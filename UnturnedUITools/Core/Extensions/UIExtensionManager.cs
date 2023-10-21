@@ -1,0 +1,1331 @@
+﻿using DanielWillett.ReflectionTools;
+using DanielWillett.UITools.API;
+using DanielWillett.UITools.API.Extensions;
+using DanielWillett.UITools.API.Extensions.Members;
+using DanielWillett.UITools.Util;
+using HarmonyLib;
+using JetBrains.Annotations;
+using SDG.Unturned;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Runtime.Serialization;
+using Module = SDG.Framework.Modules.Module;
+
+namespace DanielWillett.UITools.Core.Extensions;
+
+/// <summary>
+/// Default implementation of <see cref="IUIExtensionManager"/>, manages UI extensions.
+/// </summary>
+public class UIExtensionManager : IUIExtensionManager
+{
+    internal const string Source = "UI EXT MNGR"; private static readonly List<UIExtensionInfo> ExtensionsIntl = new List<UIExtensionInfo>(8);
+    private readonly Dictionary<Type, UIExtensionInfo> ExtensionsDictIntl = new Dictionary<Type, UIExtensionInfo>(8);
+    private readonly Dictionary<Type, UIExtensionParentTypeInfo> ParentTypeInfoIntl = new Dictionary<Type, UIExtensionParentTypeInfo>(8);
+    private readonly Dictionary<MethodBase, UIExtensionPatch> Patches = new Dictionary<MethodBase, UIExtensionPatch>(64);
+    private readonly Dictionary<MethodBase, UIExtensionExistingMemberPatchInfo> PatchInfo = new Dictionary<MethodBase, UIExtensionExistingMemberPatchInfo>(64);
+    private Action<object>? _onDestroy;
+    private Action<object>? _onAdd;
+    /// <summary>
+    /// List of all registered UI Extensions (info, not instances themselves).
+    /// </summary>
+    public IReadOnlyList<UIExtensionInfo> Extensions { get; } = ExtensionsIntl.AsReadOnly();
+
+    public bool DebugLogging { get; set; }
+
+    /// <summary>
+    /// Dictionary of all parent types. Parent types references the vanilla UI type backend. (i.e. <see cref="PlayerDashboardCraftingUI"/>)
+    /// </summary>
+    public IReadOnlyDictionary<Type, UIExtensionParentTypeInfo> ParentTypeInfo { get; }
+
+    public UIExtensionManager()
+    {
+        ParentTypeInfo = new ReadOnlyDictionary<Type, UIExtensionParentTypeInfo>(ParentTypeInfoIntl);
+    }
+
+    /// <summary>
+    /// Gets the last created instance of <typeparamref name="T"/> (which should be a UI extension), or <see langword="null"/> if one isn't registered.
+    /// </summary>
+    /// <remarks>Lazily cached.</remarks>
+    public virtual T? GetInstance<T>() where T : class => InstanceCache<T>.Instance;
+    
+    internal void LogDebug(string message, Module? module = null, Assembly? assembly = null)
+    {
+        message = "[DBG] " + message;
+        if (module == null)
+            CommandWindow.Log(assembly == null ? "[" + Source + "] " + message : ("[" + Source + " | " + assembly.GetName().Name.ToUpperInvariant() + "] " + message));
+        else
+            CommandWindow.Log("[" + Source + " | " + module.config.Name + " v" + module.config.Version + "] " + message);
+    }
+    internal void LogInfo(string message, Module? module = null, Assembly? assembly = null)
+    {
+        if (module == null)
+            CommandWindow.Log(assembly == null ? "[" + Source + "] " + message : ("[" + Source + " | " + assembly.GetName().Name.ToUpperInvariant() + "] " + message));
+        else
+            CommandWindow.Log("[" + Source + " | " + module.config.Name + " v" + module.config.Version + "] " + message);
+    }
+    internal void LogWarning(string message, Module? module = null, Assembly? assembly = null)
+    {
+        if (module == null)
+            CommandWindow.LogWarning(assembly == null ? "[" + Source + "] " + message : ("[" + Source + " | " + assembly.GetName().Name.ToUpperInvariant() + "] " + message));
+        else
+            CommandWindow.LogWarning("[" + Source + " | " + module.config.Name + " v" + module.config.Version + "] " + message);
+    }
+    internal void LogError(string message, Module? module = null, Assembly? assembly = null)
+    {
+        if (module == null)
+            CommandWindow.LogError(assembly == null ? "[" + Source + "] " + message : ("[" + Source + " | " + assembly.GetName().Name.ToUpperInvariant() + "] " + message));
+        else
+            CommandWindow.LogError("[" + Source + " | " + module.config.Name + " v" + module.config.Version + "] " + message);
+    }
+    public virtual void RegisterFromModuleAssembly(Assembly assembly, Module module)
+    {
+        ThreadUtil.assertIsGameThread();
+
+        List<Type> types = Accessor.GetTypesSafe(assembly, true);
+        foreach (Type type in types)
+        {
+            if (Attribute.GetCustomAttribute(type, typeof(UIExtensionAttribute)) is not UIExtensionAttribute attribute)
+                continue;
+
+            PriorityAttribute? priority = Attribute.GetCustomAttribute(type, typeof(PriorityAttribute)) as PriorityAttribute;
+
+            UIExtensionInfo info = new UIExtensionInfo(type, attribute.ParentType, priority == null ? 0 : priority.Priority, module)
+            {
+                SuppressUIExtensionParentWarning = attribute.SuppressUIExtensionParentWarning
+            };
+
+            try
+            {
+                InitializeExtension(info);
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error initializing UI extension: {type.Name}.", module, type.Assembly);
+                CommandWindow.LogError(ex);
+                continue;
+            }
+            
+            if (DebugLogging)
+                LogDebug($"Registered UI extension: {type.Name}.", module, type.Assembly);
+        }
+    }
+
+    protected virtual void OnOpened(Type? type, object? instance)
+    {
+        if (instance != null)
+            type = instance.GetType();
+        if (DebugLogging)
+            LogDebug($"Opened: {type!.Name}.");
+        if (!ParentTypeInfoIntl.TryGetValue(type!, out UIExtensionParentTypeInfo parentTypeInfo))
+        {
+            LogWarning($"Unable to find parent type info while opening {type!.Name}.");
+            return;
+        }
+
+        bool found = false;
+        for (int i = 0; i < parentTypeInfo.VanillaInstancesIntl.Count; ++i)
+        {
+            UIExtensionVanillaInstanceInfo instanceInfo = parentTypeInfo.VanillaInstancesIntl[i];
+            if (ReferenceEquals(instanceInfo.Instance, instance) || parentTypeInfo.VanillaInstancesIntl.Count == 1 && parentTypeInfo.ParentTypeInfo.IsInstanceUI)
+            {
+                if (instanceInfo.IsOpen)
+                {
+                    if (DebugLogging)
+                        LogDebug($"Already open: {type!.Name}.");
+                    return;
+                }
+
+                found = true;
+                instanceInfo.IsOpen = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            LogWarning($"Unable to find vanilla instance info while opening {type!.Name}.");
+            return;
+        }
+        for (int i = 0; i < ExtensionsIntl.Count; i++)
+        {
+            UIExtensionInfo info = ExtensionsIntl[i];
+            if (info.ParentType != type) continue;
+
+            for (int j = 0; j < info.InstantiationsIntl.Count; j++)
+            {
+                object instantiation = info.InstantiationsIntl[j];
+                if (instantiation is UIExtension ext)
+                {
+                    try
+                    {
+                        ext.InvokeOnOpened();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError($"Error invoking OnOpened from {instantiation.GetType().Name}.", info.Module, info.Assembly);
+                        CommandWindow.LogError(ex);
+                    }
+                }
+            }
+            if (DebugLogging)
+                LogDebug($"* Invoked Opened: {info.ImplementationType.Name}.", info.Module, info.Assembly);
+        }
+    }
+    protected virtual void OnClosed(Type? type, object? instance)
+    {
+        if (instance != null)
+            type = instance.GetType();
+        if (DebugLogging)
+            LogDebug($"Closed: {type!.Name}.");
+        if (!ParentTypeInfoIntl.TryGetValue(type!, out UIExtensionParentTypeInfo parentTypeInfo))
+        {
+            LogWarning($"Unable to find parent type info while closing {type!.Name}.");
+            return;
+        }
+
+        bool found = false;
+        for (int i = 0; i < parentTypeInfo.VanillaInstancesIntl.Count; ++i)
+        {
+            UIExtensionVanillaInstanceInfo instanceInfo = parentTypeInfo.VanillaInstancesIntl[i];
+            if (ReferenceEquals(instanceInfo.Instance, instance) || parentTypeInfo.VanillaInstancesIntl.Count == 1 && parentTypeInfo.ParentTypeInfo.IsInstanceUI)
+            {
+                if (!instanceInfo.IsOpen)
+                {
+                    if (DebugLogging)
+                        LogDebug($"Already closed: {type!.Name}.");
+                    return;
+                }
+
+                found = true;
+                instanceInfo.IsOpen = false;
+                break;
+            }
+        }
+        if (!found)
+        {
+            LogWarning($"Unable to find vanilla instance info while closing {type!.Name}.");
+            return;
+        }
+
+        for (int i = 0; i < ExtensionsIntl.Count; i++)
+        {
+            UIExtensionInfo info = ExtensionsIntl[i];
+            if (info.ParentType != type) continue;
+
+            for (int j = 0; j < info.InstantiationsIntl.Count; j++)
+            {
+                object instantiation = info.InstantiationsIntl[j];
+                if (instantiation is UIExtension ext)
+                {
+                    try
+                    {
+                        ext.InvokeOnClosed();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError($"Error invoking OnClosed from {instantiation.GetType().Name}.", info.Module, info.Assembly);
+                        CommandWindow.LogError(ex);
+                    }
+                }
+            }
+            if (DebugLogging)
+                LogDebug($"* Invoked Closed: {info.ImplementationType.Name}.", info.Module, info.Assembly);
+        }
+    }
+    protected virtual void OnInitialized(Type? type, object? instance)
+    {
+        if (instance != null)
+            type = instance.GetType();
+        if (DebugLogging)
+            LogDebug($"Initialized: {type!.Name}.");
+
+        for (int i = 0; i < ExtensionsIntl.Count; i++)
+        {
+            UIExtensionInfo info = ExtensionsIntl[i];
+            if (info.ParentType != type) continue;
+            object? ext = CreateExtension(info, instance);
+            if (ext == null) continue;
+            info.InstantiationsIntl.Add(ext);
+            if (DebugLogging)
+                LogDebug($"* Initialized: {info.ImplementationType.Name}.", info.Module, info.Assembly);
+            if ((info.TypeInfo.OpenOnInitialize || info.TypeInfo.DefaultOpenState) && ext is UIExtension ext2)
+            {
+                try
+                {
+                    ext2.InvokeOnOpened();
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Error invoking OnOpened from {ext.GetType().Name}.", info.Module, info.Assembly);
+                    CommandWindow.LogError(ex);
+                }
+            }
+        }
+    }
+    protected virtual void OnDestroy(Type? type, object? instance)
+    {
+        if (instance != null)
+            type = instance.GetType();
+
+        if (DebugLogging)
+            LogDebug($"Destroyed: {type!.Name}.");
+        foreach (UITypeInfo otherTypeInfo in UIAccessor.TypeInfo.Values)
+        {
+            if (otherTypeInfo.DestroyWhenParentDestroys && otherTypeInfo.Type != type && otherTypeInfo.Parent == type)
+            {
+                if (DebugLogging)
+                    LogDebug($"* Destroying child: {otherTypeInfo.Type.Name}.");
+                OnDestroy(otherTypeInfo.Type, null);
+            }
+        }
+        if (!ParentTypeInfoIntl.TryGetValue(type!, out UIExtensionParentTypeInfo parentTypeInfo) && DebugLogging)
+        {
+            LogDebug($"Unable to find parent type info while destroying {type!.Name}.");
+        }
+        bool close = true;
+        if (parentTypeInfo != null)
+        {
+            close = parentTypeInfo.ParentTypeInfo.CloseOnDestroy;
+            if (close)
+            {
+                bool found = false;
+                for (int i = 0; i < parentTypeInfo.VanillaInstancesIntl.Count; ++i)
+                {
+                    UIExtensionVanillaInstanceInfo instanceInfo = parentTypeInfo.VanillaInstancesIntl[i];
+                    if (ReferenceEquals(instanceInfo.Instance, instance) || parentTypeInfo.VanillaInstancesIntl.Count == 1 && parentTypeInfo.ParentTypeInfo.IsInstanceUI)
+                    {
+                        if (!instanceInfo.IsOpen)
+                        {
+                            if (DebugLogging)
+                                LogDebug($"Already closed: {type!.Name}.");
+                            close = false;
+                        }
+                        else instanceInfo.IsOpen = false;
+
+                        found = true;
+                        parentTypeInfo.VanillaInstancesIntl.RemoveAt(i);
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    LogWarning($"Unable to find vanilla instance info while closing (destroying) {type!.Name}.");
+                    close = false;
+                }
+            }
+        }
+
+        for (int i = 0; i < ExtensionsIntl.Count; i++)
+        {
+            UIExtensionInfo info = ExtensionsIntl[i];
+            if (info.ParentType != type) continue;
+            for (int j = 0; j < info.InstantiationsIntl.Count; j++)
+            {
+                object instantiation = info.InstantiationsIntl[j];
+                if (close && instantiation is UIExtension ext)
+                {
+                    try
+                    {
+                        ext.InvokeOnClosed();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError($"Error invoking OnClosed from {instantiation.GetType().Name} while destroying.", info.Module, info.Assembly);
+                        CommandWindow.LogError(ex);
+                    }
+                }
+                if (instantiation is IDisposable disposable)
+                {
+                    try
+                    {
+                        disposable.Dispose();
+                        if (DebugLogging)
+                            LogDebug($"* Disposed: {info.ImplementationType.Name}.", info.Module, info.Assembly);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError($"Error disposing UI extension: {info.ImplementationType.Name}.", info.Module, info.Assembly);
+                        CommandWindow.LogError(ex);
+                    }
+                }
+
+                if (ParentTypeInfo.TryGetValue(info.ParentType, out UIExtensionParentTypeInfo parentInfo))
+                    parentInfo.InstancesIntl.RemoveAll(x => x.Instance == instance);
+                _onDestroy?.Invoke(instantiation);
+            }
+            info.InstantiationsIntl.Clear();
+            if (DebugLogging)
+                LogDebug($"* Destroyed Instances: {info.ImplementationType.Name}.", info.Module, info.Assembly);
+        }
+    }
+    public virtual void RegisterExtension(Type extensionType, Type parentType, Module module)
+    {
+        ThreadUtil.assertIsGameThread();
+
+        UIExtensionAttribute? attribute = (UIExtensionAttribute?)Attribute.GetCustomAttribute(extensionType, typeof(UIExtensionAttribute));
+
+        PriorityAttribute? priority = Attribute.GetCustomAttribute(extensionType, typeof(PriorityAttribute)) as PriorityAttribute;
+
+        UIExtensionInfo info = new UIExtensionInfo(extensionType, parentType, priority == null ? 0 : priority.Priority, module)
+        {
+            SuppressUIExtensionParentWarning = attribute == null || attribute.SuppressUIExtensionParentWarning
+        };
+
+        try
+        {
+            InitializeExtension(info);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Unable to initialize UI extension: {extensionType.FullName}.", ex);
+        }
+
+        if (DebugLogging)
+            LogDebug($"Registered UI extension: {extensionType.Name}.", module, extensionType.Assembly);
+    }
+
+    private void AddToList(UIExtensionInfo info)
+    {
+        lock (this)
+        {
+            int priority = info.Priority;
+            int index = ExtensionsIntl.FindIndex(x => x.Priority <= priority);
+            if (index == -1)
+                ExtensionsIntl.Add(info);
+            else
+                ExtensionsIntl.Insert(index, info);
+
+            ExtensionsDictIntl[info.ImplementationType] = info;
+        }
+    }
+    /// <exception cref="AggregateException"></exception>
+    protected virtual void InitializeExtension(UIExtensionInfo info)
+    {
+        if (!info.SuppressUIExtensionParentWarning && !typeof(UIExtension).IsAssignableFrom(info.ImplementationType))
+        {
+            LogWarning($"It's recommended to derive UI extensions from the {nameof(UIExtension)} class (unlike {info.ImplementationType.Name}).", info.Module, info.Assembly);
+            LogInfo($"Alternatively set SuppressUIExtensionParentWarning to True in a {nameof(UIExtensionAttribute)} on the extension class.", info.Module, info.Assembly);
+        }
+
+        if (!UIAccessor.TryGetUITypeInfo(info.ParentType, out UITypeInfo? typeInfo))
+        {
+            LogWarning($"No type info for parent UI type: {info.ParentType.Name}, {info.ImplementationType.Name} UI extension may not behave as expected. Any warnings below:", info.Module, info.Assembly);
+        }
+
+        if (typeInfo == null)
+        {
+            typeInfo = new UITypeInfo(info.ParentType);
+            LogInfo($"Created UI type info for {info.ParentType.Name}: {typeInfo.OpenMethods.Length} open method(s), " +
+                    $"{typeInfo.CloseMethods.Length} close method(s), {typeInfo.InitializeMethods.Length} initialize method(s), " +
+                    $"{typeInfo.DestroyMethods.Length} destroy method(s).", info.Module, info.Assembly);
+        }
+
+        info.TypeInfo = typeInfo;
+
+        bool staticUI = !info.ParentType.GetIsStatic() && typeInfo.IsStaticUI;
+
+        List<Exception>? exceptions = null;
+
+        ConstructorInfo[] ctors = info.ImplementationType.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        ConstructorInfo? constructor = staticUI ? null : ctors.FirstOrDefault(x => x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType.IsAssignableFrom(info.ParentType));
+        if (constructor == null)
+        {
+            constructor = ctors.FirstOrDefault(x => x.GetParameters().Length == 0);
+            if (constructor == null)
+                (exceptions ??= new List<Exception>()).Add(new InvalidOperationException("Type " + info.ImplementationType.Name + " does not have a parameterless constructor or an instance input constructor."));
+        }
+
+        foreach (MemberInfo member in info.ImplementationType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                     .Concat<MemberInfo>(info.ImplementationType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy))
+                     .Concat(info.ImplementationType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                         .Where(x => !x.IsSpecialName))
+                     .OrderByDescending(Accessor.GetPriority)
+                     .ThenBy(x => x.Name))
+        {
+            if (member.IsIgnored())
+                continue;
+            try
+            {
+                TryInitializeMember(info, member);
+            }
+            catch (Exception ex)
+            {
+                (exceptions ??= new List<Exception>()).Add(ex);
+            }
+        }
+
+        if (exceptions != null)
+            throw new AggregateException($"Failed to initialze UI extension: {info.ImplementationType.Name}.", exceptions);
+
+        try
+        {
+            DynamicMethod dynMethod = new DynamicMethod("<DS_UIEXT>_CreateExtensionImpl",
+                MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName, CallingConventions.Standard, typeof(object),
+                new Type[] { typeof(object) }, info.ImplementationType, true);
+            dynMethod.DefineParameter(0, ParameterAttributes.None, "uiInstance");
+            ILGenerator il = dynMethod.GetILGenerator();
+
+            il.DeclareLocal(info.ImplementationType); // 0
+            il.DeclareLocal(info.ParentType); // 1
+
+            Label useProvidedLocal1 = il.DefineLabel();
+            Label setLocal1 = il.DefineLabel();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Brtrue_S, useProvidedLocal1);
+            if (!staticUI)
+            {
+                try
+                {
+                    UIAccessor.LoadUIToILGenerator(il, info.ParentType);
+                }
+                catch (InvalidOperationException)
+                {
+                    il.Emit(OpCodes.Ldnull);
+                }
+            }
+            else
+                il.Emit(OpCodes.Ldnull);
+            il.Emit(OpCodes.Br, setLocal1);
+            il.MarkLabel(useProvidedLocal1);
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Castclass, info.ParentType);
+            il.MarkLabel(setLocal1);
+            il.Emit(OpCodes.Stloc_1);
+
+            il.Emit(OpCodes.Ldtoken, info.ImplementationType);
+            il.Emit(OpCodes.Call, new Func<RuntimeTypeHandle, Type>(Type.GetTypeFromHandle).Method);
+            il.Emit(OpCodes.Call, new Func<Type, object>(FormatterServices.GetUninitializedObject).Method);
+            il.Emit(OpCodes.Castclass, info.ImplementationType);
+            il.Emit(OpCodes.Stloc_0);
+
+            if (typeof(UIExtension).IsAssignableFrom(info.ImplementationType))
+            {
+                MethodInfo? setter = typeof(UIExtension).GetProperty(nameof(UIExtension.Instance), BindingFlags.Public | BindingFlags.Instance)?.GetSetMethod(true);
+                if (setter != null)
+                {
+                    il.Emit(OpCodes.Ldloc_0);
+                    il.Emit(OpCodes.Ldloc_1);
+                    il.Emit(OpCodes.Call, setter);
+                }
+            }
+
+            foreach (UIExistingMemberInfo member in info.ExistingMembers)
+            {
+                if (!member.IsInitialized) continue;
+                if (!member.Member.GetIsStatic())
+                    il.Emit(OpCodes.Ldloc_0);
+
+                if (!member.ExistingIsStatic)
+                    il.Emit(OpCodes.Ldloc_1);
+
+                member.EmitApply(il);
+            }
+
+            il.Emit(OpCodes.Ldloc_0);
+            if (constructor!.GetParameters().Length == 1)
+                il.Emit(OpCodes.Ldloc_1);
+            il.Emit(OpCodes.Call, constructor);
+
+            il.Emit(OpCodes.Ldloc_1);
+            il.Emit(OpCodes.Ldloc_0);
+            il.Emit(GetType() == typeof(UIExtensionManager) ? OpCodes.Call : OpCodes.Callvirt, AddInstanceMethod);
+
+            il.Emit(OpCodes.Ldloc_0);
+            il.Emit(OpCodes.Ret);
+
+            info.CreateCallback = (CreateUIExtension)dynMethod.CreateDelegate(typeof(CreateUIExtension));
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to create instantiation method for UI extension: {info.ImplementationType.Name}.", ex);
+        }
+
+        try
+        {
+            InitializeParentPatches(info);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to patch for UI parent: {info.ParentType.Name} (while patching {info.ImplementationType.Name}).", ex);
+        }
+
+        AddToList(info);
+
+        try
+        {
+            InitializeExtensionPatches(info);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                if (ExtensionsDictIntl.TryGetValue(info.ImplementationType, out UIExtensionInfo extInfo))
+                {
+                    for (int i = 0; i < extInfo.InstantiationsIntl.Count; ++i)
+                    {
+                        object instance = extInfo.InstantiationsIntl[i];
+                        if (instance is IDisposable disposable)
+                        {
+                            try
+                            {
+                                disposable.Dispose();
+                            }
+                            catch (Exception ex2)
+                            {
+                                LogWarning($"Error disposing UI extension: {extInfo.ImplementationType.Name}.", extInfo.Module, extInfo.Assembly);
+                                CommandWindow.LogWarning(ex2);
+                            }
+                        }
+
+                        ExtensionsIntl.Remove(extInfo);
+
+                        if (ParentTypeInfo.TryGetValue(extInfo.ParentType, out UIExtensionParentTypeInfo parentInfo))
+                            parentInfo.InstancesIntl.RemoveAll(x => x.Instance == instance);
+                    }
+
+                    if (DebugLogging)
+                        LogDebug($"Deregistered UI extension: {info.ImplementationType.Name}.", extInfo.Module, extInfo.Assembly);
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            throw new Exception($"Failed to patch for UI extension: {info.ImplementationType.Name}.", ex);
+        }
+    }
+    private static readonly MethodInfo AddInstanceMethod = typeof(UIExtensionManager).GetMethod(nameof(AddInstance), BindingFlags.NonPublic | BindingFlags.Static)!;
+    [UsedImplicitly]
+    protected virtual void AddInstance(object? uiInstance, object instance)
+    {
+        Type? type;
+        UIExtensionInfo? extInfo = null;
+        if (uiInstance == null)
+        {
+            type = instance.GetType();
+            type.ForEachBaseType((type, _) => !ExtensionsDictIntl.TryGetValue(type, out extInfo));
+            type = extInfo?.ParentType;
+        }
+        else type = uiInstance.GetType();
+
+        UIExtensionParentTypeInfo? parentInfo = null;
+        type?.ForEachBaseType((type, _) => !ParentTypeInfoIntl.TryGetValue(type, out parentInfo));
+
+        if (parentInfo == null)
+        {
+            LogWarning($"Failed to find parent info for extension: {instance.GetType().Name}.", extInfo?.Module, extInfo?.Assembly);
+            return;
+        }
+
+        UIExtensionVanillaInstanceInfo? info = null;
+        List<UIExtensionVanillaInstanceInfo> vanillaInstances = parentInfo.VanillaInstancesIntl;
+
+        if (vanillaInstances.Count != 0 && (parentInfo.ParentTypeInfo.IsInstanceUI || parentInfo.ParentTypeInfo.IsStaticUI) && (vanillaInstances.Count != 1 || !ReferenceEquals(vanillaInstances[0].Instance, instance)))
+        {
+            vanillaInstances.Clear();
+            info = new UIExtensionVanillaInstanceInfo(parentInfo.ParentTypeInfo.IsStaticUI ? null : uiInstance, parentInfo.ParentTypeInfo.OpenOnInitialize || parentInfo.ParentTypeInfo.DefaultOpenState);
+            vanillaInstances.Add(info);
+            if (DebugLogging)
+                LogDebug($"Replaced vanilla instance info: {parentInfo.ParentType.Name}.");
+        }
+        else
+        {
+            for (int i = 0; i < vanillaInstances.Count; ++i)
+            {
+                if (ReferenceEquals(vanillaInstances[i].Instance, uiInstance))
+                {
+                    info = vanillaInstances[i];
+                    if (DebugLogging)
+                        LogDebug($"Found vanilla instance info: {parentInfo.ParentType.Name}.");
+                    break;
+                }
+            }
+
+            if (info == null)
+            {
+                info = new UIExtensionVanillaInstanceInfo(parentInfo.ParentTypeInfo.IsStaticUI ? null : uiInstance, parentInfo.ParentTypeInfo.OpenOnInitialize || parentInfo.ParentTypeInfo.DefaultOpenState);
+                vanillaInstances.Add(info);
+                if (DebugLogging)
+                    LogDebug($"Added vanilla instance info: {parentInfo.ParentType.Name}.");
+            }
+        }
+
+
+        parentInfo.InstancesIntl.Add(new UIExtensionInstanceInfo(instance, info));
+    }
+    protected virtual object? CreateExtension(UIExtensionInfo info, object? uiInstance)
+    {
+        try
+        {
+            object? instance;
+            lock (this)
+            {
+                instance = info.CreateCallback(uiInstance);
+
+                if (instance == null)
+                {
+                    LogWarning($"Failed to create extension of type {info.ImplementationType.Name}.", info.Module, info.Assembly);
+                    return null;
+                }
+
+                if (DebugLogging)
+                    LogDebug($"Created {info.ImplementationType.Name} for {info.ParentType.Name}.", info.Module, info.Assembly);
+            }
+
+            _onAdd?.Invoke(instance);
+
+            return instance;
+        }
+        catch (Exception ex)
+        {
+            LogError($"Error initializing {info.ImplementationType.Name}.", info.Module, info.Assembly);
+            CommandWindow.LogError(ex);
+            return null;
+        }
+    }
+    protected virtual void TryInitializeMember(UIExtensionInfo info, MemberInfo member)
+    {
+        if (Attribute.GetCustomAttribute(member, typeof(ExistingMemberAttribute)) is not ExistingMemberAttribute existingMemberAttribute)
+            return;
+
+        ExistingMemberFailureBehavior failureMode = existingMemberAttribute.FailureBehavior;
+
+        FieldInfo? field = member as FieldInfo;
+        PropertyInfo? property = member as PropertyInfo;
+        MethodInfo? method = member as MethodInfo;
+
+        if (field == null && property == null && method == null)
+            return;
+
+        bool isStatic = member.GetIsStatic();
+        if (isStatic)
+            throw new Exception($"UI extensions should not have static existing members, such as \"{member.Name}\".");
+
+        Type owningType = existingMemberAttribute.OwningType ?? info.ParentType;
+
+        FieldInfo? existingField = owningType.GetField(existingMemberAttribute.MemberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+        PropertyInfo? existingProperty = owningType.GetProperty(existingMemberAttribute.MemberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+        MethodInfo? existingMethod = owningType.GetMethod(existingMemberAttribute.MemberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy,
+            null, CallingConventions.Any, Array.Empty<Type>(), null);
+
+        if (existingField == null &&
+            (existingProperty == null ||
+             existingProperty.GetSetMethod(true) == null && existingProperty.GetGetMethod(true) == null ||
+             existingProperty.GetIndexParameters().Length > 0) &&
+            (existingMethod == null || existingMethod.ReturnType == typeof(void) || existingMethod.GetParameters().Length > 0))
+        {
+            string msg = $"Unable to match \"{owningType.Name}.{existingMemberAttribute.MemberName}\" to a field, get-able property, or no-argument, non-void-returning method.";
+            if (failureMode != ExistingMemberFailureBehavior.Ignore)
+                throw new MemberAccessException(msg);
+
+            LogInfo(msg, info.Module, info.Assembly);
+            return;
+        }
+        MemberInfo existingMember = ((MemberInfo?)existingField ?? existingProperty) ?? existingMethod!;
+
+        Type existingMemberType = existingMember.GetMemberType()!;
+        Type memberType = member.GetMemberType()!;
+
+        if (method != null)
+        {
+            ParameterInfo[] parameters = method.GetParameters();
+            if (method.ReturnType == typeof(void))
+            {
+                // setter
+                if (parameters.Length == 0 || !parameters[0].ParameterType.IsAssignableFrom(existingMemberType))
+                {
+                    string msg = $"Unable to assign existing method parameter type: \"{existingMemberType.FullName}\" to expected member type: \"{parameters[0].ParameterType.FullName}\" for existing member \"{member.Name}\".";
+                    if (failureMode != ExistingMemberFailureBehavior.Ignore)
+                        throw new Exception(msg);
+
+                    LogInfo(msg, info.Module, info.Assembly);
+                    return;
+                }
+            }
+            else
+            {
+                // getter
+                if (parameters.Length != 0 || !memberType.IsAssignableFrom(existingMemberType))
+                {
+                    string msg = $"Unable to assign existing method parameter type: \"{existingMemberType.FullName}\" to expected member type: \"{memberType.FullName}\" for existing member \"{member.Name}\".";
+                    if (failureMode != ExistingMemberFailureBehavior.Ignore)
+                        throw new Exception(msg);
+
+                    LogInfo(msg, info.Module, info.Assembly);
+                    return;
+                }
+            }
+        }
+        else if (!memberType.IsAssignableFrom(existingMemberType))
+        {
+            string msg = $"Unable to assign existing member type: \"{existingMemberType.FullName}\" to expected member type: \"{memberType.FullName}\" for existing member \"{member.Name}\".";
+            if (failureMode != ExistingMemberFailureBehavior.Ignore)
+                throw new Exception(msg);
+
+            LogInfo(msg, info.Module, info.Assembly);
+            return;
+        }
+
+        bool existingIsStatic = existingMember.GetIsStatic();
+
+        if (!existingIsStatic && info.TypeInfo.IsStaticUI)
+        {
+            string msg = $"Requested instance variable ({existingMember.Name}) from static UI: {info.ParentType.Name} for existing member \"{member.Name}\".";
+            if (failureMode != ExistingMemberFailureBehavior.Ignore)
+                throw new InvalidOperationException(msg);
+
+            LogInfo(msg, info.Module, info.Assembly);
+            return;
+        }
+
+        bool initialized;
+        if (existingMemberAttribute.InitializeMode is ExistingMemberInitializeMode.InitializeOnConstruct or ExistingMemberInitializeMode.PatchGetter)
+        {
+            initialized = existingMemberAttribute.InitializeMode == ExistingMemberInitializeMode.InitializeOnConstruct;
+            if (!initialized && field != null)
+            {
+                LogWarning($"Fields can not be non-initialized (as indicated for {field.Name}).", info.Module, info.Assembly);
+                initialized = true;
+            }
+            if (initialized && property != null && property.GetSetMethod(true) == null)
+            {
+                LogWarning($"Properties without a setter can not be initialized (as indicated for {property.Name}).", info.Module, info.Assembly);
+                initialized = false;
+            }
+            if (!initialized && method != null && method.ReturnType == typeof(void))
+            {
+                LogWarning($"Void-returning methods can not be non-initialized (as indicated for {method.Name}).", info.Module, info.Assembly);
+                initialized = true;
+            }
+            if (initialized && method != null && method.GetParameters().Length == 0)
+            {
+                LogWarning($"Parameterless methods can not be initialized (as indicated for {method.Name}).", info.Module, info.Assembly);
+                initialized = false;
+            }
+            if (DebugLogging)
+                LogDebug($"Set initialized setting for existing member: {member.Name}: {initialized}.", info.Module, info.Assembly);
+        }
+        else
+        {
+            if (field != null)
+                initialized = true;
+            else if (property != null)
+                initialized = property.GetSetMethod(true) != null;
+            else if (method!.ReturnType == typeof(void))
+                initialized = true;
+            else
+                initialized = false;
+            if (DebugLogging)
+                LogDebug($"Assumed initialized setting for existing member: {member.Name}: {initialized}.", info.Module, info.Assembly);
+        }
+
+        if (!initialized && existingProperty != null && existingProperty.GetSetMethod(true) != null)
+            LogWarning($"Setter on {existingProperty.Name} can not be used to set the original value. Recommended to make the property get-only (readonly).", info.Module, info.Assembly);
+
+        info.ExistingMembersIntl.Add(new UIExistingMemberInfo(member, existingMember, existingIsStatic, initialized));
+    }
+    protected virtual void InitializeExtensionPatches(UIExtensionInfo info)
+    {
+        for (int i = 0; i < info.ExistingMembersIntl.Count; ++i)
+        {
+            UIExistingMemberInfo member = info.ExistingMembersIntl[i];
+            if (member.IsInitialized || member.Member is not PropertyInfo property)
+            {
+                if (DebugLogging)
+                    LogDebug($"Skipping initialized member: {member.Member.Name}.", info.Module, info.Assembly);
+                continue;
+            }
+            MethodInfo? getter = property.GetGetMethod(true);
+            MethodInfo? setter = property.GetSetMethod(true);
+            if (getter == null)
+            {
+                LogWarning($"Unable to find getter for {property.Name}.", info.Module, info.Assembly);
+                continue;
+            }
+            if (DebugLogging && setter == null)
+                LogDebug($"Unable to find setter for {property.Name}, not an issue.", info.Module, info.Assembly);
+            if (Patches.ContainsKey(getter))
+            {
+                if (DebugLogging)
+                    LogDebug($"{getter.Name} has already been transpiled.", info.Module, info.Assembly);
+            }
+            else
+            {
+                UIExtensionExistingMemberPatchInfo patchInfo = new UIExtensionExistingMemberPatchInfo(info, member);
+                PatchInfo[getter] = patchInfo;
+                MethodInfo transpiler = TranspileGetterPropertyMethod;
+                UIAccessor.Patcher.Patch(getter, transpiler: new HarmonyMethod(transpiler));
+                Patches.Add(getter, new UIExtensionPatch(getter, transpiler, HarmonyPatchType.Transpiler));
+            }
+
+            if (setter != null)
+            {
+                if (Patches.ContainsKey(setter))
+                {
+                    if (DebugLogging)
+                        LogDebug($"{setter.Name} has already been transpiled.", info.Module, info.Assembly);
+                }
+                else
+                {
+                    UIExtensionExistingMemberPatchInfo patchInfo = new UIExtensionExistingMemberPatchInfo(info, member);
+                    PatchInfo[setter] = patchInfo;
+                    MethodInfo transpiler = TranspileSetterPropertyMethod;
+                    UIAccessor.Patcher.Patch(setter, transpiler: new HarmonyMethod(transpiler));
+                    Patches.Add(setter, new UIExtensionPatch(setter, transpiler, HarmonyPatchType.Transpiler));
+                }
+            }
+        }
+    }
+    protected virtual UIExtensionParentTypeInfo GetOrAddParentTypeInfo(Type parentType, UITypeInfo typeInfo)
+    {
+        if (!ParentTypeInfoIntl.TryGetValue(parentType, out UIExtensionParentTypeInfo parentTypeInfo))
+        {
+            parentTypeInfo = new UIExtensionParentTypeInfo(parentType, typeInfo);
+            ParentTypeInfoIntl.Add(parentType, parentTypeInfo);
+        }
+        return parentTypeInfo;
+    }
+    protected virtual void InitializeParentPatches(UIExtensionInfo info)
+    {
+        UIExtensionParentTypeInfo parentTypeInfo = GetOrAddParentTypeInfo(info.ParentType, info.TypeInfo);
+
+        PatchParentOnOpen(info.TypeInfo, parentTypeInfo, info.Module, info.Assembly);
+        PatchParentOnClose(info.TypeInfo, parentTypeInfo, info.Module, info.Assembly);
+        PatchParentOnInitialize(info.TypeInfo, parentTypeInfo, info.Module, info.Assembly);
+        PatchParentOnDestroy(info.TypeInfo, parentTypeInfo, info.Module, info.Assembly);
+    }
+    protected virtual void PatchParentOnOpen(UITypeInfo typeInfo, UIExtensionParentTypeInfo parentTypeInfo, Module? module, Assembly assembly)
+    {
+        if (typeInfo.CustomOnOpen != null)
+        {
+            if (!typeInfo.CustomOnOpen.HasBeenInitialized)
+            {
+                typeInfo.CustomOnOpen.Patch(UIAccessor.Patcher);
+                typeInfo.CustomOnOpen.HasBeenInitialized = true;
+            }
+            if (!typeInfo.CustomOnOpen.HasOnOpenBeenInitialized)
+            {
+                typeInfo.CustomOnOpen.OnOpened += OnOpened;
+                typeInfo.CustomOnOpen.HasOnOpenBeenInitialized = true;
+            }
+        }
+        else if (!typeInfo.OpenOnInitialize)
+        {
+            foreach (UIVisibilityMethodInfo openMethod in typeInfo.OpenMethods)
+            {
+                if (parentTypeInfo.OpenPatchesIntl.Any(x => x.Original == openMethod.Method))
+                {
+                    if (DebugLogging)
+                        LogDebug($"Skipped finalizer for {openMethod.Method.Name}, already done from this extension.", module, assembly);
+                    continue;
+                }
+
+                if (Patches.TryGetValue(openMethod.Method, out UIExtensionPatch patchInfo))
+                {
+                    if (DebugLogging)
+                        LogDebug($"Skipped finalizer for {openMethod.Method.Name}, already done from another extension.", module, assembly);
+                    parentTypeInfo.OpenPatchesIntl.Add(patchInfo);
+                    continue;
+                }
+
+                if (openMethod.Method.DeclaringType == typeInfo.Type)
+                {
+                    MethodInfo finalizer = openMethod.IsStatic
+                        ? StaticOpenMethodFinalizerMethod
+                        : InstanceOpenMethodFinalizerMethod;
+                    UIAccessor.Patcher.Patch(openMethod.Method, finalizer: new HarmonyMethod(finalizer));
+                    patchInfo = new UIExtensionPatch(openMethod.Method, finalizer, HarmonyPatchType.Finalizer);
+                    parentTypeInfo.OpenPatchesIntl.Add(patchInfo);
+                    Patches.Add(openMethod.Method, patchInfo);
+                    if (DebugLogging)
+                        LogDebug($"Added finalizer for {openMethod.Method.Name}: {finalizer.Name}.", module, assembly);
+                }
+                else if (openMethod.Method.IsStatic)
+                {
+                    throw new InvalidOperationException("Can't patch an open method from another class.");
+                }
+            }
+        }
+    }
+    protected virtual void PatchParentOnClose(UITypeInfo typeInfo, UIExtensionParentTypeInfo parentTypeInfo, Module? module, Assembly assembly)
+    {
+        if (typeInfo.CustomOnClose != null)
+        {
+            if (!typeInfo.CustomOnClose.HasBeenInitialized)
+            {
+                typeInfo.CustomOnClose.Patch(UIAccessor.Patcher);
+                typeInfo.CustomOnClose.HasBeenInitialized = true;
+            }
+            if (!typeInfo.CustomOnClose.HasOnCloseBeenInitialized)
+            {
+                typeInfo.CustomOnClose.OnClosed += OnClosed;
+                typeInfo.CustomOnClose.HasOnCloseBeenInitialized = true;
+            }
+        }
+        else if (!typeInfo.CloseOnDestroy)
+        {
+            foreach (UIVisibilityMethodInfo closeMethod in typeInfo.CloseMethods)
+            {
+                if (parentTypeInfo.ClosePatchesIntl.Any(x => x.Original == closeMethod.Method))
+                {
+                    if (DebugLogging)
+                        LogDebug($"Skipped finalizer for {closeMethod.Method.Name}, already done from this extension.", module, assembly);
+                    continue;
+                }
+
+                if (Patches.TryGetValue(closeMethod.Method, out UIExtensionPatch patchInfo))
+                {
+                    if (DebugLogging)
+                        LogDebug($"Skipped finalizer for {closeMethod.Method.Name}, already done from another extension.", module, assembly);
+                    parentTypeInfo.ClosePatchesIntl.Add(patchInfo);
+                    continue;
+                }
+
+                if (closeMethod.Method.DeclaringType == typeInfo.Type)
+                {
+                    MethodInfo finalizer = closeMethod.IsStatic
+                        ? StaticCloseMethodFinalizerMethod
+                        : InstanceCloseMethodFinalizerMethod;
+                    UIAccessor.Patcher.Patch(closeMethod.Method, finalizer: new HarmonyMethod(finalizer));
+                    patchInfo = new UIExtensionPatch(closeMethod.Method, finalizer, HarmonyPatchType.Finalizer);
+                    parentTypeInfo.ClosePatchesIntl.Add(patchInfo);
+                    Patches.Add(closeMethod.Method, patchInfo);
+                    if (DebugLogging)
+                        LogDebug($"Added finalizer for {closeMethod.Method.Name}: {finalizer.Name}.", module, assembly);
+                }
+                else if (closeMethod.Method.IsStatic)
+                {
+                    throw new InvalidOperationException("Can't patch a close method from another class.");
+                }
+            }
+        }
+    }
+    protected virtual void PatchParentOnInitialize(UITypeInfo typeInfo, UIExtensionParentTypeInfo parentTypeInfo, Module? module, Assembly assembly)
+    {
+        if (typeInfo.CustomOnInitialize != null)
+        {
+            if (!typeInfo.CustomOnInitialize.HasBeenInitialized)
+            {
+                typeInfo.CustomOnInitialize.Patch(UIAccessor.Patcher);
+                typeInfo.CustomOnInitialize.HasBeenInitialized = true;
+            }
+            if (!typeInfo.CustomOnInitialize.HasOnInitializeBeenInitialized)
+            {
+                typeInfo.CustomOnInitialize.OnInitialize += OnInitialized;
+                typeInfo.CustomOnInitialize.HasOnInitializeBeenInitialized = true;
+            }
+        }
+        else
+        {
+            foreach (UIVisibilityMethodInfo initializeMethod in typeInfo.InitializeMethods)
+            {
+                if (parentTypeInfo.InitializePatchesIntl.Any(x => x.Original == initializeMethod.Method))
+                {
+                    if (DebugLogging)
+                        LogDebug($"Skipped finalizer for {initializeMethod.Method.Name}, already done from this extension.", module, assembly);
+                    continue;
+                }
+
+                if (Patches.TryGetValue(initializeMethod.Method, out UIExtensionPatch patchInfo))
+                {
+                    if (DebugLogging)
+                        LogDebug($"Skipped finalizer for {initializeMethod.Method.Name}, already done from another extension.", module, assembly);
+                    parentTypeInfo.InitializePatchesIntl.Add(patchInfo);
+                    continue;
+                }
+
+                if (initializeMethod.Method.DeclaringType == typeInfo.Type)
+                {
+                    MethodInfo finalizer = InstanceInitializeMethodFinalizerMethod;
+                    UIAccessor.Patcher.Patch(initializeMethod.Method, finalizer: new HarmonyMethod(finalizer));
+                    patchInfo = new UIExtensionPatch(initializeMethod.Method, finalizer, HarmonyPatchType.Finalizer);
+                    parentTypeInfo.InitializePatchesIntl.Add(patchInfo);
+                    Patches.Add(initializeMethod.Method, patchInfo);
+                    if (DebugLogging)
+                        LogDebug($"Added finalizer for {initializeMethod.Method.Name}: {finalizer.Name}.", module, assembly);
+                }
+                else if (initializeMethod.Method.IsStatic)
+                {
+                    throw new InvalidOperationException("Can't patch a initialize method from another class.");
+                }
+            }
+        }
+    }
+    protected virtual void PatchParentOnDestroy(UITypeInfo typeInfo, UIExtensionParentTypeInfo parentTypeInfo, Module? module, Assembly assembly)
+    {
+        if (typeInfo.DestroyWhenParentDestroys && typeInfo.Parent != null && UIAccessor.TryGetUITypeInfo(typeInfo.Parent, out UITypeInfo parentUITypeInfo))
+            PatchParentOnDestroy(parentUITypeInfo, GetOrAddParentTypeInfo(parentUITypeInfo.Type, typeInfo), module, assembly);
+
+        if (typeInfo.CustomOnDestroy != null)
+        {
+            if (!typeInfo.CustomOnDestroy.HasBeenInitialized)
+            {
+                typeInfo.CustomOnDestroy.Patch(UIAccessor.Patcher);
+                typeInfo.CustomOnDestroy.HasBeenInitialized = true;
+            }
+            if (!typeInfo.CustomOnDestroy.HasOnDestroyBeenInitialized)
+            {
+                typeInfo.CustomOnDestroy.OnDestroyed += OnDestroy;
+                typeInfo.CustomOnDestroy.HasOnDestroyBeenInitialized = true;
+            }
+        }
+        else if (typeInfo is not { DestroyOnClose: true, CloseOnDestroy: false })
+        {
+            foreach (UIVisibilityMethodInfo destroyMethod in typeInfo.DestroyMethods)
+            {
+                if (parentTypeInfo.DestroyPatchesIntl.Any(x => x.Original == destroyMethod.Method))
+                {
+                    if (DebugLogging)
+                        LogDebug($"[{Source}] Skipped finalizer for {destroyMethod.Method.Name}, already done from this extension.", module, assembly);
+                    continue;
+                }
+
+                if (Patches.TryGetValue(destroyMethod.Method, out UIExtensionPatch patchInfo))
+                {
+                    if (DebugLogging)
+                        LogDebug($"[{Source}] Skipped finalizer for {destroyMethod.Method.Name}, already done from another extension.", module, assembly);
+                    parentTypeInfo.DestroyPatchesIntl.Add(patchInfo);
+                    continue;
+                }
+
+                if (destroyMethod.Method.DeclaringType == typeInfo.Type)
+                {
+                    if (destroyMethod.Method.GetParameters().Length == 0)
+                    {
+                        MethodInfo prefix = destroyMethod.IsStatic
+                            ? StaticDestroyMethodPrefixMethod
+                            : InstanceDestroyMethodPrefixMethod;
+                        UIAccessor.Patcher.Patch(destroyMethod.Method, prefix: new HarmonyMethod(prefix));
+                        patchInfo = new UIExtensionPatch(destroyMethod.Method, prefix, HarmonyPatchType.Prefix);
+                        if (DebugLogging)
+                            LogDebug($"[{Source}] Added prefix for {destroyMethod.Method.Name}: {prefix.Name}.", module, assembly);
+                    }
+                    else
+                    {
+                        MethodInfo finalizer = destroyMethod.IsStatic
+                            ? StaticDestroyMethodFinalizerMethod
+                            : InstanceDestroyMethodFinalizerMethod;
+                        UIAccessor.Patcher.Patch(destroyMethod.Method, finalizer: new HarmonyMethod(finalizer));
+                        patchInfo = new UIExtensionPatch(destroyMethod.Method, finalizer, HarmonyPatchType.Finalizer);
+                        if (DebugLogging)
+                            LogDebug($"[{Source}] Added finalizer for {destroyMethod.Method.Name}: {finalizer.Name}.", module, assembly);
+                    }
+                    parentTypeInfo.DestroyPatchesIntl.Add(patchInfo);
+                    Patches.Add(destroyMethod.Method, patchInfo);
+                }
+                else if (destroyMethod.Method.IsStatic)
+                {
+                    throw new InvalidOperationException("Can't patch a destroy method from another class.");
+                }
+            }
+        }
+    }
+
+    private static readonly MethodInfo StaticOpenMethodFinalizerMethod = typeof(UIExtensionManager).GetMethod(nameof(StaticOpenMethodFinalizer), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static void StaticOpenMethodFinalizer(MethodBase __originalMethod, bool __runOriginal, Exception? __exception)
+    {
+        if (!__runOriginal || __exception != null)
+            return;
+
+        (UnturnedUIToolsNexus.UIExtensionManager as UIExtensionManager)?.OnOpened(__originalMethod.DeclaringType!, null);
+    }
+
+    private static readonly MethodInfo StaticCloseMethodFinalizerMethod = typeof(UIExtensionManager).GetMethod(nameof(StaticCloseMethodFinalizer), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static void StaticCloseMethodFinalizer(MethodBase __originalMethod, bool __runOriginal, Exception? __exception)
+    {
+        if (!__runOriginal || __exception != null)
+            return;
+
+        (UnturnedUIToolsNexus.UIExtensionManager as UIExtensionManager)?.OnClosed(__originalMethod.DeclaringType!, null);
+    }
+
+    private static readonly MethodInfo StaticDestroyMethodPrefixMethod = typeof(UIExtensionManager).GetMethod(nameof(StaticDestroyMethodPrefix), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static void StaticDestroyMethodPrefix(MethodBase __originalMethod, bool __runOriginal)
+    {
+        if (!__runOriginal)
+            return;
+
+        (UnturnedUIToolsNexus.UIExtensionManager as UIExtensionManager)?.OnDestroy(__originalMethod.DeclaringType!, null);
+    }
+
+    private static readonly MethodInfo StaticDestroyMethodFinalizerMethod = typeof(UIExtensionManager).GetMethod(nameof(StaticDestroyMethodFinalizer), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static void StaticDestroyMethodFinalizer(MethodBase __originalMethod, bool __runOriginal, Exception? __exception)
+    {
+        if (!__runOriginal || __exception != null)
+            return;
+
+        (UnturnedUIToolsNexus.UIExtensionManager as UIExtensionManager)?.OnDestroy(__originalMethod.DeclaringType!, null);
+    }
+
+    private static readonly MethodInfo InstanceOpenMethodFinalizerMethod = typeof(UIExtensionManager).GetMethod(nameof(InstanceOpenMethodFinalizer), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static void InstanceOpenMethodFinalizer(object __instance, bool __runOriginal, Exception? __exception)
+    {
+        if (!__runOriginal || __exception != null)
+            return;
+
+        (UnturnedUIToolsNexus.UIExtensionManager as UIExtensionManager)?.OnOpened(null, __instance);
+    }
+
+    private static readonly MethodInfo InstanceCloseMethodFinalizerMethod = typeof(UIExtensionManager).GetMethod(nameof(InstanceCloseMethodFinalizer), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static void InstanceCloseMethodFinalizer(object __instance, bool __runOriginal, Exception? __exception)
+    {
+        if (!__runOriginal || __exception != null)
+            return;
+
+        (UnturnedUIToolsNexus.UIExtensionManager as UIExtensionManager)?.OnClosed(null, __instance);
+    }
+
+
+    private static readonly MethodInfo InstanceDestroyMethodFinalizerMethod = typeof(UIExtensionManager).GetMethod(nameof(InstanceDestroyMethodFinalizer), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static void InstanceDestroyMethodFinalizer(object __instance, bool __runOriginal, Exception? __exception)
+    {
+        if (!__runOriginal || __exception != null)
+            return;
+
+        (UnturnedUIToolsNexus.UIExtensionManager as UIExtensionManager)?.OnDestroy(null, __instance);
+    }
+
+    private static readonly MethodInfo InstanceDestroyMethodPrefixMethod = typeof(UIExtensionManager).GetMethod(nameof(InstanceDestroyMethodPrefix), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static void InstanceDestroyMethodPrefix(object __instance, bool __runOriginal)
+    {
+        if (!__runOriginal)
+            return;
+        (UnturnedUIToolsNexus.UIExtensionManager as UIExtensionManager)?.OnDestroy(null, __instance);
+    }
+
+    private static readonly MethodInfo InstanceInitializeMethodFinalizerMethod = typeof(UIExtensionManager).GetMethod(nameof(InstanceInitializeMethodFinalizer), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static void InstanceInitializeMethodFinalizer(MethodBase __originalMethod, object __instance, bool __runOriginal, Exception? __exception)
+    {
+        if (!__runOriginal || __exception != null || __originalMethod.DeclaringType != __instance.GetType())
+            return;
+
+        (UnturnedUIToolsNexus.UIExtensionManager as UIExtensionManager)?.OnInitialized(null, __instance);
+    }
+
+    private static readonly MethodInfo TranspileGetterPropertyMethod = typeof(UIExtensionManager).GetMethod(nameof(TranspileGetterProperty), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+    [UsedImplicitly]
+    private static IEnumerable<CodeInstruction> TranspileGetterProperty(IEnumerable<CodeInstruction> instructions, ILGenerator generator, MethodBase method)
+    {
+        if (UnturnedUIToolsNexus.UIExtensionManager is not UIExtensionManager mngr)
+            throw new Exception("Can't patch with different IUIExtensionManager inplementation.");
+
+        Type declType = method.DeclaringType!;
+        if (!mngr.PatchInfo.TryGetValue(method, out UIExtensionExistingMemberPatchInfo info))
+        {
+            mngr.LogWarning($"Unable to patch {method.Name}: Could not find existing member info for {declType.Name}.", null, method.DeclaringType?.Assembly);
+            foreach (CodeInstruction instr in EmitUtilitiy.Throw<InvalidOperationException>($"Could not find existing member info for {declType.Name}."))
+                yield return instr;
+
+            yield break;
+        }
+
+        if (!info.MemberInfo.ExistingIsStatic)
+        {
+            if (typeof(UIExtension).IsAssignableFrom(info.Extension.ImplementationType) && typeof(UIExtension).GetProperty(nameof(UIExtension.Instance), BindingFlags.Instance | BindingFlags.Public)?.GetGetMethod(true) is { } prop)
+            {
+                // this.Instance
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return new CodeInstruction(OpCodes.Call, prop);
+                yield return new CodeInstruction(OpCodes.Castclass, info.Extension.ParentType);
+            }
+            else
+            {
+                foreach (CodeInstruction instr in UIAccessor.EnumerateUIInstructions(info.Extension.ParentType, generator))
+                    yield return instr;
+            }
+        }
+
+        foreach (CodeInstruction instr in info.MemberInfo.EnumerateApply(true))
+            yield return instr;
+
+        yield return new CodeInstruction(OpCodes.Ret);
+        
+        if (mngr.DebugLogging)
+            mngr.LogDebug($"[{Source}] Transpiled {method.Name} for extension for {info.Extension.ParentType.Name}.", info.Extension.Module, info.Extension.Assembly);
+    }
+    private static readonly MethodInfo TranspileSetterPropertyMethod = typeof(UIExtensionManager).GetMethod(nameof(TranspileSetterProperty), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+    [UsedImplicitly]
+    private static IEnumerable<CodeInstruction> TranspileSetterProperty(IEnumerable<CodeInstruction> instructions, MethodBase method) => EmitUtilitiy.Throw<NotImplementedException>($"{method.Name.Replace("set_", "")} can not have a setter, as it is a UI extension implementation.");
+    private class UIExtensionExistingMemberPatchInfo
+    {
+        public UIExtensionInfo Extension { get; }
+        public UIExistingMemberInfo MemberInfo { get; }
+        public UIExtensionExistingMemberPatchInfo(UIExtensionInfo extension, UIExistingMemberInfo memberInfo)
+        {
+            Extension = extension;
+            MemberInfo = memberInfo;
+        }
+    }
+    private static class InstanceCache<T> where T : class
+    {
+        private static T? _instance;
+        public static T? Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    Recache();
+
+                    if (_instance == null)
+                    {
+                        Type type = typeof(T);
+                        UIExtensionInfo? extInfo = UnturnedUIToolsNexus.UIExtensionManager.Extensions.FirstOrDefault(x => x.ImplementationType == type);
+
+                        if (UnturnedUIToolsNexus.UIExtensionManager is UIExtensionManager mngr)
+                        {
+                            if (extInfo != null)
+                                mngr.LogWarning($"Unable to find instance of UI extension: {type.Name} extending {extInfo.TypeInfo.Type.Name}.", extInfo.Module, extInfo.Assembly);
+                            else
+                                mngr.LogWarning($"Unable to find instance of UI extension: {type.Name}.");
+                        }
+                    }
+                }
+
+                return _instance;
+            }
+        }
+
+        static InstanceCache()
+        {
+            Recache();
+            if (UnturnedUIToolsNexus.UIExtensionManager is UIExtensionManager mngr)
+            {
+                mngr._onDestroy += OnDestroyed;
+                mngr._onAdd += OnAdded;
+            }
+        }
+        private static void Recache()
+        {
+            UIExtensionInfo? info = UnturnedUIToolsNexus.UIExtensionManager.Extensions.FirstOrDefault(x => x.ImplementationType == typeof(T));
+
+            if (info == null)
+                return;
+            _instance = info.Instantiations.OfType<T>().LastOrDefault();
+        }
+        private static void OnDestroyed(object instance)
+        {
+            if (instance is not T)
+                return;
+
+            if (ReferenceEquals(Instance, instance))
+                _instance = null;
+            Recache();
+        }
+        private static void OnAdded(object obj)
+        {
+            if (obj is T)
+                Recache();
+        }
+    }
+
+    public delegate object? CreateUIExtension(object? uiInstance);
+}
