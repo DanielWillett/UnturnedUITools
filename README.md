@@ -2,6 +2,10 @@
 
 Powerful Unturned Module/Library for manipulating Glazier/Sleek UI.
 
+Requires `HarmonyLib 2.2.2+`.
+
+NuGet package: [DanielWillett.UnturnedUITools](https://www.nuget.org/packages/DanielWillett.UnturnedUITools)
+
 ## Reflection Tools
 This package references my [Reflection Tools](https://github.com/DanielWillett/ReflectionTools) library which has a lot of good tools for efficient access to non-public members.
 
