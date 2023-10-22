@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DanielWillett.UnturnedUITools" Version="0.0.5" />
+    <PackageReference Include="DanielWillett.UnturnedUITools" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>

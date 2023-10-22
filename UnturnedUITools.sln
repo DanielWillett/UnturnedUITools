@@ -8,7 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8846237A-6E3B-48C0-A2C8-0AD453C15324}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
-		SDG.Glazier.Runtime.xml = SDG.Glazier.Runtime.xml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleModule", "ExampleModule\ExampleModule.csproj", "{ABC68581-BB4F-4939-A834-41BEFC0F2B87}"
