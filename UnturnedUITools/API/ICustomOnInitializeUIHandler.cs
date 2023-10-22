@@ -22,10 +22,10 @@ public interface ICustomOnInitializeUIHandler : ICustomUIHandler
     /// <summary>
     /// Invoked when the UI is initialized.
     /// </summary>
-    event Action<Type?, object?> OnInitialize;
+    event Action<Type?, object?> OnInitialized;
 
     /// <summary>
-    /// Checks if the <see cref="ICustomOnInitializeUIHandler"/> handler has been patched.
+    /// Checks if <see cref="OnInitialized"/> has been subscribed to.
     /// </summary>
     bool HasOnInitializeBeenInitialized { get; internal set; }
 }

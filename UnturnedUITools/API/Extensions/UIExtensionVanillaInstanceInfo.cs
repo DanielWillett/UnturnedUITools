@@ -26,5 +26,6 @@ public class UIExtensionVanillaInstanceInfo
         IsOpen = isOpen;
     }
 
+    /// <inheritdoc />
     public override string ToString() => $"Instance: {(Instance == null ? "null" : "instance of " + Instance.GetType().Name)} (hash: {(Instance == null ? 0 : Instance.GetHashCode()):X8}), Static: {Static}, IsOpen: {IsOpen}.";
 }

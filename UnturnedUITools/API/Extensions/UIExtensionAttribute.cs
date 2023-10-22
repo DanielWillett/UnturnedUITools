@@ -1,7 +1,9 @@
-﻿using JetBrains.Annotations;
+﻿using DanielWillett.UITools.Core.Extensions;
+using JetBrains.Annotations;
 using SDG.Unturned;
 using System;
 using System.Reflection;
+using DanielWillett.UITools.Util;
 
 namespace DanielWillett.UITools.API.Extensions;
 
@@ -22,6 +24,10 @@ public sealed class UIExtensionAttribute : Attribute
     /// </summary>
     public bool SuppressUIExtensionParentWarning { get; set; }
 
+    /// <summary>
+    /// Defines a new UI extension given the UI type to extend. This type should be present in <see cref="UIAccessor.TypeInfo"/>.
+    /// </summary>
+    /// <param name="parentType">The type of UI to extend. This type should be present in <see cref="UIAccessor.TypeInfo"/>.</param>
     public UIExtensionAttribute(Type parentType)
     {
         ParentType = parentType;

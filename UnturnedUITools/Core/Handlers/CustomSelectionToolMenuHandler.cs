@@ -22,12 +22,9 @@ internal class CustomVolumeMenuHandler : CustomSelectionToolMenuHandler
 internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler, ICustomOnOpenUIHandler
 {
     private const string Source = UIAccessor.Source + ".SELECTION TOOL HANDLER";
-
-    private static CustomNodeMenuHandler? _nodes;
-    private static CustomVolumeMenuHandler? _volumes;
+    
     public event Action<Type?, object?>? OnClosed;
     public event Action<Type?, object?>? OnOpened;
-    private readonly bool _isNodes;
     public bool HasBeenInitialized { get; set; }
     public bool HasOnCloseBeenInitialized { get; set; }
     public bool HasOnOpenBeenInitialized { get; set; }
@@ -38,21 +35,8 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
     {
         Type = type;
         TypeName = type?.Name ?? backupName;
-        if (this is CustomNodeMenuHandler nodeHandler)
-        {
-            _nodes = nodeHandler;
-            _isNodes = true;
-        }
-        else if (this is CustomVolumeMenuHandler volumeHandler)
-            _volumes = volumeHandler;
     }
-
-    private MethodInfo GetTranspiler() => _isNodes
-        ? new Func<IEnumerable<CodeInstruction>, MethodBase, IEnumerable<CodeInstruction>>(TranspileNodeUIOnUpdate).Method
-        : new Func<IEnumerable<CodeInstruction>, MethodBase, IEnumerable<CodeInstruction>>(TranspileVolumeUIOnUpdate).Method;
-    private MethodInfo GetOnClosedAndDestroyedInvoker() => _isNodes
-        ? new Action<object>(OnNodeClosedAndDestroyedInvoker).Method
-        : new Action<object>(OnVolumeClosedAndDestroyedInvoker).Method;
+    
     public void Patch(Harmony patcher)
     {
         if (Type == null)
@@ -71,7 +55,7 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
         try
         {
 
-            patcher.Patch(onUpdateMethod, transpiler: new HarmonyMethod(GetTranspiler()));
+            patcher.Patch(onUpdateMethod, transpiler: new HarmonyMethod(Accessor.GetMethod(TranspileUIOnUpdate)!));
         }
         catch (Exception ex)
         {
@@ -90,7 +74,7 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
         try
         {
 
-            patcher.Patch(closeMethod, postfix: new HarmonyMethod(GetOnClosedAndDestroyedInvoker()));
+            patcher.Patch(closeMethod, postfix: new HarmonyMethod(Accessor.GetMethod(OnClosedAndDestroyedInvoker)!));
         }
         catch (Exception ex)
         {
@@ -105,27 +89,16 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
         MethodInfo? closeMethod = UIAccessor.EditorVolumesUIType!.GetMethod("Close", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
 
         if (onUpdateMethod != null)
-            patcher.Unpatch(onUpdateMethod, GetTranspiler());
+            patcher.Unpatch(onUpdateMethod, Accessor.GetMethod(TranspileUIOnUpdate)!);
 
         if (closeMethod != null)
-            patcher.Unpatch(closeMethod, GetOnClosedAndDestroyedInvoker());
+            patcher.Unpatch(closeMethod, Accessor.GetMethod(OnClosedAndDestroyedInvoker)!);
     }
 
-    private static IEnumerable<CodeInstruction> TranspileNodeUIOnUpdate(IEnumerable<CodeInstruction> instructions, MethodBase method)
+    private static IEnumerable<CodeInstruction> TranspileUIOnUpdate(IEnumerable<CodeInstruction> instructions, MethodBase method)
     {
-        MethodInfo addInvoker = new Action<object>(OnNodeOpenedInvoker).Method;
-        MethodInfo removeInvoker = new Action<object>(OnNodeClosedAndDestroyedInvoker).Method;
-        return TranspileUIOnUpdate(instructions, method, addInvoker, removeInvoker);
-    }
-    private static IEnumerable<CodeInstruction> TranspileVolumeUIOnUpdate(IEnumerable<CodeInstruction> instructions, MethodBase method)
-    {
-        MethodInfo addInvoker = new Action<object>(OnVolumeOpenedInvoker).Method;
-        MethodInfo removeInvoker = new Action<object>(OnVolumeClosedAndDestroyedInvoker).Method;
-        return TranspileUIOnUpdate(instructions, method, addInvoker, removeInvoker);
-    }
-
-    private static IEnumerable<CodeInstruction> TranspileUIOnUpdate(IEnumerable<CodeInstruction> instructions, MethodBase method, MethodInfo addInvoker, MethodInfo removeInvoker)
-    {
+        MethodInfo addInvoker = Accessor.GetMethod(OnOpenedInvoker)!;
+        MethodInfo removeInvoker = Accessor.GetMethod(OnClosedAndDestroyedInvoker)!;
         MethodInfo? addMethod = typeof(SleekWrapper).GetMethod(nameof(SleekWrapper.AddChild), BindingFlags.Instance | BindingFlags.Public);
         if (addMethod == null)
             CommandWindow.LogError($"[{Source}] Unable to find method: SleekWrapper.AddChild.");
@@ -144,9 +117,10 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
                     ))
             {
                 add = true;
-                ins.Insert(i, ins[i - 2].CopyWithoutSpecial());
-                ins.Insert(i + 1, new CodeInstruction(OpCodes.Call, addInvoker));
-                i += 2;
+                ins.Insert(i, ins[i - 3].CopyWithoutSpecial());
+                ins.Insert(i + 1, ins[i - 2].CopyWithoutSpecial());
+                ins.Insert(i + 2, new CodeInstruction(OpCodes.Call, addInvoker));
+                i += 3;
             }
 
             if (!remove && EmitUtilitiy.MatchPattern(ins, i,
@@ -155,8 +129,8 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
                 ))
             {
                 remove = true;
-                ins.Insert(i, new CodeInstruction(OpCodes.Dup));
-                ins.Insert(i + 1, new CodeInstruction(OpCodes.Call, removeInvoker));
+                ins.Insert(i + 1, new CodeInstruction(OpCodes.Dup));
+                ins.Insert(i + 2, new CodeInstruction(OpCodes.Call, removeInvoker));
                 i += 4;
             }
         }
@@ -171,20 +145,26 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
 
         return ins;
     }
-    private static void OnNodeOpenedInvoker(object __instance)
+    private static void OnOpenedInvoker(object __instance)
     {
-        _nodes?.OnOpened?.Invoke(null, __instance);
+        Type type = __instance.GetType();
+        CommandWindow.Log($"[{Source}] Started opening " + __instance.ToString());
+
+        if (!UIAccessor.TryGetUITypeInfo(type, out UITypeInfo typeInfo) || typeInfo.CustomOnOpen is not CustomSelectionToolMenuHandler customHandler)
+            return;
+
+        customHandler.OnOpened?.Invoke(null, __instance);
+        CommandWindow.Log($"[{Source}] Opened " + __instance.ToString() + " ( " + typeInfo.Type + ").");
     }
-    private static void OnNodeClosedAndDestroyedInvoker(object __instance)
+    private static void OnClosedAndDestroyedInvoker(object __instance)
     {
-        _nodes?.OnClosed?.Invoke(null, __instance);
-    }
-    private static void OnVolumeOpenedInvoker(object __instance)
-    {
-        _volumes?.OnOpened?.Invoke(null, __instance);
-    }
-    private static void OnVolumeClosedAndDestroyedInvoker(object __instance)
-    {
-        _volumes?.OnClosed?.Invoke(null, __instance);
+        Type type = __instance.GetType();
+        CommandWindow.Log($"[{Source}] Started closing " + __instance.ToString());
+
+        if (!UIAccessor.TryGetUITypeInfo(type, out UITypeInfo typeInfo) || typeInfo.CustomOnClose is not CustomSelectionToolMenuHandler customHandler)
+            return;
+
+        customHandler.OnClosed?.Invoke(null, __instance);
+        CommandWindow.Log($"[{Source}] Closed " + __instance.ToString() + " ( " + typeInfo.Type + ").");
     }
 }

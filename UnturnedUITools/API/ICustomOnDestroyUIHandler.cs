@@ -25,7 +25,7 @@ public interface ICustomOnDestroyUIHandler : ICustomUIHandler
     event Action<Type?, object?> OnDestroyed;
 
     /// <summary>
-    /// Checks if the <see cref="ICustomOnDestroyUIHandler"/> handler has been patched.
+    /// Checks if <see cref="OnDestroyed"/> has been subscribed to.
     /// </summary>
     bool HasOnDestroyBeenInitialized { get; internal set; }
 }

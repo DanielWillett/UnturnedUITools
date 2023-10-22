@@ -25,7 +25,7 @@ public interface ICustomOnCloseUIHandler : ICustomUIHandler
     event Action<Type?, object?> OnClosed;
 
     /// <summary>
-    /// Checks if the <see cref="ICustomOnCloseUIHandler"/> handler has been patched.
+    /// Checks if <see cref="OnClosed"/> has been subscribed to.
     /// </summary>
     bool HasOnCloseBeenInitialized { get; internal set; }
 }

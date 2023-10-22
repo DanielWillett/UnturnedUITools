@@ -2,6 +2,7 @@
 using System;
 
 namespace DanielWillett.UITools.API.Extensions.Members;
+
 /// <summary>
 /// Mark a field, property, or method as an accessor for a field, property, or method in the parent type. The member can be static or instance.
 /// </summary>
@@ -35,6 +36,10 @@ public sealed class ExistingMemberAttribute : Attribute
     /// </summary>
     public Type? OwningType { get; set; }
 
+    /// <summary>
+    /// Defines an existing member by it's field, property, or method name.
+    /// </summary>
+    /// <param name="memberName">The name of the field, property, or method.</param>
     public ExistingMemberAttribute(string memberName)
     {
         MemberName = memberName;

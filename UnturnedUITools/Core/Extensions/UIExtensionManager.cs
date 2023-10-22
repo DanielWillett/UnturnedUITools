@@ -23,17 +23,43 @@ namespace DanielWillett.UITools.Core.Extensions;
 public class UIExtensionManager : IUIExtensionManager
 {
     internal const string Source = "UI EXT MNGR"; private static readonly List<UIExtensionInfo> ExtensionsIntl = new List<UIExtensionInfo>(8);
-    private readonly Dictionary<Type, UIExtensionInfo> ExtensionsDictIntl = new Dictionary<Type, UIExtensionInfo>(8);
-    private readonly Dictionary<Type, UIExtensionParentTypeInfo> ParentTypeInfoIntl = new Dictionary<Type, UIExtensionParentTypeInfo>(8);
-    private readonly Dictionary<MethodBase, UIExtensionPatch> Patches = new Dictionary<MethodBase, UIExtensionPatch>(64);
-    private readonly Dictionary<MethodBase, UIExtensionExistingMemberPatchInfo> PatchInfo = new Dictionary<MethodBase, UIExtensionExistingMemberPatchInfo>(64);
-    private Action<object>? _onDestroy;
-    private Action<object>? _onAdd;
+
+    /// <summary>
+    /// Stores all extensions in a mutable dictionary.
+    /// </summary>
+    protected readonly Dictionary<Type, UIExtensionInfo> ExtensionsDictIntl = new Dictionary<Type, UIExtensionInfo>(8);
+
+    /// <summary>
+    /// Stores all vanilla UI types in a mutable dictionary.
+    /// </summary>
+    protected readonly Dictionary<Type, UIExtensionParentTypeInfo> ParentTypeInfoIntl = new Dictionary<Type, UIExtensionParentTypeInfo>(8);
+
+    /// <summary>
+    /// Stores all extension patches in a mutable dictionary.
+    /// </summary>
+    protected readonly Dictionary<MethodBase, UIExtensionPatch> Patches = new Dictionary<MethodBase, UIExtensionPatch>(64);
+
+    /// <summary>
+    /// Stores all extension member patches in a mutable dictionary.
+    /// </summary>
+    protected readonly Dictionary<MethodBase, UIExtensionExistingMemberPatchInfo> PatchInfo = new Dictionary<MethodBase, UIExtensionExistingMemberPatchInfo>(64);
+
+    /// <summary>
+    /// Invoked when an extension is destroyed.
+    /// </summary>
+    protected Action<object>? OnRemoved;
+
+    /// <summary>
+    /// Invoked when an extension is initialzied.
+    /// </summary>
+    protected Action<object>? OnAdd;
+
     /// <summary>
     /// List of all registered UI Extensions (info, not instances themselves).
     /// </summary>
     public IReadOnlyList<UIExtensionInfo> Extensions { get; } = ExtensionsIntl.AsReadOnly();
 
+    /// <inheritdoc />
     public bool DebugLogging { get; set; }
 
     /// <summary>
@@ -41,18 +67,33 @@ public class UIExtensionManager : IUIExtensionManager
     /// </summary>
     public IReadOnlyDictionary<Type, UIExtensionParentTypeInfo> ParentTypeInfo { get; }
 
+    /// <summary>
+    /// Create a new default implementation of <see cref="IUIExtensionManager"/>.
+    /// </summary>
     public UIExtensionManager()
     {
         ParentTypeInfo = new ReadOnlyDictionary<Type, UIExtensionParentTypeInfo>(ParentTypeInfoIntl);
     }
 
-    /// <summary>
-    /// Gets the last created instance of <typeparamref name="T"/> (which should be a UI extension), or <see langword="null"/> if one isn't registered.
-    /// </summary>
-    /// <remarks>Lazily cached.</remarks>
+    /// <inheritdoc />
     public virtual T? GetInstance<T>() where T : class => InstanceCache<T>.Instance;
+
+    /// <inheritdoc />
+    public virtual T? GetInstance<T>(object vanillaUIInstance) where T : class
+    {
+        Type extType = typeof(T);
+        if (!ExtensionsDictIntl.TryGetValue(extType, out UIExtensionInfo extension))
+            return null;
+
+        ParentTypeInfoIntl.TryGetValue(extension.ParentType, out UIExtensionParentTypeInfo parentTypeInfo);
+        UIExtensionInstanceInfo? extInstance = parentTypeInfo?.InstancesIntl.FindLast(x => x.Instance is T && ReferenceEquals(x.VanillaInstance.Instance, vanillaUIInstance));
+        return extInstance?.Instance as T;
+    }
     
-    internal void LogDebug(string message, Module? module = null, Assembly? assembly = null)
+    /// <summary>
+    /// Logs a message in debug format.
+    /// </summary>
+    protected virtual void LogDebug(string message, Module? module = null, Assembly? assembly = null)
     {
         message = "[DBG] " + message;
         if (module == null)
@@ -60,27 +101,41 @@ public class UIExtensionManager : IUIExtensionManager
         else
             CommandWindow.Log("[" + Source + " | " + module.config.Name + " v" + module.config.Version + "] " + message);
     }
-    internal void LogInfo(string message, Module? module = null, Assembly? assembly = null)
+
+    /// <summary>
+    /// Logs a message in info format.
+    /// </summary>
+    protected virtual void LogInfo(string message, Module? module = null, Assembly? assembly = null)
     {
         if (module == null)
             CommandWindow.Log(assembly == null ? "[" + Source + "] " + message : ("[" + Source + " | " + assembly.GetName().Name.ToUpperInvariant() + "] " + message));
         else
             CommandWindow.Log("[" + Source + " | " + module.config.Name + " v" + module.config.Version + "] " + message);
     }
-    internal void LogWarning(string message, Module? module = null, Assembly? assembly = null)
+
+    /// <summary>
+    /// Logs a message in warning format.
+    /// </summary>
+    protected virtual void LogWarning(string message, Module? module = null, Assembly? assembly = null)
     {
         if (module == null)
             CommandWindow.LogWarning(assembly == null ? "[" + Source + "] " + message : ("[" + Source + " | " + assembly.GetName().Name.ToUpperInvariant() + "] " + message));
         else
             CommandWindow.LogWarning("[" + Source + " | " + module.config.Name + " v" + module.config.Version + "] " + message);
     }
-    internal void LogError(string message, Module? module = null, Assembly? assembly = null)
+
+    /// <summary>
+    /// Logs a message in error format.
+    /// </summary>
+    protected virtual void LogError(string message, Module? module = null, Assembly? assembly = null)
     {
         if (module == null)
             CommandWindow.LogError(assembly == null ? "[" + Source + "] " + message : ("[" + Source + " | " + assembly.GetName().Name.ToUpperInvariant() + "] " + message));
         else
             CommandWindow.LogError("[" + Source + " | " + module.config.Name + " v" + module.config.Version + "] " + message);
     }
+
+    /// <inheritdoc />
     public virtual void RegisterFromModuleAssembly(Assembly assembly, Module module)
     {
         ThreadUtil.assertIsGameThread();
@@ -114,6 +169,11 @@ public class UIExtensionManager : IUIExtensionManager
         }
     }
 
+    /// <summary>
+    /// Called when a UI is detected to have opened.
+    /// </summary>
+    /// <param name="type">Type of the UI that was opened. Won't be <see langword="null"/> unless <paramref name="instance"/> has a value.</param>
+    /// <param name="instance">Instance of a non-static UI that was opened. Won't be <see langword="null"/> unless <paramref name="type"/> has a value.</param>
     protected virtual void OnOpened(Type? type, object? instance)
     {
         if (instance != null)
@@ -175,6 +235,12 @@ public class UIExtensionManager : IUIExtensionManager
                 LogDebug($"* Invoked Opened: {info.ImplementationType.Name}.", info.Module, info.Assembly);
         }
     }
+
+    /// <summary>
+    /// Called when a UI is detected to have closed.
+    /// </summary>
+    /// <param name="type">Type of the UI that was opened. Won't be <see langword="null"/> unless <paramref name="instance"/> has a value.</param>
+    /// <param name="instance">Instance of a non-static UI that was opened. Won't be <see langword="null"/> unless <paramref name="type"/> has a value.</param>
     protected virtual void OnClosed(Type? type, object? instance)
     {
         if (instance != null)
@@ -236,6 +302,12 @@ public class UIExtensionManager : IUIExtensionManager
                 LogDebug($"* Invoked Closed: {info.ImplementationType.Name}.", info.Module, info.Assembly);
         }
     }
+
+    /// <summary>
+    /// Called when a UI is detected to have been initialized.
+    /// </summary>
+    /// <param name="type">Type of the UI that was opened. Won't be <see langword="null"/> unless <paramref name="instance"/> has a value.</param>
+    /// <param name="instance">Instance of a non-static UI that was opened. Won't be <see langword="null"/> unless <paramref name="type"/> has a value.</param>
     protected virtual void OnInitialized(Type? type, object? instance)
     {
         if (instance != null)
@@ -266,6 +338,12 @@ public class UIExtensionManager : IUIExtensionManager
             }
         }
     }
+
+    /// <summary>
+    /// Called when a UI is detected to have been destroyed.
+    /// </summary>
+    /// <param name="type">Type of the UI that was opened. Won't be <see langword="null"/> unless <paramref name="instance"/> has a value.</param>
+    /// <param name="instance">Instance of a non-static UI that was opened. Won't be <see langword="null"/> unless <paramref name="type"/> has a value.</param>
     protected virtual void OnDestroy(Type? type, object? instance)
     {
         if (instance != null)
@@ -356,13 +434,15 @@ public class UIExtensionManager : IUIExtensionManager
 
                 if (ParentTypeInfo.TryGetValue(info.ParentType, out UIExtensionParentTypeInfo parentInfo))
                     parentInfo.InstancesIntl.RemoveAll(x => x.Instance == instance);
-                _onDestroy?.Invoke(instantiation);
+                OnRemoved?.Invoke(instantiation);
             }
             info.InstantiationsIntl.Clear();
             if (DebugLogging)
                 LogDebug($"* Destroyed Instances: {info.ImplementationType.Name}.", info.Module, info.Assembly);
         }
     }
+
+    /// <inheritdoc />
     public virtual void RegisterExtension(Type extensionType, Type parentType, Module module)
     {
         ThreadUtil.assertIsGameThread();
@@ -403,7 +483,12 @@ public class UIExtensionManager : IUIExtensionManager
             ExtensionsDictIntl[info.ImplementationType] = info;
         }
     }
-    /// <exception cref="AggregateException"></exception>
+
+    /// <summary>
+    /// Main initialize method for a <see cref="UIExtensionInfo"/> (representing an extension class).
+    /// </summary>
+    /// <remarks>Should call <see cref="TryInitializeMember"/>, <see cref="InitializeExtensionPatches"/>, and <see cref="InitializeParentPatches"/>.</remarks>
+    /// <exception cref="AggregateException">Something went wrong initializing the extension.</exception>
     protected virtual void InitializeExtension(UIExtensionInfo info)
     {
         if (!info.SuppressUIExtensionParentWarning && !typeof(UIExtension).IsAssignableFrom(info.ImplementationType))
@@ -464,6 +549,9 @@ public class UIExtensionManager : IUIExtensionManager
 
         try
         {
+            MethodInfo getTypeFromHandle = Accessor.GetMethod(Type.GetTypeFromHandle)!;
+            MethodInfo getUninitObject = Accessor.GetMethod(FormatterServices.GetUninitializedObject)!;
+
             DynamicMethod dynMethod = new DynamicMethod("<DS_UIEXT>_CreateExtensionImpl",
                 MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName, CallingConventions.Standard, typeof(object),
                 new Type[] { typeof(object) }, info.ImplementationType, true);
@@ -498,8 +586,8 @@ public class UIExtensionManager : IUIExtensionManager
             il.Emit(OpCodes.Stloc_1);
 
             il.Emit(OpCodes.Ldtoken, info.ImplementationType);
-            il.Emit(OpCodes.Call, new Func<RuntimeTypeHandle, Type>(Type.GetTypeFromHandle).Method);
-            il.Emit(OpCodes.Call, new Func<Type, object>(FormatterServices.GetUninitializedObject).Method);
+            il.Emit(getTypeFromHandle.GetCallRuntime(), getTypeFromHandle);
+            il.Emit(getUninitObject.GetCallRuntime(), getUninitObject);
             il.Emit(OpCodes.Castclass, info.ImplementationType);
             il.Emit(OpCodes.Stloc_0);
 
@@ -531,6 +619,11 @@ public class UIExtensionManager : IUIExtensionManager
                 il.Emit(OpCodes.Ldloc_1);
             il.Emit(OpCodes.Call, constructor);
 
+            if (!AddInstanceMethod.IsStatic)
+            {
+                MethodInfo managerGetter = typeof(UnturnedUIToolsNexus).GetProperty(nameof(UnturnedUIToolsNexus.UIExtensionManager), BindingFlags.Public | BindingFlags.Static)!.GetMethod;
+                il.Emit(managerGetter.GetCallRuntime(), managerGetter);
+            }
             il.Emit(OpCodes.Ldloc_1);
             il.Emit(OpCodes.Ldloc_0);
             il.Emit(GetType() == typeof(UIExtensionManager) ? OpCodes.Call : OpCodes.Callvirt, AddInstanceMethod);
@@ -600,7 +693,11 @@ public class UIExtensionManager : IUIExtensionManager
             throw new Exception($"Failed to patch for UI extension: {info.ImplementationType.Name}.", ex);
         }
     }
-    private static readonly MethodInfo AddInstanceMethod = typeof(UIExtensionManager).GetMethod(nameof(AddInstance), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo AddInstanceMethod = typeof(UIExtensionManager).GetMethod(nameof(AddInstance), BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+    /// <summary>
+    /// Register an extension instance in the list.
+    /// </summary>
     [UsedImplicitly]
     protected virtual void AddInstance(object? uiInstance, object instance)
     {
@@ -659,6 +756,10 @@ public class UIExtensionManager : IUIExtensionManager
 
         parentInfo.InstancesIntl.Add(new UIExtensionInstanceInfo(instance, info));
     }
+
+    /// <summary>
+    /// Create the extension object. Calls <see cref="UIExtensionInfo.CreateCallback"/>.
+    /// </summary>
     protected virtual object? CreateExtension(UIExtensionInfo info, object? uiInstance)
     {
         try
@@ -678,7 +779,7 @@ public class UIExtensionManager : IUIExtensionManager
                     LogDebug($"Created {info.ImplementationType.Name} for {info.ParentType.Name}.", info.Module, info.Assembly);
             }
 
-            _onAdd?.Invoke(instance);
+            OnAdd?.Invoke(instance);
 
             return instance;
         }
@@ -689,6 +790,10 @@ public class UIExtensionManager : IUIExtensionManager
             return null;
         }
     }
+
+    /// <summary>
+    /// Initialize existing members in the extension.
+    /// </summary>
     protected virtual void TryInitializeMember(UIExtensionInfo info, MemberInfo member)
     {
         if (Attribute.GetCustomAttribute(member, typeof(ExistingMemberAttribute)) is not ExistingMemberAttribute existingMemberAttribute)
@@ -830,6 +935,10 @@ public class UIExtensionManager : IUIExtensionManager
 
         info.ExistingMembersIntl.Add(new UIExistingMemberInfo(member, existingMember, existingIsStatic, initialized));
     }
+
+    /// <summary>
+    /// Initialize existing member patches in the extension.
+    /// </summary>
     protected virtual void InitializeExtensionPatches(UIExtensionInfo info)
     {
         for (int i = 0; i < info.ExistingMembersIntl.Count; ++i)
@@ -882,7 +991,11 @@ public class UIExtensionManager : IUIExtensionManager
             }
         }
     }
-    protected virtual UIExtensionParentTypeInfo GetOrAddParentTypeInfo(Type parentType, UITypeInfo typeInfo)
+
+    /// <summary>
+    /// Get or add <see cref="UIExtensionParentTypeInfo"/> for a UI type.
+    /// </summary>
+    protected UIExtensionParentTypeInfo GetOrAddParentTypeInfo(Type parentType, UITypeInfo typeInfo)
     {
         if (!ParentTypeInfoIntl.TryGetValue(parentType, out UIExtensionParentTypeInfo parentTypeInfo))
         {
@@ -891,7 +1004,11 @@ public class UIExtensionManager : IUIExtensionManager
         }
         return parentTypeInfo;
     }
-    protected virtual void InitializeParentPatches(UIExtensionInfo info)
+
+    /// <summary>
+    /// Patch methods for the UI parent type.
+    /// </summary>
+    protected void InitializeParentPatches(UIExtensionInfo info)
     {
         UIExtensionParentTypeInfo parentTypeInfo = GetOrAddParentTypeInfo(info.ParentType, info.TypeInfo);
 
@@ -900,6 +1017,10 @@ public class UIExtensionManager : IUIExtensionManager
         PatchParentOnInitialize(info.TypeInfo, parentTypeInfo, info.Module, info.Assembly);
         PatchParentOnDestroy(info.TypeInfo, parentTypeInfo, info.Module, info.Assembly);
     }
+
+    /// <summary>
+    /// Patch OnOpen methods for the UI parent type.
+    /// </summary>
     protected virtual void PatchParentOnOpen(UITypeInfo typeInfo, UIExtensionParentTypeInfo parentTypeInfo, Module? module, Assembly assembly)
     {
         if (typeInfo.CustomOnOpen != null)
@@ -953,6 +1074,10 @@ public class UIExtensionManager : IUIExtensionManager
             }
         }
     }
+
+    /// <summary>
+    /// Patch OnClose methods for the UI parent type.
+    /// </summary>
     protected virtual void PatchParentOnClose(UITypeInfo typeInfo, UIExtensionParentTypeInfo parentTypeInfo, Module? module, Assembly assembly)
     {
         if (typeInfo.CustomOnClose != null)
@@ -1006,6 +1131,10 @@ public class UIExtensionManager : IUIExtensionManager
             }
         }
     }
+
+    /// <summary>
+    /// Patch OnInitialize methods for the UI parent type.
+    /// </summary>
     protected virtual void PatchParentOnInitialize(UITypeInfo typeInfo, UIExtensionParentTypeInfo parentTypeInfo, Module? module, Assembly assembly)
     {
         if (typeInfo.CustomOnInitialize != null)
@@ -1017,7 +1146,7 @@ public class UIExtensionManager : IUIExtensionManager
             }
             if (!typeInfo.CustomOnInitialize.HasOnInitializeBeenInitialized)
             {
-                typeInfo.CustomOnInitialize.OnInitialize += OnInitialized;
+                typeInfo.CustomOnInitialize.OnInitialized += OnInitialized;
                 typeInfo.CustomOnInitialize.HasOnInitializeBeenInitialized = true;
             }
         }
@@ -1057,6 +1186,10 @@ public class UIExtensionManager : IUIExtensionManager
             }
         }
     }
+
+    /// <summary>
+    /// Patch OnDestroy methods for the UI parent type.
+    /// </summary>
     protected virtual void PatchParentOnDestroy(UITypeInfo typeInfo, UIExtensionParentTypeInfo parentTypeInfo, Module? module, Assembly assembly)
     {
         if (typeInfo.DestroyWhenParentDestroys && typeInfo.Parent != null && UIAccessor.TryGetUITypeInfo(typeInfo.Parent, out UITypeInfo parentUITypeInfo))
@@ -1254,19 +1387,43 @@ public class UIExtensionManager : IUIExtensionManager
 
     [UsedImplicitly]
     private static IEnumerable<CodeInstruction> TranspileSetterProperty(IEnumerable<CodeInstruction> instructions, MethodBase method) => EmitUtilitiy.Throw<NotImplementedException>($"{method.Name.Replace("set_", "")} can not have a setter, as it is a UI extension implementation.");
-    private class UIExtensionExistingMemberPatchInfo
+    
+    /// <summary>
+    /// Represents a patch for an existing member.
+    /// </summary>
+    protected class UIExtensionExistingMemberPatchInfo
     {
+        /// <summary>
+        /// The extension this was patched for.
+        /// </summary>
         public UIExtensionInfo Extension { get; }
+
+        /// <summary>
+        /// The member that was patched.
+        /// </summary>
         public UIExistingMemberInfo MemberInfo { get; }
+
+        /// <summary>
+        /// Create a new <see cref="UIExtensionExistingMemberPatchInfo"/>.
+        /// </summary>
         public UIExtensionExistingMemberPatchInfo(UIExtensionInfo extension, UIExistingMemberInfo memberInfo)
         {
             Extension = extension;
             MemberInfo = memberInfo;
         }
     }
-    private static class InstanceCache<T> where T : class
+
+    /// <summary>
+    /// Caches an instance of a UI extension.
+    /// </summary>
+    /// <typeparam name="T">The type of the UI extension.</typeparam>
+    protected static class InstanceCache<T> where T : class
     {
         private static T? _instance;
+
+        /// <summary>
+        /// UI Extension instance, or <see langword="null"/> if it can't be found.
+        /// </summary>
         public static T? Instance
         {
             get
@@ -1299,8 +1456,8 @@ public class UIExtensionManager : IUIExtensionManager
             Recache();
             if (UnturnedUIToolsNexus.UIExtensionManager is UIExtensionManager mngr)
             {
-                mngr._onDestroy += OnDestroyed;
-                mngr._onAdd += OnAdded;
+                mngr.OnRemoved += OnDestroyed;
+                mngr.OnAdd += OnAdded;
             }
         }
         private static void Recache()
@@ -1327,5 +1484,8 @@ public class UIExtensionManager : IUIExtensionManager
         }
     }
 
+    /// <summary>
+    /// Represents a method to create a UI extension object.
+    /// </summary>
     public delegate object? CreateUIExtension(object? uiInstance);
 }

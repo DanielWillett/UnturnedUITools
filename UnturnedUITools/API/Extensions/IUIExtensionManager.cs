@@ -26,6 +26,11 @@ public interface IUIExtensionManager
     T? GetInstance<T>() where T : class;
 
     /// <summary>
+    /// Gets the last created instance of <typeparamref name="T"/> (which should be a UI extension) linked to the vanilla UI instance, or <see langword="null"/> if one isn't registered.
+    /// </summary>
+    T? GetInstance<T>(object vanillaUIInstance) where T : class;
+
+    /// <summary>
     /// Manually register a UI extension.
     /// </summary>
     void RegisterExtension(Type extensionType, Type parentType, Module module);

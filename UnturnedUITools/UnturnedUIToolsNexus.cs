@@ -90,6 +90,8 @@ public class UnturnedUIToolsNexus : IModuleNexus
         HashSet<string> alreadyScanned = new HashSet<string>();
         foreach (Module module in ModuleHook.modules)
         {
+            if (module.assemblies == null)
+                continue;
             foreach (Assembly assembly in module.assemblies)
             {
                 if (!alreadyScanned.Add(assembly.GetName().FullName))

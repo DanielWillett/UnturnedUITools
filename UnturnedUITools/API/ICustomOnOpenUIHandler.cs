@@ -25,7 +25,7 @@ public interface ICustomOnOpenUIHandler : ICustomUIHandler
     event Action<Type?, object?> OnOpened;
 
     /// <summary>
-    /// Checks if the <see cref="ICustomOnOpenUIHandler"/> handler has been patched.
+    /// Checks if <see cref="OnOpened"/> has been subscribed to.
     /// </summary>
     bool HasOnOpenBeenInitialized { get; internal set; }
 }

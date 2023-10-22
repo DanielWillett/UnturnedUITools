@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>DanielWillett.UnturnedUITools</id>
+    <version>0.0.1</version>
+    <title>Unturned Glazier UI Tools</title>
+    <authors>Daniel Willett</authors>
+    <license type="expression">GPL-3.0-only</license>
+    <licenseUrl>https://licenses.nuget.org/GPL-3.0-only</licenseUrl>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/DanielWillett/ReflectionTools</projectUrl>
+    <description>Tools for working with vanilla (Glazier, Sleek, etc.) UIs in Unturned, including an extension system.</description>
+    <tags>reflection, modding, utility, utilities, glazier, sleek, ui, unturned</tags>
+    <repository type="git" url="https://github.com/DanielWillett/UnturnedUITools" commit="11e870d5a8ac8b6de967f94f5bb915ea68a132c9" />
+    <dependencies>
+      <dependency id="DanielWillett.ReflectionTools" version="[1.0.1,)" exclude="Build,Analyzers" />
+      <dependency id="Lib.Harmony" version="[2.2.2,)" exclude="Build,Analyzers" />
+    </dependencies>
+    <references>
+      <reference file="SDG.Glazier.Runtime.dll"/>
+    </references>
+  </metadata>
+  <files>
+    <file src="..\README.md" target="\" />
+    <file src="ReferenceLibraries\SDG.Glazier.Runtime.dll" target="lib"/>
+    <file src="ReferenceLibraries\SDG.Glazier.Runtime.xml" target="lib"/>
+  </files>
+</package>

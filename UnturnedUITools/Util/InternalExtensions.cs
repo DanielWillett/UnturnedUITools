@@ -5,10 +5,6 @@ using System.Diagnostics.Contracts;
 namespace DanielWillett.UITools.Util;
 internal static class InternalExtensions
 {
-    /// <summary>
-    /// Returns the first matching value only if there are no other matching values.
-    /// </summary>
-    /// <remarks>Doesn't throw an error when there are no matches (unlike the normal linq version).</remarks>
     [Pure]
     public static T? SingleOrDefaultSafe<T>(this IEnumerable<T> enumerable, Predicate<T> predicate)
     {

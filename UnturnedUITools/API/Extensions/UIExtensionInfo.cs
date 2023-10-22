@@ -1,8 +1,8 @@
 ﻿using DanielWillett.UITools.API.Extensions.Members;
+using DanielWillett.UITools.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using DanielWillett.UITools.Core.Extensions;
 using Module = SDG.Framework.Modules.Module;
 
 namespace DanielWillett.UITools.API.Extensions;
@@ -57,7 +57,7 @@ public class UIExtensionInfo
     public IReadOnlyList<UIExtensionPatch> Patches { get; }
 
     /// <summary>
-    /// All existing UI members defined by the extension. These are defined using the <see cref="ExistingUIMemberAttribute"/>.
+    /// All existing UI members defined by the extension. These are defined using the <see cref="ExistingMemberAttribute"/>.
     /// </summary>
     public IReadOnlyList<UIExistingMemberInfo> ExistingMembers { get; }
 

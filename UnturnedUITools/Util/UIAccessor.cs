@@ -8,9 +8,11 @@ using SDG.Unturned;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 using System.Threading;
 using UnityEngine;
 
@@ -25,6 +27,8 @@ public static class UIAccessor
 
     private static Harmony? _patcher;
     private static string _harmonyId = "DanielWillett.UITools";
+    private static string? _harmonyLogPath;
+    private static bool _manageHarmonyDebugLog;
     private static int _init;
 
     internal const string Source = "UI TOOLS";
@@ -38,7 +42,46 @@ public static class UIAccessor
 
             lock (Sync)
             {
-                return _patcher ??= new Harmony(_harmonyId);
+                if (_patcher == null)
+                {
+                    // set up harmony debug log if enabled.
+                    if (_manageHarmonyDebugLog)
+                    {
+                        try
+                        {
+                            _harmonyLogPath ??= Path.Combine(UnturnedPaths.RootDirectory.FullName, "Logs", "harmony.log");
+                            Environment.SetEnvironmentVariable("HARMONY_LOG_FILE", _harmonyLogPath);
+
+                            string? dir = Path.GetDirectoryName(_harmonyLogPath);
+                            if (dir != null)
+                                Directory.CreateDirectory(dir);
+
+                            try
+                            {
+                                using FileStream str = new FileStream(_harmonyLogPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+                                byte[] bytes = Encoding.UTF8.GetBytes(DateTimeOffset.UtcNow.ToString("R") + Environment.NewLine);
+                                str.Write(bytes, 0, bytes.Length);
+                                str.Flush();
+                            }
+                            catch (Exception ex)
+                            {
+                                CommandWindow.LogError($"Unable to clear previous harmony log: {_harmonyLogPath}");
+                                CommandWindow.LogError(ex);
+                            }
+
+                            Harmony.DEBUG = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            CommandWindow.LogError("Failed to set up Harmony log.");
+                            CommandWindow.LogError(ex);
+                        }
+                    }
+
+                    _patcher = new Harmony(_harmonyId);
+                }
+
+                return _patcher;
             }
         }
     }
@@ -61,6 +104,45 @@ public static class UIAccessor
                     throw new InvalidOperationException("Patcher has already been set up.");
 
                 _harmonyId = value;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Set the path of the harmony debug log. Defaults to <c>Unturned/Logs/harmony.log</c>. Enable it with <see cref="ManageHarmonyDebugLog"/>.
+    /// </summary>
+    /// <remarks>Must be set in <see cref="IModuleNexus.initialize"/>.</remarks>
+    public static string? HarmonyLogPath
+    {
+        get => _harmonyLogPath;
+        set
+        {
+            lock (Sync)
+            {
+                if (_patcher != null)
+                    throw new InvalidOperationException("Patcher has already been set up.");
+
+                _harmonyLogPath = value;
+                Environment.SetEnvironmentVariable("HARMONY_LOG_FILE", _harmonyLogPath);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Enable managing the harmony debug log? Set the path with <see cref="HarmonyLogPath"/>.
+    /// </summary>
+    /// <remarks>Must be set in <see cref="IModuleNexus.initialize"/>.</remarks>
+    public static bool ManageHarmonyDebugLog
+    {
+        get => _manageHarmonyDebugLog;
+        set
+        {
+            lock (Sync)
+            {
+                if (_patcher != null)
+                    throw new InvalidOperationException("Patcher has already been set up.");
+
+                _manageHarmonyDebugLog = value;
             }
         }
     }
@@ -217,6 +299,9 @@ public static class UIAccessor
     private static readonly Func<object?>? GetItemStoreCartMenu;
     private static readonly Func<object?>? GetItemStoreDetailsMenu;
 
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorUI"/>.
+    /// </summary>
     public static EditorUI? EditorUI
     {
         get
@@ -226,6 +311,9 @@ public static class UIAccessor
         }
     }
 
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.PlayerUI"/>.
+    /// </summary>
     public static PlayerUI? PlayerUI
     {
         get
@@ -235,6 +323,9 @@ public static class UIAccessor
         }
     }
 
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuUI"/>.
+    /// </summary>
     public static MenuUI? MenuUI
     {
         get
@@ -244,6 +335,9 @@ public static class UIAccessor
         }
     }
 
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.LoadingUI"/>.
+    /// </summary>
     public static LoadingUI? LoadingUI
     {
         get
@@ -261,11 +355,18 @@ public static class UIAccessor
         }
     }
 
+    /// <summary>
+    /// Called when the <see cref="SDG.Unturned.EditorUI"/> is initialized.
+    /// </summary>
     public static event System.Action? EditorUIReady;
+
+    /// <summary>
+    /// Called when the <see cref="SDG.Unturned.PlayerUI"/> is initialized.
+    /// </summary>
     public static event System.Action? PlayerUIReady;
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorDashboardUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorDashboardUI"/>.
     /// </summary>
     public static EditorDashboardUI? EditorDashboardUI
     {
@@ -277,7 +378,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorEnvironmentUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorEnvironmentUI"/>.
     /// </summary>
     public static EditorEnvironmentUI? EditorEnvironmentUI
     {
@@ -289,17 +390,17 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.EditorEnvironmentNodesUI"/>
+    /// Type of <see cref="SDG.Unturned.EditorEnvironmentNodesUI"/>.
     /// </summary>
     public static Type? EditorEnvironmentNodesUIType { get; }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorEnvironmentNodesUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorEnvironmentNodesUI"/>.
     /// </summary>
     public static object? EditorEnvironmentNodesUI => GetEditorEnvironmentNodesUI?.Invoke();
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainUI"/>.
     /// </summary>
     public static EditorTerrainUI? EditorTerrainUI
     {
@@ -311,47 +412,47 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.EditorTerrainHeightUI"/>
+    /// Type of <see cref="SDG.Unturned.EditorTerrainHeightUI"/>.
     /// </summary>
     public static Type? EditorTerrainHeightUIType { get; }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainHeightUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainHeightUI"/>.
     /// </summary>
     public static object? EditorTerrainHeightUI => GetEditorTerrainHeightUI?.Invoke();
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.EditorTerrainMaterialsUI"/>
+    /// Type of <see cref="SDG.Unturned.EditorTerrainMaterialsUI"/>.
     /// </summary>
     public static Type? EditorTerrainMaterialsUIType { get; }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainMaterialsUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainMaterialsUI"/>.
     /// </summary>
     public static object? EditorTerrainMaterialsUI => GetEditorTerrainMaterialsUI?.Invoke();
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.EditorTerrainDetailsUI"/>
+    /// Type of <see cref="SDG.Unturned.EditorTerrainDetailsUI"/>.
     /// </summary>
     public static Type? EditorTerrainDetailsUIType { get; }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainDetailsUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainDetailsUI"/>.
     /// </summary>
     public static object? EditorTerrainDetailsUI => GetEditorTerrainDetailsUI?.Invoke();
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.EditorTerrainTilesUI"/>
+    /// Type of <see cref="SDG.Unturned.EditorTerrainTilesUI"/>.
     /// </summary>
     public static Type? EditorTerrainTilesUIType { get; }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainTilesUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorTerrainTilesUI"/>.
     /// </summary>
     public static object? EditorTerrainTilesUI => GetEditorTerrainTilesUI?.Invoke();
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorLevelUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorLevelUI"/>.
     /// </summary>
     public static EditorLevelUI? EditorLevelUI
     {
@@ -363,7 +464,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorLevelObjectsUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorLevelObjectsUI"/>.
     /// </summary>
     public static EditorLevelObjectsUI? EditorLevelObjectsUI
     {
@@ -375,22 +476,22 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.EditorVolumesUI"/>
+    /// Type of <see cref="SDG.Unturned.EditorVolumesUI"/>.
     /// </summary>
     public static Type? EditorVolumesUIType { get; }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.EditorVolumesUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.EditorVolumesUI"/>.
     /// </summary>
     public static object? EditorVolumesUI => GetEditorVolumesUI?.Invoke();
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.PlayerBrowserRequestUI"/>
+    /// Type of <see cref="SDG.Unturned.PlayerBrowserRequestUI"/>.
     /// </summary>
     public static Type? PlayerBrowserRequestUIType { get; } = typeof(Provider).Assembly.GetType("SDG.Unturned.PlayerBrowserRequestUI", false);
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.PlayerBrowserRequestUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.PlayerBrowserRequestUI"/>.
     /// </summary>
     public static object? PlayerBrowserRequestUI
     {
@@ -402,7 +503,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.PlayerBarricadeMannequinUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.PlayerBarricadeMannequinUI"/>.
     /// </summary>
     public static PlayerBarricadeStereoUI? PlayerBarricadeStereoUI
     {
@@ -414,7 +515,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.PlayerBarricadeMannequinUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.PlayerBarricadeMannequinUI"/>.
     /// </summary>
     public static PlayerBarricadeMannequinUI? PlayerBarricadeMannequinUI
     {
@@ -426,12 +527,12 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.PlayerGroupUI"/>
+    /// Type of <see cref="SDG.Unturned.PlayerGroupUI"/>.
     /// </summary>
     public static Type? PlayerGroupUIType { get; } = typeof(Provider).Assembly.GetType("SDG.Unturned.PlayerGroupUI", false);
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.PlayerGroupUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.PlayerGroupUI"/>.
     /// </summary>
     public static object? PlayerGroupUI
     {
@@ -443,7 +544,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.PlayerDashboardUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.PlayerDashboardUI"/>.
     /// </summary>
     public static PlayerDashboardUI? PlayerDashboardUI
     {
@@ -455,7 +556,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.PlayerPauseUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.PlayerPauseUI"/>.
     /// </summary>
     public static PlayerPauseUI? PlayerPauseUI
     {
@@ -467,7 +568,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.PlayerLifeUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.PlayerLifeUI"/>.
     /// </summary>
     public static PlayerLifeUI? PlayerLifeUI
     {
@@ -479,7 +580,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.PlayerDashboardInformationUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.PlayerDashboardInformationUI"/>.
     /// </summary>
     public static PlayerDashboardInformationUI? PlayerDashboardInformationUI
     {
@@ -491,7 +592,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuDashboardUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuDashboardUI"/>.
     /// </summary>
     public static MenuDashboardUI? MenuDashboardUI
     {
@@ -503,7 +604,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuPauseUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPauseUI"/>.
     /// </summary>
     public static MenuPauseUI? MenuPauseUI
     {
@@ -515,7 +616,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuCreditsUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuCreditsUI"/>.
     /// </summary>
     public static MenuCreditsUI? MenuCreditsUI
     {
@@ -527,7 +628,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuTitleUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuTitleUI"/>.
     /// </summary>
     public static MenuTitleUI? MenuTitleUI
     {
@@ -539,7 +640,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayUI"/>.
     /// </summary>
     public static MenuPlayUI? MenuPlayUI
     {
@@ -551,7 +652,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsUI"/>.
     /// </summary>
     public static MenuSurvivorsUI? MenuSurvivorsUI
     {
@@ -563,7 +664,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuConfigurationUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuConfigurationUI"/>.
     /// </summary>
     public static MenuConfigurationUI? MenuConfigurationUI
     {
@@ -575,7 +676,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopUI"/>.
     /// </summary>
     public static MenuWorkshopUI? MenuWorkshopUI
     {
@@ -587,7 +688,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayConnectUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayConnectUI"/>.
     /// </summary>
     public static MenuPlayConnectUI? MenuPlayConnectUI
     {
@@ -599,7 +700,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServersUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServersUI"/>.
     /// </summary>
     public static MenuPlayServersUI? MenuPlayServersUI
     {
@@ -611,7 +712,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerInfoUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerInfoUI"/>.
     /// </summary>
     public static MenuPlayServerInfoUI? MenuPlayServerInfoUI
     {
@@ -623,7 +724,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuPlaySingleplayerUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlaySingleplayerUI"/>.
     /// </summary>
     public static MenuPlaySingleplayerUI? MenuPlaySingleplayerUI
     {
@@ -635,7 +736,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayMatchmakingUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayMatchmakingUI"/>.
     /// </summary>
     public static MenuPlayMatchmakingUI? MenuPlayMatchmakingUI
     {
@@ -647,7 +748,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayLobbiesUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayLobbiesUI"/>.
     /// </summary>
     public static MenuPlayLobbiesUI? MenuPlayLobbiesUI
     {
@@ -659,12 +760,12 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuServerPasswordUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuServerPasswordUI"/>.
     /// </summary>
     public static MenuServerPasswordUI? MenuServerPasswordUI => GetMenuServerPasswordUI?.Invoke();
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsCharacterUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsCharacterUI"/>.
     /// </summary>
     public static MenuSurvivorsCharacterUI? MenuSurvivorsCharacterUI
     {
@@ -676,7 +777,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsAppearanceUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsAppearanceUI"/>.
     /// </summary>
     public static MenuSurvivorsAppearanceUI? MenuSurvivorsAppearanceUI
     {
@@ -688,7 +789,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsGroupUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsGroupUI"/>.
     /// </summary>
     public static MenuSurvivorsGroupUI? MenuSurvivorsGroupUI
     {
@@ -700,7 +801,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingUI"/>.
     /// </summary>
     public static MenuSurvivorsClothingUI? MenuSurvivorsClothingUI
     {
@@ -712,7 +813,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingItemUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingItemUI"/>.
     /// </summary>
     public static MenuSurvivorsClothingItemUI? MenuSurvivorsClothingItemUI
     {
@@ -724,7 +825,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingInspectUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingInspectUI"/>.
     /// </summary>
     public static MenuSurvivorsClothingInspectUI? MenuSurvivorsClothingInspectUI
     {
@@ -736,7 +837,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingDeleteUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingDeleteUI"/>.
     /// </summary>
     public static MenuSurvivorsClothingDeleteUI? MenuSurvivorsClothingDeleteUI
     {
@@ -748,7 +849,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingBoxUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuSurvivorsClothingBoxUI"/>.
     /// </summary>
     public static MenuSurvivorsClothingBoxUI? MenuSurvivorsClothingBoxUI
     {
@@ -760,12 +861,12 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.ItemStoreCartMenu"/>
+    /// Type of <see cref="SDG.Unturned.ItemStoreCartMenu"/>.
     /// </summary>
     public static Type? ItemStoreMenuType { get; } = typeof(Provider).Assembly.GetType("SDG.Unturned.ItemStoreMenu", false);
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.ItemStoreMenu"/>
+    /// Singleton instance of <see cref="SDG.Unturned.ItemStoreMenu"/>.
     /// </summary>
     public static object? ItemStoreMenu
     {
@@ -777,27 +878,27 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.ItemStoreCartMenu"/>
+    /// Type of <see cref="SDG.Unturned.ItemStoreCartMenu"/>.
     /// </summary>
     public static Type? ItemStoreCartMenuType { get; } = typeof(Provider).Assembly.GetType("SDG.Unturned.ItemStoreCartMenu", false);
 
     /// <summary>
-    /// Type of <see cref="SDG.Unturned.ItemStoreDetailsMenu"/>
+    /// Type of <see cref="SDG.Unturned.ItemStoreDetailsMenu"/>.
     /// </summary>
     public static Type? ItemStoreDetailsMenuType { get; } = typeof(Provider).Assembly.GetType("SDG.Unturned.ItemStoreDetailsMenu", false);
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.ItemStoreCartMenu"/>
+    /// Singleton instance of <see cref="SDG.Unturned.ItemStoreCartMenu"/>.
     /// </summary>
     public static object? ItemStoreCartMenu => GetItemStoreCartMenu?.Invoke();
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.ItemStoreDetailsMenu"/>
+    /// Singleton instance of <see cref="SDG.Unturned.ItemStoreDetailsMenu"/>.
     /// </summary>
     public static object? ItemStoreDetailsMenu => GetItemStoreDetailsMenu?.Invoke();
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopSubmitUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopSubmitUI"/>.
     /// </summary>
     public static MenuWorkshopSubmitUI? MenuWorkshopSubmitUI
     {
@@ -809,7 +910,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopEditorUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopEditorUI"/>.
     /// </summary>
     public static MenuWorkshopEditorUI? MenuWorkshopEditorUI
     {
@@ -821,7 +922,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopErrorUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopErrorUI"/>.
     /// </summary>
     public static MenuWorkshopErrorUI? MenuWorkshopErrorUI
     {
@@ -833,7 +934,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopLocalizationUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopLocalizationUI"/>.
     /// </summary>
     public static MenuWorkshopLocalizationUI? MenuWorkshopLocalizationUI
     {
@@ -845,7 +946,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopSpawnsUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopSpawnsUI"/>.
     /// </summary>
     public static MenuWorkshopSpawnsUI? MenuWorkshopSpawnsUI
     {
@@ -857,7 +958,7 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopSubscriptionsUI"/>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopSubscriptionsUI"/>.
     /// </summary>
     public static MenuWorkshopSubscriptionsUI? MenuWorkshopSubscriptionsUI
     {
@@ -1021,6 +1122,15 @@ public static class UIAccessor
     {
         lock (Sync)
         {
+            try
+            {
+                _harmonyLogPath = Environment.GetEnvironmentVariable("HARMONY_LOG_FILE");
+            }
+            catch
+            {
+                // ignored
+            }
+
             try
             {
                 Type accessTools = typeof(UIAccessor);
@@ -1293,6 +1403,9 @@ public static class UIAccessor
         }
     }
 
+    /// <summary>
+    /// Initialize <see cref="TypeInfo"/> if it hasn't already been initialized. Calls <see cref="OnInitializingUIInfo"/>.
+    /// </summary>
     public static void Init()
     {
         _ = Patcher;
@@ -2133,8 +2246,6 @@ public static class UIAccessor
                                 Scene = UIScene.Editor,
                                 CustomEmitter = EmitNodeMenu,
                                 CustomTranspiler = EnumerateNodeMenu,
-                                DefaultOpenState = true,
-                                OpenOnInitialize = true,
                                 CustomOnClose = nodeHandler,
                                 CustomOnOpen = nodeHandler,
                                 CustomOnDestroy = sleekWrapperHandler
@@ -2338,4 +2449,8 @@ public static class UIAccessor
     }
 }
 
+/// <summary>
+/// Handler for <see cref="UIAccessor.OnInitializingUIInfo"/>,
+/// </summary>
+/// <param name="typeInfo">Mutable dictionary of UI types.</param>
 public delegate void InitializingUIInfo(Dictionary<Type, UITypeInfo> typeInfo);

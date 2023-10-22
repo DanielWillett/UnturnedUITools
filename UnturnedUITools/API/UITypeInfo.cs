@@ -40,7 +40,7 @@ public class UITypeInfo
     public UIScene Scene { get; internal set; }
 
     /// <summary>
-    /// Name of the property to get the UI in <see cref="UIAccessTools"/>.
+    /// Name of the property to get the UI in <see cref="UIAccessor"/>.
     /// </summary>
     public string? EmitProperty { get; internal set; }
 

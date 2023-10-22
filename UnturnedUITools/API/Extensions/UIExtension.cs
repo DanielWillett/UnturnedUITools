@@ -52,5 +52,8 @@ public abstract class UIExtension
 /// <typeparam name="T">The vanilla UI type.</typeparam>
 public abstract class UIExtension<T> : UIExtension where T : class
 {
+    /// <summary>
+    /// The vanilla UI instance, or <see langword="null"/> when the vanilla UI is a static UI.
+    /// </summary>
     public new T? Instance => (T?)base.Instance;
 }

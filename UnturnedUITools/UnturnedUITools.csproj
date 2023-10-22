@@ -1,16 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net461;net481</TargetFrameworks>
+    <TargetFramework>net461</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
 
     <GamePath>C:\Program Files (x86)\Steam\steamapps\common\Unturned</GamePath>
 
     <RootNamespace>DanielWillett.UITools</RootNamespace>
+
+    <PackageId>DanielWillett.UnturnedUITools</PackageId>
+    <Title>Unturned Glazier UI Tools</Title>
+    <Version>1.0.0</Version>
+    <Authors>Daniel Willett</Authors>
+    <Product>DanielWillett.UnturnedUITools</Product>
+    <Description>Tools for working with vanilla (Glazier, Sleek, etc.) UIs in Unturned, including an extension system.</Description>
+    <PackageProjectUrl>https://github.com/DanielWillett/UnturnedUITools</PackageProjectUrl>
+    <SignAssembly>True</SignAssembly>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/DanielWillett/UnturnedUITools</RepositoryUrl>
+    <PackageTags>reflection, modding, utility, utilities, glazier, sleek, ui, unturned</PackageTags>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <AssemblyVersion>$(Version).0</AssemblyVersion>
+    <FileVersion>$(Version).0</FileVersion>
+    <AssemblyOriginatorKeyFile>C:\Users\danny\OneDrive\Documents\Strong Name Keys\DanielWillett.UnturnedUITools\DanielWillett.UnturnedUITools.dll.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="DanielWillett.ReflectionTools" Version="1.0.0" />
-    <PackageReference Include="Lib.Harmony" Version="2.2.2" />
+    <PackageReference Include="DanielWillett.ReflectionTools" Version="[1.0.1,)" />
+    <PackageReference Include="Lib.Harmony" Version="[2.2.2,)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="\" />
+    <Reference Include="SDG.Glazier.Runtime" HintPath="ReferenceLibraries/SDG.Glazier.Runtime.dll" Private="true" />
+    <None Include="ReferenceLibraries/SDG.Glazier.Runtime.dll" Pack="true" PackagePath="\lib\$(TargetFramework)" />
+    <None Include="ReferenceLibraries/SDG.Glazier.Runtime.xml" Pack="true" PackagePath="\lib\$(TargetFramework)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,9 +55,6 @@
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(GamePath)\Unturned_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>$(GamePath)\Unturned_Data\Managed\SDG.Glazier.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
 

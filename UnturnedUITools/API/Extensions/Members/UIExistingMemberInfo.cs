@@ -9,7 +9,7 @@ using System.Reflection.Emit;
 namespace DanielWillett.UITools.API.Extensions.Members;
 
 /// <summary>
-/// Stores information about existing members (defined with <see cref="ExistingUIMemberAttribute"/>) on an extension.
+/// Stores information about existing members (defined with <see cref="ExistingMemberAttribute"/>) on an extension.
 /// </summary>
 public class UIExistingMemberInfo
 {
@@ -29,7 +29,7 @@ public class UIExistingMemberInfo
     public bool ExistingIsStatic { get; }
 
     /// <summary>
-    /// If the member is set when the extension is created, instead of patching the extension member to get the value in realtime (customized by setting <see cref="ExistingUIMemberAttribute.InitializeMode"/>).
+    /// If the member is set when the extension is created, instead of patching the extension member to get the value in realtime (customized by setting <see cref="ExistingMemberAttribute.InitializeMode"/>).
     /// </summary>
     public bool IsInitialized { get; }
     internal UIExistingMemberInfo(MemberInfo member, MemberInfo existing, bool existingIsStatic, bool isInitialized)
@@ -43,6 +43,7 @@ public class UIExistingMemberInfo
     /// <summary>
     /// Emits instructions to get the value (expects the vanilla UI instance is on the stack if it's not a static member) and set the value of the member in the extension.
     /// </summary>
+    /// <param name="il">Instruction emitter for a dynamic method.</param>
     /// <param name="onlyRead">Only get the value instead of also setting it to the extension's member.</param>
     public void EmitApply(ILGenerator il, bool onlyRead = false)
     {

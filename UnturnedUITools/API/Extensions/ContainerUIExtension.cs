@@ -1,8 +1,7 @@
-﻿using DanielWillett.UITools.API.Extensions;
-using SDG.Unturned;
+﻿using SDG.Unturned;
 using System;
 
-namespace DanielWillett.UITools.API;
+namespace DanielWillett.UITools.API.Extensions;
 
 /// <summary>
 /// Implements a fullscreen container base for a UI.
@@ -15,19 +14,56 @@ public abstract class ContainerUIExtension : UIExtension, IDisposable
     /// The parent of the container. Usually <see cref="EditorUI.window"/>, <see cref="PlayerUI.window"/>, <see cref="MenuUI.window"/>, or <see cref="LoadingUI.window"/>.
     /// </summary>
     protected abstract SleekWindow Parent { get; }
+
+    /// <summary>
+    /// Width of the container (from 0-1, 0 being 0px and 1 being the size of the monitor or parent object).
+    /// </summary>
     protected virtual float SizeScaleX => 1f;
+
+    /// <summary>
+    /// Height of the container (from 0-1, 0 being 0px and 1 being the size of the monitor or parent object).
+    /// </summary>
     protected virtual float SizeScaleY => 1f;
+
+    /// <summary>
+    /// X Position of the top left corner of the container from the left side of the screen (from 0-1, 0 being 0px and 1 being the size of the monitor or parent object).
+    /// </summary>
     protected virtual float PositionScaleX => 0f;
+
+    /// <summary>
+    /// X Position of the top left corner of the container from the top of the screen (from 0-1, 0 being 0px and 1 being the size of the monitor or parent object).
+    /// </summary>
     protected virtual float PositionScaleY => 0f;
+
+    /// <summary>
+    /// How much bigger the container is outside of its bounds in the x direction (in pixels). Use negative values to shrink the container.
+    /// </summary>
     protected virtual int SizeOffsetX => 0;
+
+    /// <summary>
+    /// How much bigger the container is outside of its bounds in the y direction (in pixels). Use negative values to shrink the container.
+    /// </summary>
     protected virtual int SizeOffsetY => 0;
+
+    /// <summary>
+    /// How offset the container is from its bounds in the x direction (in pixels). Positive values move the container right, negative values move it left.
+    /// </summary>
     protected virtual int PositionOffsetX => 0;
+
+    /// <summary>
+    /// How offset the container is from its bounds in the y direction (in pixels). Positive values move the container down, negative values move it up.
+    /// </summary>
     protected virtual int PositionOffsetY => 0;
 
     /// <summary>
-    /// Base container to add all elements to. Value may change.
+    /// Base container to add all elements to.
     /// </summary>
+    /// <remarks>The value of this property may change over time.</remarks>
     public SleekFullscreenBox Container { get; set; }
+
+    /// <summary>
+    /// Creates a new <see cref="ContainerUIExtension"/> and a new <see cref="SleekFullscreenBox"/> without parenting it.
+    /// </summary>
     protected ContainerUIExtension()
     {
         Container = new SleekFullscreenBox
@@ -36,6 +72,7 @@ public abstract class ContainerUIExtension : UIExtension, IDisposable
             SizeScale_Y = 1f,
             IsVisible = false
         };
+
         _containerHasBeenParented = false;
     }
 
@@ -53,11 +90,15 @@ public abstract class ContainerUIExtension : UIExtension, IDisposable
     /// Unsubscribe from events, etc here. This is basically the <see cref="IDisposable.Dispose"/> method of your extension.
     /// </summary>
     protected abstract void OnDestroyed();
+
+    /// <summary>
+    /// Don't call this.
+    /// </summary>
     protected sealed override void Opened()
     {
         if (Parent == null)
         {
-            CommandWindow.LogError($"Parent null trying to add container: {this.GetType().Name}.");
+            CommandWindow.LogError($"Parent null trying to add container: {GetType().Name}.");
             return;
         }
         if (!_containerHasBeenParented || Parent.FindIndexOfChild(Container) == -1)
@@ -99,11 +140,19 @@ public abstract class ContainerUIExtension : UIExtension, IDisposable
         Container.IsVisible = true;
         OnShown();
     }
+
+    /// <summary>
+    /// Don't call this.
+    /// </summary>
     protected sealed override void Closed()
     {
         OnHidden();
         Container.IsVisible = false;
     }
+
+    /// <summary>
+    /// Don't call or implement this.
+    /// </summary>
     public void Dispose()
     {
         OnDestroyed();

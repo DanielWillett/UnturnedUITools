@@ -6,23 +6,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using DanielWillett.ReflectionTools;
 
 namespace DanielWillett.UITools.Core.Handlers;
 internal class CustomUseableHandler : ICustomOnDestroyUIHandler, ICustomOnInitializeUIHandler
 {
     private const string Source = UIAccessor.Source + ".USEABLES";
-    private static CustomUseableHandler? _instance;
     public event Action<Type?, object?>? OnDestroyed;
-    public event Action<Type?, object?>? OnInitialize;
+    public event Action<Type?, object?>? OnInitialized;
     public bool HasBeenInitialized { get; set; }
     public bool HasOnDestroyBeenInitialized { get; set; }
     public bool HasOnInitializeBeenInitialized { get; set; }
     public Dictionary<MethodInfo, List<Type>> AllowedEquipTypes { get; } = new Dictionary<MethodInfo, List<Type>>(8);
     public Dictionary<MethodInfo, List<Type>> AllowedDequipTypes { get; } = new Dictionary<MethodInfo, List<Type>>(8);
-    public CustomUseableHandler()
-    {
-        _instance = this;
-    }
     public void Patch(Harmony patcher)
     {
         foreach (UITypeInfo useableInfo in UIAccessor.TypeInfo.Values.Where(x => typeof(Useable).IsAssignableFrom(x.Type)))
@@ -63,8 +59,8 @@ internal class CustomUseableHandler : ICustomOnDestroyUIHandler, ICustomOnInitia
                 }
             }
         }
-        HarmonyMethod equipPatch = new HarmonyMethod(new Action<Useable, MethodInfo, bool>(EquipPostfix).Method);
-        HarmonyMethod dequipPatch = new HarmonyMethod(new Action<Useable, MethodInfo, bool>(DequipPostfix).Method);
+        HarmonyMethod equipPatch = new HarmonyMethod(Accessor.GetMethod(EquipPostfix)!);
+        HarmonyMethod dequipPatch = new HarmonyMethod(Accessor.GetMethod(DequipPostfix)!);
 
         foreach (MethodInfo method in AllowedEquipTypes.Keys)
         {
@@ -107,16 +103,24 @@ internal class CustomUseableHandler : ICustomOnDestroyUIHandler, ICustomOnInitia
     }
     private static void EquipPostfix(Useable __instance, MethodInfo __originalMethod, bool __runOriginal)
     {
-        if (__runOriginal && _instance != null && __instance.channel.IsLocalPlayer && _instance.AllowedEquipTypes.TryGetValue(__originalMethod, out List<Type> allowedTypes) && allowedTypes.Contains(__instance.GetType()))
-        {
-            _instance.OnInitialize?.Invoke(null, __instance);
-        }
+        Type type = __instance.GetType();
+        if (!__runOriginal || !__instance.channel.IsLocalPlayer)
+            return;
+
+        if (!UIAccessor.TryGetUITypeInfo(type, out UITypeInfo typeInfo) || typeInfo.CustomOnInitialize is not CustomUseableHandler customUseableHandler)
+            return;
+
+        customUseableHandler.OnInitialized?.Invoke(null, __instance);
     }
     private static void DequipPostfix(Useable __instance, MethodInfo __originalMethod, bool __runOriginal)
     {
-        if (__runOriginal && _instance != null && __instance.channel.IsLocalPlayer && _instance.AllowedDequipTypes.TryGetValue(__originalMethod, out List<Type> allowedTypes) && allowedTypes.Contains(__instance.GetType()))
-        {
-            _instance.OnDestroyed?.Invoke(null, __instance);
-        }
+        Type type = __instance.GetType();
+        if (!__runOriginal || !__instance.channel.IsLocalPlayer)
+            return;
+
+        if (!UIAccessor.TryGetUITypeInfo(type, out UITypeInfo typeInfo) || typeInfo.CustomOnDestroy is not CustomUseableHandler customUseableHandler)
+            return;
+
+        customUseableHandler.OnDestroyed?.Invoke(null, __instance);
     }
 }
