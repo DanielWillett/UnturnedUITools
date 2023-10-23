@@ -75,7 +75,7 @@ More examples available in: [ExampleModule/Examples](https://github.com/DanielWi
 
 This example adds a button to the bottom left of the main menu.
 
-![ex1 1](https://github.com/DanielWillett/UnturnedUITools/assets/12886600/fac55ccd-e7be-4e2e-9bf7-2ab1015483f6)
+![ex1 1](https://i.imgur.com/JhY9HBJ.png)
 
 ```cs
 [UIExtension(typeof(MenuDashboardUI))]
