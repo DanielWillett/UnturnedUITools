@@ -16,7 +16,7 @@ public class Nexus : IModuleNexus
 
         // Optionally override the UI Extension manager in your initialize method to enable debug logging.
 
-        UnturnedUIToolsNexus.UIExtensionManager = new UIExtensionManager
+        UnturnedUIToolsNexus.UIExtensionManager ??= new UIExtensionManager
         {
             DebugLogging = true
         };

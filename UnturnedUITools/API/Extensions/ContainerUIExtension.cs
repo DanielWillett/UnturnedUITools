@@ -1,5 +1,6 @@
 ﻿using SDG.Unturned;
 using System;
+using DanielWillett.UITools.Util;
 
 namespace DanielWillett.UITools.API.Extensions;
 
@@ -146,8 +147,21 @@ public abstract class ContainerUIExtension : UIExtension, IDisposable
     /// </summary>
     protected sealed override void Closed()
     {
-        OnHidden();
-        Container.IsVisible = false;
+        try
+        {
+            OnHidden();
+        }
+        finally
+        {
+            try
+            {
+                Container.IsVisible = false;
+            }
+            catch (NullReferenceException)
+            {
+                // ignored
+            }
+        }
     }
 
     /// <summary>
@@ -156,11 +170,8 @@ public abstract class ContainerUIExtension : UIExtension, IDisposable
     public void Dispose()
     {
         OnDestroyed();
-        if (Parent != null && Parent.FindIndexOfChild(Container) >= 0)
-        {
-            Parent.RemoveChild(Container);
-            _containerHasBeenParented = true;
-        }
+        Parent.TryRemoveChild(Container);
+        _containerHasBeenParented = true;
         Container = null!;
     }
 }

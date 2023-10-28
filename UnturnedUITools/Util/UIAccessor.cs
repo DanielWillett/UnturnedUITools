@@ -1652,7 +1652,8 @@ public static class UIAccessor
                     {
                         Parent = typeof(MenuUI),
                         Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuDashboardUI)
+                        EmitProperty = nameof(MenuDashboardUI),
+                        DefaultOpenState = true
                     }
                 },
                 {
@@ -2266,7 +2267,8 @@ public static class UIAccessor
                             IsInstanceUI = false,
                             DefaultOpenState = true,
                             OpenOnInitialize = true,
-                            CustomOnDestroy = sleekWrapperHandler
+                            CustomOnDestroy = sleekWrapperHandler,
+                            CloseOnDestroy = true
                         });
                     }
                     CommandWindow.Log($"[{Source}] Discovered {typeInfo.Count - c} UI wrapper type(s).");

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Module = SDG.Framework.Modules.Module;
 
 namespace DanielWillett.UITools;
@@ -17,6 +18,8 @@ namespace DanielWillett.UITools;
 /// <remarks>Call <see cref="Initialize"/> to set up if not loaded as a module.</remarks>
 public class UnturnedUIToolsNexus : IModuleNexus
 {
+    private static readonly object Sync = new object();
+
     private static IUIExtensionManager? _uiExtensionManager;
     private static bool _init;
     private static bool _isStandaloneCached;
@@ -57,14 +60,32 @@ public class UnturnedUIToolsNexus : IModuleNexus
             if (_init && _uiExtensionManager == null)
                 throw new InvalidOperationException("UI Extension Manager was never set up.");
 
-            return _uiExtensionManager;
+            lock (Sync)
+                return _uiExtensionManager;
         }
         set
         {
-            if (_init)
-                throw new InvalidOperationException("UI Extension Manager has already been set up.");
+            ThreadUtil.assertIsGameThread();
 
-            _uiExtensionManager = value;
+            lock (Sync)
+            {
+                if (value is null)
+                    throw new ArgumentNullException(nameof(value));
+
+                IUIExtensionManager old = Interlocked.Exchange(ref _uiExtensionManager, value);
+                if (ReferenceEquals(old, value))
+                    return;
+
+                if (old is IDisposable disposable)
+                    disposable.Dispose();
+
+                if (_init)
+                {
+                    value.Initialize();
+
+                    Register();
+                }
+            }
         }
     }
 
@@ -85,6 +106,10 @@ public class UnturnedUIToolsNexus : IModuleNexus
             _subModInit = false;
             ModuleHook.onModulesInitialized -= OnModulesInitialized;
         }
+
+        IUIExtensionManager? oldManager = Interlocked.Exchange(ref _uiExtensionManager, null!);
+        if (oldManager is IDisposable disposable)
+            disposable.Dispose();
     }
     private void OnModulesInitialized()
     {
@@ -130,11 +155,24 @@ public class UnturnedUIToolsNexus : IModuleNexus
         if (_init)
             return;
 
-        UIAccessor.Init();
+        lock (Sync)
+        {
+            if (_init)
+                return;
 
-        _init = true;
-        _uiExtensionManager ??= new UIExtensionManager();
+            UIAccessor.Init();
 
+            _init = true;
+            _uiExtensionManager ??= new UIExtensionManager();
+
+            _uiExtensionManager.Initialize();
+
+            Register();
+        }
+    }
+
+    private static void Register()
+    {
         if (ModuleHook.modules != null)
         {
             HashSet<string> alreadyScanned = new HashSet<string>();
@@ -149,7 +187,7 @@ public class UnturnedUIToolsNexus : IModuleNexus
 
                     try
                     {
-                        _uiExtensionManager.RegisterFromModuleAssembly(assembly, module);
+                        UIExtensionManager.RegisterFromModuleAssembly(assembly, module);
                     }
                     catch (Exception ex)
                     {

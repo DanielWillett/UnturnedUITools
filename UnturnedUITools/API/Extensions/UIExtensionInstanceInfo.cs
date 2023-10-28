@@ -14,9 +14,15 @@ public class UIExtensionInstanceInfo
     /// The vanilla type the instance is extending.
     /// </summary>
     public UIExtensionVanillaInstanceInfo VanillaInstance { get; }
-    internal UIExtensionInstanceInfo(object instance, UIExtensionVanillaInstanceInfo vanillaInstance)
+
+    /// <summary>
+    /// The extension the instance belongs to.
+    /// </summary>
+    public UIExtensionInfo Extension { get; }
+    internal UIExtensionInstanceInfo(object instance, UIExtensionVanillaInstanceInfo vanillaInstance, UIExtensionInfo extension)
     {
         Instance = instance;
         VanillaInstance = vanillaInstance;
+        Extension = extension;
     }
 }

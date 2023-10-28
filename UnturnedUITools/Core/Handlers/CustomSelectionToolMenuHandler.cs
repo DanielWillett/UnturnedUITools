@@ -148,23 +148,19 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
     private static void OnOpenedInvoker(object __instance)
     {
         Type type = __instance.GetType();
-        CommandWindow.Log($"[{Source}] Started opening " + __instance.ToString());
 
         if (!UIAccessor.TryGetUITypeInfo(type, out UITypeInfo typeInfo) || typeInfo.CustomOnOpen is not CustomSelectionToolMenuHandler customHandler)
             return;
 
         customHandler.OnOpened?.Invoke(null, __instance);
-        CommandWindow.Log($"[{Source}] Opened " + __instance.ToString() + " ( " + typeInfo.Type + ").");
     }
     private static void OnClosedAndDestroyedInvoker(object __instance)
     {
         Type type = __instance.GetType();
-        CommandWindow.Log($"[{Source}] Started closing " + __instance.ToString());
 
         if (!UIAccessor.TryGetUITypeInfo(type, out UITypeInfo typeInfo) || typeInfo.CustomOnClose is not CustomSelectionToolMenuHandler customHandler)
             return;
 
         customHandler.OnClosed?.Invoke(null, __instance);
-        CommandWindow.Log($"[{Source}] Closed " + __instance.ToString() + " ( " + typeInfo.Type + ").");
     }
 }

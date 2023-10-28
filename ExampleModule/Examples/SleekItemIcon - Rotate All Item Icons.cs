@@ -13,8 +13,8 @@ namespace ExampleModule.Examples;
  * In this example, we rotate all SleekItemIcons upside-down.
  */
 
-[UIExtension(typeof(SleekItemIcon))]
-internal class SleekItemIconExtension : UIExtension
+[UIExtension(typeof(SleekItemIcon))]                 // Implement this interface to make sure your patch can be cleaned up.
+internal class SleekItemIconExtension : UIExtension, IUnpatchableExtension
 {
     private static bool _hasPatched;
 
@@ -67,6 +67,28 @@ internal class SleekItemIconExtension : UIExtension
         try
         {
             Nexus.Patcher.Patch(patch, postfix: new HarmonyMethod(Accessor.GetMethod(OnRotationUpdated)));
+        }
+        catch (Exception ex)
+        {
+            CommandWindow.LogWarning("Unable to patch setter of SleekItemIcon.rot:");
+            CommandWindow.LogWarning(ex);
+        }
+    }
+
+    // Clean up after your patch, this will be ran on the last instance of this class when the manager is being disposed.
+    void IUnpatchableExtension.Unpatch()
+    {
+        MethodInfo? patch = typeof(SleekItemIcon).GetProperty(nameof(SleekItemIcon.rot), BindingFlags.Public | BindingFlags.Instance)?.SetMethod;
+
+        if (patch == null)
+        {
+            CommandWindow.LogWarning("Unable to find setter of SleekItemIcon.rot.");
+            return;
+        }
+
+        try
+        {
+            Nexus.Patcher.Unpatch(patch, Accessor.GetMethod(OnRotationUpdated));
         }
         catch (Exception ex)
         {

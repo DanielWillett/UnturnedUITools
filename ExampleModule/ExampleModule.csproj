@@ -7,10 +7,19 @@
 
     <GamePath>C:\Program Files (x86)\Steam\steamapps\common\Unturned</GamePath>
 
+    <UseProjectReferenceInsteadOfPackage>true</UseProjectReferenceInsteadOfPackage>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="!$(UseProjectReferenceInsteadOfPackage)">
     <PackageReference Include="DanielWillett.UnturnedUITools" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(UseProjectReferenceInsteadOfPackage)">
+    <ProjectReference Include="..\UnturnedUITools\UnturnedUITools.csproj" />
+    <Reference Include="SDG.Glazier.Runtime">
+      <HintPath>$(GamePath)\Unturned_Data\Managed\SDG.Glazier.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

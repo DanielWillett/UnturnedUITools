@@ -39,4 +39,9 @@ public interface IUIExtensionManager
     /// Register all UI extensions in an assembly and module.
     /// </summary>
     void RegisterFromModuleAssembly(Assembly assembly, Module module);
+
+    /// <summary>
+    /// Run any start-up requirements. This should not include any extension searching, as those will be registered with <see cref="RegisterFromModuleAssembly"/> and <see cref="RegisterExtension"/>.
+    /// </summary>
+    void Initialize();
 }

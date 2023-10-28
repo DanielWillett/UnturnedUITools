@@ -1,9 +1,9 @@
 ﻿using DanielWillett.UITools.API.Extensions;
+using DanielWillett.UITools.Util;
 using HarmonyLib;
 using SDG.Unturned;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace ExampleModule.Examples;
@@ -61,6 +61,6 @@ internal class UseableGunExtension : UIExtension, IDisposable
     public void Dispose()
     {
         // Clean up our UI after the gun is put away.
-        PlayerUI.container.RemoveChild(_gunInfo);
+        PlayerUI.container.TryRemoveChild(_gunInfo);
     }
 }

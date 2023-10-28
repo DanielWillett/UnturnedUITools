@@ -1,4 +1,5 @@
-﻿using SDG.Unturned;
+﻿using System;
+using SDG.Unturned;
 
 namespace DanielWillett.UITools.Util;
 
@@ -23,5 +24,29 @@ public static class UITools
 
         element.SizeScale_X = other.SizeScale_X;
         element.SizeScale_Y = other.SizeScale_Y;
+    }
+
+    /// <summary>
+    /// Attempt to remove <paramref name="child"/> from <paramref name="parent"/> if it's a child.
+    /// </summary>
+    /// <returns><see langword="false"/> if either <paramref name="child"/> or <paramref name="parent"/> is <see langword="null"/> or <paramref name="child"/> is not a child of <paramref name="parent"/> or <paramref name="parent"/> has been destroyed, otherwise <see langword="true"/>.</returns>
+    public static bool TryRemoveChild(this ISleekElement? parent, ISleekElement? child)
+    {
+        if (parent == null || child == null)
+            return false;
+
+        if (parent.FindIndexOfChild(child) == -1)
+            return false;
+
+        try
+        {
+            parent.RemoveChild(child);
+            return true;
+        }
+        catch (NullReferenceException)
+        {
+            // parent was destroyed already.
+            return false;
+        }
     }
 }

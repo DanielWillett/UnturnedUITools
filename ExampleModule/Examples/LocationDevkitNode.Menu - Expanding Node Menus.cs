@@ -1,6 +1,8 @@
 ﻿using DanielWillett.UITools.API.Extensions;
+using DanielWillett.UITools.Util;
 using SDG.Framework.Devkit;
 using SDG.Unturned;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -12,7 +14,7 @@ namespace ExampleModule.Examples;
 
 // Note that in the CLR, the '+' indicates a nested type.
 [UIExtension("LocationDevkitNode+Menu")]
-internal class LocationDevkitNodeMenuExtension : UIExtension<SleekWrapper>
+internal class LocationDevkitNodeMenuExtension : UIExtension<SleekWrapper>, IDisposable
 {
     private readonly ISleekButton _copyLocationNameButton;
     public LocationDevkitNodeMenuExtension()
@@ -47,6 +49,10 @@ internal class LocationDevkitNodeMenuExtension : UIExtension<SleekWrapper>
         // Copy it to clipboard.
         GUIUtility.systemCopyBuffer = node.locationName;
     }
-
-    // No need to remove this one as a child since the SleekWrapper parent is also being destroyed.
+    
+    // Clean up after our extension.
+    public void Dispose()
+    {
+        Instance.TryRemoveChild(_copyLocationNameButton);
+    }
 }

@@ -1,6 +1,7 @@
 ﻿using DanielWillett.ReflectionTools;
 using DanielWillett.UITools;
 using DanielWillett.UITools.API.Extensions;
+using DanielWillett.UITools.Util;
 using HarmonyLib;
 using SDG.Framework.Landscapes;
 using SDG.Framework.Utilities;
@@ -16,8 +17,8 @@ namespace ExampleModule.Examples;
  * In this example, we add HUD labels to map markers that show up in the viewport.
  */
 
-[UIExtension(typeof(PlayerUI))]
-internal class PlayerUIExtension : ContainerUIExtension
+[UIExtension(typeof(PlayerUI))]                          // Implement this interface to make sure your patch can be cleaned up.
+internal class PlayerUIExtension : ContainerUIExtension, IUnpatchableExtension
                                    // ContainerUIExtension is made to help with fullscreen containers
                                    //   used for adding stuff to the viewport like nametags, etc.
 {
@@ -27,8 +28,6 @@ internal class PlayerUIExtension : ContainerUIExtension
     private readonly Dictionary<ulong, MarkerLabel> _labels = new Dictionary<ulong, MarkerLabel>();
 
     private bool _subbedToEvents;
-    private Vector3 _lastPos;
-    private Quaternion _lastRot;
 
     // Set the parent window of this extension's fullscreen box.
     protected override SleekWindow Parent => PlayerUI.window;
@@ -68,8 +67,7 @@ internal class PlayerUIExtension : ContainerUIExtension
         {
             foreach (MarkerLabel label in _labels.Values)
             {
-                if (Container.FindIndexOfChild(label.Label) >= 0)
-                    Container.RemoveChild(label.Label);
+                Container.TryRemoveChild(label.Label);
             }
         }
 
@@ -86,9 +84,9 @@ internal class PlayerUIExtension : ContainerUIExtension
     // Patch PlayerQuests.ReceiveMarkerState so that when a marker is updated we update the nametag.
     private static void Patch()
     {
-        MethodInfo? patch = typeof(PlayerQuests).GetMethod(nameof(PlayerQuests.ReceiveMarkerState), BindingFlags.Public | BindingFlags.Instance);
+        MethodInfo? originalMethod = typeof(PlayerQuests).GetMethod(nameof(PlayerQuests.ReceiveMarkerState), BindingFlags.Public | BindingFlags.Instance);
 
-        if (patch == null)
+        if (originalMethod == null)
         {
             CommandWindow.LogWarning("Unable to find method PlayerQuests.ReceiveMarkerState.");
             return;
@@ -96,7 +94,29 @@ internal class PlayerUIExtension : ContainerUIExtension
 
         try
         {
-            Nexus.Patcher.Patch(patch, postfix: new HarmonyMethod(Accessor.GetMethod(OnMarkerUpdated)));
+            Nexus.Patcher.Patch(originalMethod, postfix: new HarmonyMethod(Accessor.GetMethod(OnMarkerUpdated)));
+        }
+        catch (Exception ex)
+        {
+            CommandWindow.LogWarning("Unable to patch PlayerQuests.ReceiveMarkerState:");
+            CommandWindow.LogWarning(ex);
+        }
+    }
+
+    // Clean up after your patch, this will be ran on the last instance of this class when the manager is being disposed.
+    void IUnpatchableExtension.Unpatch()
+    {
+        MethodInfo? originalMethod = typeof(PlayerQuests).GetMethod(nameof(PlayerQuests.ReceiveMarkerState), BindingFlags.Public | BindingFlags.Instance);
+
+        if (originalMethod == null)
+        {
+            CommandWindow.LogWarning("Unable to find method PlayerQuests.ReceiveMarkerState.");
+            return;
+        }
+
+        try
+        {
+            Nexus.Patcher.Unpatch(originalMethod, Accessor.GetMethod(OnMarkerUpdated));
         }
         catch (Exception ex)
         {
@@ -126,22 +146,8 @@ internal class PlayerUIExtension : ContainerUIExtension
     // Called every frame by TimeUtility.updated.
     private void OnUpdated()
     {
-        // Update all our labels if the player's position or rotation changed.
-
-        Vector3 pos = Player.player.look.aim.position;
-        if (_lastPos != pos)
-        {
-            _lastPos = pos;
-            UpdateAllLabels();
-            return;
-        }
-
-        Quaternion rot = Player.player.look.aim.rotation;
-        if (_lastRot != rot)
-        {
-            _lastRot = rot;
-            UpdateAllLabels();
-        }
+        // Update all our labels every frame.
+        UpdateAllLabels();
     }
 
     private void UpdateAllLabels()

@@ -10,7 +10,7 @@
 
     <PackageId>DanielWillett.UnturnedUITools</PackageId>
     <Title>Unturned Glazier UI Tools</Title>
-    <Version>1.1.1</Version>
+    <Version>1.2.0</Version>
     <Authors>Daniel Willett</Authors>
     <Product>DanielWillett.UnturnedUITools</Product>
     <Description>Tools for working with vanilla (Glazier, Sleek, etc.) UIs in Unturned, including an extension system.</Description>
@@ -20,7 +20,7 @@
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/DanielWillett/UnturnedUITools</RepositoryUrl>
-    <PackageTags>reflection, modding, utility, utilities, glazier, sleek, ui, unturned</PackageTags>
+    <PackageTags>reflection, modding, utility, utilities, glazier, sleek, ui, unturned, module</PackageTags>
     <PackageReleaseNotes></PackageReleaseNotes>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -28,6 +28,11 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AssemblyVersion>$(Version).0</AssemblyVersion>
     <FileVersion>$(Version).0</FileVersion>
+    <AssemblyOriginatorKeyFile>C:\Users\danny\OneDrive\Documents\Strong Name Keys\DanielWillett.UnturnedUITools\DanielWillett.UnturnedUITools.dll.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="exists('C:\Users\danny\OneDrive\Documents\Strong Name Keys\DanielWillett.UnturnedUITools\DanielWillett.UnturnedUITools.dll.snk')">
+    <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>C:\Users\danny\OneDrive\Documents\Strong Name Keys\DanielWillett.UnturnedUITools\DanielWillett.UnturnedUITools.dll.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 

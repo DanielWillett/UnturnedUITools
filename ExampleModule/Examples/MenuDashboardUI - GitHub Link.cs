@@ -70,10 +70,11 @@ internal class MenuDashboardUIExtension : UIExtension, IDisposable
         });
     }
 
+    // Clean up after our extension.
     public void Dispose()
     {
         _githubButton.OnClicked -= OnClickedGithubButton;
-        _container.RemoveChild(_githubButton);
+        _container.TryRemoveChild(_githubButton);
     }
 }
 
