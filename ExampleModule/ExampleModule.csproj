@@ -7,11 +7,11 @@
 
     <GamePath>C:\Program Files (x86)\Steam\steamapps\common\Unturned</GamePath>
 
-    <UseProjectReferenceInsteadOfPackage>true</UseProjectReferenceInsteadOfPackage>
+    <UseProjectReferenceInsteadOfPackage>false</UseProjectReferenceInsteadOfPackage>
   </PropertyGroup>
 
   <ItemGroup Condition="!$(UseProjectReferenceInsteadOfPackage)">
-    <PackageReference Include="DanielWillett.UnturnedUITools" Version="1.1.0" />
+    <PackageReference Include="DanielWillett.UnturnedUITools" Version="[1.2.0,)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(UseProjectReferenceInsteadOfPackage)">
