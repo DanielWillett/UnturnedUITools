@@ -50,7 +50,7 @@ public class UnturnedUIToolsNexus : IModuleNexus
 #nullable disable
 
     /// <summary>
-    /// Must be set in <see cref="IModuleNexus.initialize"/>.
+    /// Manages extensions, the default type is <see cref="Core.Extensions.UIExtensionManager"/>.
     /// </summary>
     /// <remarks>Call <see cref="Initialize"/> to setup with default values.</remarks>
     public static IUIExtensionManager UIExtensionManager
