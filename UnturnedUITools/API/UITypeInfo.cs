@@ -253,9 +253,6 @@ public class UITypeInfo
                     MethodBase method = matches[i];
                     DestroyMethods[i] = new UIVisibilityMethodInfo(method, method.GetParameters().Length > 0, method.IsStatic);
                 }
-
-                if (DestroyMethods.Length == 0)
-                    CommandWindow.LogWarning($"[{UIAccessor.Source}] Failed to find any destroy methods for UI: {type.Name}.");
             }
             catch (Exception ex)
             {
