@@ -1671,7 +1671,7 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
         if (!mngr.PatchInfo.TryGetValue(method, out UIExtensionExistingMemberPatchInfo info))
         {
             mngr.LogWarning($"Unable to patch {method.Name}: Could not find existing member info for {declType.Name}.", null, method.DeclaringType?.Assembly);
-            foreach (CodeInstruction instr in EmitUtilitiy.Throw<InvalidOperationException>($"Could not find existing member info for {declType.Name}."))
+            foreach (CodeInstruction instr in EmitUtility.Throw<InvalidOperationException>($"Could not find existing member info for {declType.Name}."))
                 yield return instr;
 
             yield break;
@@ -1704,7 +1704,7 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
     private static readonly MethodInfo TranspileSetterPropertyMethod = typeof(UIExtensionManager).GetMethod(nameof(TranspileSetterProperty), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     [UsedImplicitly]
-    private static IEnumerable<CodeInstruction> TranspileSetterProperty(IEnumerable<CodeInstruction> instructions, MethodBase method) => EmitUtilitiy.Throw<NotImplementedException>($"{method.Name.Replace("set_", "")} can not have a setter, as it is a UI extension implementation.");
+    private static IEnumerable<CodeInstruction> TranspileSetterProperty(IEnumerable<CodeInstruction> instructions, MethodBase method) => EmitUtility.Throw<NotImplementedException>($"{method.Name.Replace("set_", "")} can not have a setter, as it is a UI extension implementation.");
     
     /// <summary>
     /// Represents a patch for an existing member.

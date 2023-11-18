@@ -109,7 +109,7 @@ internal class CustomSleekWrapperDestroyHandler : ICustomOnDestroyUIHandler
             .FirstOrDefault(x => x.PropertyType == typeof(SleekWrapper));
 
         if (property != null)
-            return Accessor.GenerateInstancePropertyGetter<SleekWrapper>(type, property.Name);
+            return Accessor.GenerateInstancePropertyGetter<SleekWrapper>(type, property.Name, allowUnsafeTypeBinding: true);
 
         CommandWindow.LogWarning($"[{Source}] Failed to find property or field for SleekWrapper in proxy type: " + type.Name + ".");
         return null;

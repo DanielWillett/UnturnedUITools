@@ -111,7 +111,7 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
         bool add = false, remove = false;
         for (int i = 0; i < ins.Count; ++i)
         {
-            if (!add && EmitUtilitiy.FollowPattern(ins, ref i,
+            if (!add && EmitUtility.FollowPattern(ins, ref i,
                     x => x.opcode == OpCodes.Ldfld,
                     x => addMethod != null && x.Calls(addMethod)
                     ))
@@ -123,7 +123,7 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
                 i += 3;
             }
 
-            if (!remove && EmitUtilitiy.MatchPattern(ins, i,
+            if (!remove && EmitUtility.MatchPattern(ins, i,
                     x => x.opcode == OpCodes.Ldfld,
                     x => removeMethod != null && x.Calls(removeMethod)
                 ))
