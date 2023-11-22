@@ -14,6 +14,8 @@ namespace DanielWillett.UITools.API;
 /// </summary>
 public class UITypeInfo
 {
+    internal string ExpectedTypeName;
+
     /// <summary>
     /// Type of the UI.
     /// </summary>
@@ -23,6 +25,12 @@ public class UITypeInfo
     /// Type that 'owns' the UI, or <see langword="null"/> for root types (<see cref="LoadingUI"/>, <see cref="MenuUI"/>, <see cref="PlayerUI"/>, and <see cref="EditorUI"/>).
     /// </summary>
     public Type? Parent { get; internal set; }
+
+    internal string? ParentName
+    {
+        get => Parent?.FullName;
+        set => Parent = value == null ? null : (UIAccessor.FindUIType(value) ?? typeof(object));
+    }
 
     /// <summary>
     /// If all the fields and methods (except maybe the constructor) for the UI is static.
@@ -123,6 +131,27 @@ public class UITypeInfo
     /// This UI is destroyed when its parent is destroyed.
     /// </summary>
     public bool DestroyWhenParentDestroys { get; internal set; }
+
+
+    /// <summary>
+    /// Create a new <see cref="UITypeInfo"/> and prep the <see cref="OpenMethods"/>, <see cref="CloseMethods"/>, <see cref="InitializeMethods"/>, and <see cref="DestroyMethods"/> properties.
+    /// </summary>
+    /// <param name="typeName">UI type name, can be just the type name if its in SDG.Unturned, otherwise must be the full name.</param>
+    /// <param name="closeMethods">Override list of close methods. By default it looks for all methods named (case-insensitive) 'close'.</param>
+    /// <param name="openMethods">Override list of open methods. By default it looks for all methods named (case-insensitive) 'open'.</param>
+    /// <param name="initializeMethods">Override list of initialize methods. By default it looks for all instance constructors.</param>
+    /// <param name="destroyMethods">Override list of destroy methods. By default it looks for all methods named (case-insensitive) 'destroy' or 'OnDestroy'.</param>
+    /// <param name="hasActiveMember">If the UI has an 'isActive' <see cref="bool"/> member, which stores the 'open' status. Looks for fields or properties named (case-insensitive) 'active' or 'isActive'.</param>
+    internal UITypeInfo(string typeName,
+        IReadOnlyList<MethodBase>? closeMethods = null,
+        IReadOnlyList<MethodBase>? openMethods = null,
+        IReadOnlyList<MethodBase>? initializeMethods = null,
+        IReadOnlyList<MethodBase>? destroyMethods = null,
+        bool hasActiveMember = true) : this(UIAccessor.FindUIType(typeName) ?? typeof(object), closeMethods, openMethods, initializeMethods, destroyMethods, hasActiveMember)
+    {
+        ExpectedTypeName = Type == typeof(object) ? typeName : Type.FullName!;
+    }
+
 
     /// <summary>
     /// Create a new <see cref="UITypeInfo"/> and prep the <see cref="OpenMethods"/>, <see cref="CloseMethods"/>, <see cref="InitializeMethods"/>, and <see cref="DestroyMethods"/> properties.

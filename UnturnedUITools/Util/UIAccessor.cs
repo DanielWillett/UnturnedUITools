@@ -15,6 +15,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using CodeInstruction = HarmonyLib.CodeInstruction;
 
 namespace DanielWillett.UITools.Util;
 
@@ -230,9 +231,6 @@ public static class UIAccessor
 
     private static readonly InstanceGetter<MenuPlayUI, MenuPlaySingleplayerUI?>? GetMenuPlaySingleplayerUI
         = Accessor.GenerateInstanceGetter<MenuPlayUI, MenuPlaySingleplayerUI?>("singleplayerUI");
-
-    private static readonly InstanceGetter<MenuPlayUI, MenuPlayMatchmakingUI?>? GetMenuPlayMatchmakingUI
-        = Accessor.GenerateInstanceGetter<MenuPlayUI, MenuPlayMatchmakingUI?>("matchmakingUI");
 
     private static readonly InstanceGetter<MenuPlayUI, MenuPlayLobbiesUI?>? GetMenuPlayLobbiesUI
         = Accessor.GenerateInstanceGetter<MenuPlayUI, MenuPlayLobbiesUI?>("lobbiesUI");
@@ -736,18 +734,6 @@ public static class UIAccessor
     }
 
     /// <summary>
-    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayMatchmakingUI"/>.
-    /// </summary>
-    public static MenuPlayMatchmakingUI? MenuPlayMatchmakingUI
-    {
-        get
-        {
-            MenuPlayUI? menuPlayUI = MenuPlayUI;
-            return menuPlayUI != null ? GetMenuPlayMatchmakingUI?.Invoke(menuPlayUI) : null;
-        }
-    }
-
-    /// <summary>
     /// Singleton instance of <see cref="SDG.Unturned.MenuPlayLobbiesUI"/>.
     /// </summary>
     public static MenuPlayLobbiesUI? MenuPlayLobbiesUI
@@ -1029,7 +1015,17 @@ public static class UIAccessor
         info = null!;
         return false;
     }
-    
+
+    internal static Type? FindUIType(string typeName)
+    {
+        if (typeName.IndexOf('.') != -1)
+        {
+            return typeName.IndexOf(',') != -1 ? Type.GetType(typeName, false, false) : typeof(Provider).Assembly.GetType(typeName, false, false);
+        }
+
+        return typeof(Provider).Assembly.GetType("SDG.Unturned." + typeName, false, false);
+    }
+
     /// <summary>
     /// Read a UI type to an <see cref="ILGenerator"/>.
     /// </summary>
@@ -1080,7 +1076,7 @@ public static class UIAccessor
         if (info == null)
             throw new ArgumentException(uiType.Name + " is not a valid UI type. If it's new, request it on the GitHub.");
 
-        if (info.IsStaticUI || string.IsNullOrEmpty(info.EmitProperty) && info.CustomEmitter == null)
+        if (info.IsStaticUI || string.IsNullOrEmpty(info.EmitProperty) && info.CustomTranspiler == null)
             throw new InvalidOperationException(uiType.Name + " is not an instanced UI.");
 
         if (info.CustomTranspiler != null)
@@ -1417,798 +1413,633 @@ public static class UIAccessor
             try
             {
                 MethodBase[] emptyMethods = Array.Empty<MethodBase>();
-                Dictionary<Type, UITypeInfo> typeInfo = new Dictionary<Type, UITypeInfo>(32)
-            {
-                {
-                    typeof(EditorDashboardUI),
-                    new UITypeInfo(typeof(EditorDashboardUI), emptyMethods, emptyMethods, hasActiveMember: false)
-                    {
-                        Parent = typeof(EditorUI),
-                        Scene = UIScene.Editor,
-                        EmitProperty = nameof(EditorDashboardUI),
-                        OpenOnInitialize = true,
-                        DefaultOpenState = true,
-                        CloseOnDestroy = true
-                    }
-                },
-                {
-                    typeof(EditorEnvironmentLightingUI),
-                    new UITypeInfo(typeof(EditorEnvironmentLightingUI))
-                    {
-                        Parent = typeof(EditorEnvironmentUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorEnvironmentNavigationUI),
-                    new UITypeInfo(typeof(EditorEnvironmentNavigationUI))
-                    {
-                        Parent = typeof(EditorEnvironmentUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorEnvironmentRoadsUI),
-                    new UITypeInfo(typeof(EditorEnvironmentRoadsUI))
-                    {
-                        Parent = typeof(EditorEnvironmentUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorEnvironmentUI),
-                    new UITypeInfo(typeof(EditorEnvironmentUI))
-                    {
-                        Parent = typeof(EditorDashboardUI),
-                        Scene = UIScene.Editor,
-                        EmitProperty = nameof(EditorEnvironmentUI)
-                    }
-                },
-                {
-                    typeof(EditorLevelObjectsUI),
-                    new UITypeInfo(typeof(EditorLevelObjectsUI))
-                    {
-                        Parent = typeof(EditorLevelUI),
-                        Scene = UIScene.Editor,
-                        EmitProperty = nameof(EditorLevelObjectsUI)
-                    }
-                },
-                {
-                    typeof(EditorLevelPlayersUI),
-                    new UITypeInfo(typeof(EditorLevelPlayersUI))
-                    {
-                        Parent = typeof(EditorLevelUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorLevelUI),
-                    new UITypeInfo(typeof(EditorLevelUI))
-                    {
-                        Parent = typeof(EditorDashboardUI),
-                        Scene = UIScene.Editor,
-                        EmitProperty = nameof(EditorLevelUI)
-                    }
-                },
-                {
-                    typeof(EditorLevelVisibilityUI),
-                    new UITypeInfo(typeof(EditorLevelVisibilityUI))
-                    {
-                        Parent = typeof(EditorLevelUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorPauseUI),
-                    new UITypeInfo(typeof(EditorPauseUI))
-                    {
-                        Parent = typeof(EditorDashboardUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorSpawnsAnimalsUI),
-                    new UITypeInfo(typeof(EditorSpawnsAnimalsUI))
-                    {
-                        Parent = typeof(EditorSpawnsUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorSpawnsItemsUI),
-                    new UITypeInfo(typeof(EditorSpawnsItemsUI))
-                    {
-                        Parent = typeof(EditorSpawnsUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorSpawnsUI),
-                    new UITypeInfo(typeof(EditorSpawnsUI))
-                    {
-                        Parent = typeof(EditorDashboardUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorSpawnsVehiclesUI),
-                    new UITypeInfo(typeof(EditorSpawnsVehiclesUI))
-                    {
-                        Parent = typeof(EditorSpawnsUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorSpawnsZombiesUI),
-                    new UITypeInfo(typeof(EditorSpawnsZombiesUI))
-                    {
-                        Parent = typeof(EditorSpawnsUI),
-                        Scene = UIScene.Editor,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(EditorTerrainUI),
-                    new UITypeInfo(typeof(EditorTerrainUI))
-                    {
-                        Parent = typeof(EditorDashboardUI),
-                        Scene = UIScene.Editor,
-                        EmitProperty = nameof(EditorTerrainUI)
-                    }
-                },
-                {
-                    typeof(EditorUI),
-                    new UITypeInfo(typeof(EditorUI), emptyMethods, emptyMethods,
-                        typeof(EditorUI).GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance) is { } method1 ? new MethodBase[] { method1 } : emptyMethods,
-                        hasActiveMember: false)
-                    {
-                        Scene = UIScene.Editor,
-                        EmitProperty = nameof(EditorUI),
-                        OpenOnInitialize = true,
-                        DefaultOpenState = true,
-                        CloseOnDestroy = true,
-                        IsActiveMember = typeof(EditorUI).GetProperty(nameof(EditorUI.window), BindingFlags.Static | BindingFlags.Public)
-                    }
-                },
-                {
-                    typeof(LoadingUI),
-                    new UITypeInfo(typeof(LoadingUI), emptyMethods, emptyMethods, hasActiveMember: false)
-                    {
-                        Scene = UIScene.Loading,
-                        EmitProperty = nameof(LoadingUI),
-                        OpenOnInitialize = true,
-                        DefaultOpenState = true,
-                        CloseOnDestroy = true,
-                        IsActiveMember = typeof(LoadingUI).GetProperty(nameof(LoadingUI.isBlocked), BindingFlags.Static | BindingFlags.Public)
-                    }
-                },
-                {
-                    typeof(MenuConfigurationControlsUI),
-                    new UITypeInfo(typeof(MenuConfigurationControlsUI))
-                    {
-                        Parent = typeof(MenuConfigurationUI),
-                        Scene = UIScene.Menu,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(MenuConfigurationDisplayUI),
-                    new UITypeInfo(typeof(MenuConfigurationDisplayUI))
-                    {
-                        Parent = typeof(MenuConfigurationUI),
-                        Scene = UIScene.Menu,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(MenuConfigurationGraphicsUI),
-                    new UITypeInfo(typeof(MenuConfigurationGraphicsUI))
-                    {
-                        Parent = typeof(MenuConfigurationUI),
-                        Scene = UIScene.Menu,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(MenuConfigurationOptionsUI),
-                    new UITypeInfo(typeof(MenuConfigurationOptionsUI))
-                    {
-                        Parent = typeof(MenuConfigurationUI),
-                        Scene = UIScene.Menu,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(MenuConfigurationUI),
-                    new UITypeInfo(typeof(MenuConfigurationUI))
-                    {
-                        Parent = typeof(MenuDashboardUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuConfigurationUI)
-                    }
-                },
-                {
-                    typeof(MenuCreditsUI),
-                    new UITypeInfo(typeof(MenuCreditsUI))
-                    {
-                        Parent = typeof(MenuDashboardUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuCreditsUI)
-                    }
-                },
-                {
-                    typeof(MenuDashboardUI),
-                    new UITypeInfo(typeof(MenuDashboardUI))
-                    {
-                        Parent = typeof(MenuUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuDashboardUI),
-                        DefaultOpenState = true
-                    }
-                },
-                {
-                    typeof(MenuPauseUI),
-                    new UITypeInfo(typeof(MenuPauseUI))
-                    {
-                        Parent = typeof(MenuDashboardUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuPauseUI)
-                    }
-                },
-                {
-                    typeof(MenuPlayConfigUI),
-                    new UITypeInfo(typeof(MenuPlayConfigUI))
-                    {
-                        Parent = typeof(MenuDashboardUI),
-                        Scene = UIScene.Menu,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(MenuPlayConnectUI),
-                    new UITypeInfo(typeof(MenuPlayConnectUI))
-                    {
-                        Parent = typeof(MenuPlayUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuPlayConnectUI)
-                    }
-                },
-                {
-                    typeof(MenuPlayLobbiesUI),
-                    new UITypeInfo(typeof(MenuPlayLobbiesUI))
-                    {
-                        Parent = typeof(MenuPlayUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuPlayLobbiesUI)
-                    }
-                },
-                {
-                    typeof(MenuPlayMatchmakingUI),
-                    new UITypeInfo(typeof(MenuPlayMatchmakingUI))
-                    {
-                        Parent = typeof(MenuPlayUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuPlayMatchmakingUI)
-                    }
-                },
-                {
-                    typeof(MenuPlayServerInfoUI),
-                    new UITypeInfo(typeof(MenuPlayServerInfoUI))
-                    {
-                        Parent = typeof(MenuPlayUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuPlayServerInfoUI)
-                    }
-                },
-                {
-                    typeof(MenuPlayServersUI),
-                    new UITypeInfo(typeof(MenuPlayServersUI))
-                    {
-                        Parent = typeof(MenuPlayUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuPlayServersUI)
-                    }
-                },
-                {
-                    typeof(MenuPlaySingleplayerUI),
-                    new UITypeInfo(typeof(MenuPlaySingleplayerUI))
-                    {
-                        Parent = typeof(MenuPlayUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuPlaySingleplayerUI)
-                    }
-                },
-                {
-                    typeof(MenuPlayUI),
-                    new UITypeInfo(typeof(MenuPlayUI))
-                    {
-                        Parent = typeof(MenuDashboardUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuPlayUI)
-                    }
-                },
-                {
-                    typeof(MenuServerPasswordUI),
-                    new UITypeInfo(typeof(MenuServerPasswordUI))
-                    {
-                        Parent = typeof(MenuPlayServerInfoUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuServerPasswordUI)
-                    }
-                },
-                {
-                    typeof(MenuSurvivorsAppearanceUI),
-                    new UITypeInfo(typeof(MenuSurvivorsAppearanceUI))
-                    {
-                        Parent = typeof(MenuSurvivorsUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuSurvivorsAppearanceUI)
-                    }
-                },
-                {
-                    typeof(MenuSurvivorsCharacterUI),
-                    new UITypeInfo(typeof(MenuSurvivorsCharacterUI))
-                    {
-                        Parent = typeof(MenuSurvivorsUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuSurvivorsCharacterUI)
-                    }
-                },
-                {
-                    typeof(MenuSurvivorsClothingBoxUI),
-                    new UITypeInfo(typeof(MenuSurvivorsClothingBoxUI))
-                    {
-                        Parent = typeof(MenuSurvivorsClothingUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuSurvivorsClothingBoxUI)
-                    }
-                },
-                {
-                    typeof(MenuSurvivorsClothingDeleteUI),
-                    new UITypeInfo(typeof(MenuSurvivorsClothingDeleteUI))
-                    {
-                        Parent = typeof(MenuSurvivorsClothingUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuSurvivorsClothingDeleteUI)
-                    }
-                },
-                {
-                    typeof(MenuSurvivorsClothingInspectUI),
-                    new UITypeInfo(typeof(MenuSurvivorsClothingInspectUI))
-                    {
-                        Parent = typeof(MenuSurvivorsClothingUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuSurvivorsClothingInspectUI)
-                    }
-                },
-                {
-                    typeof(MenuSurvivorsClothingItemUI),
-                    new UITypeInfo(typeof(MenuSurvivorsClothingItemUI))
-                    {
-                        Parent = typeof(MenuSurvivorsClothingUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuSurvivorsClothingItemUI)
-                    }
-                },
-                {
-                    typeof(MenuSurvivorsClothingUI),
-                    new UITypeInfo(typeof(MenuSurvivorsClothingUI))
-                    {
-                        Parent = typeof(MenuSurvivorsUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuSurvivorsClothingUI)
-                    }
-                },
-                {
-                    typeof(MenuSurvivorsGroupUI),
-                    new UITypeInfo(typeof(MenuSurvivorsGroupUI))
-                    {
-                        Parent = typeof(MenuSurvivorsUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuSurvivorsGroupUI)
-                    }
-                },
-                {
-                    typeof(MenuSurvivorsUI),
-                    new UITypeInfo(typeof(MenuSurvivorsUI))
-                    {
-                        Parent = typeof(MenuDashboardUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuSurvivorsUI)
-                    }
-                },
-                {
-                    typeof(MenuTitleUI),
-                    new UITypeInfo(typeof(MenuTitleUI))
-                    {
-                        Parent = typeof(MenuDashboardUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuTitleUI)
-                    }
-                },
-                {
-                    typeof(MenuUI),
-                    new UITypeInfo(typeof(MenuUI), emptyMethods, emptyMethods, hasActiveMember: false)
-                    {
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuUI),
-                        OpenOnInitialize = true,
-                        DefaultOpenState = true,
-                        CloseOnDestroy = true,
-                        IsActiveMember = typeof(MenuUI).GetProperty(nameof(MenuUI.window), BindingFlags.Static | BindingFlags.Public)
-                    }
-                },
-                {
-                    typeof(MenuWorkshopEditorUI),
-                    new UITypeInfo(typeof(MenuWorkshopEditorUI))
-                    {
-                        Parent = typeof(MenuWorkshopUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuWorkshopEditorUI)
-                    }
-                },
-                {
-                    typeof(MenuWorkshopErrorUI),
-                    new UITypeInfo(typeof(MenuWorkshopErrorUI))
-                    {
-                        Parent = typeof(MenuWorkshopUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuWorkshopErrorUI)
-                    }
-                },
-                {
-                    typeof(MenuWorkshopLocalizationUI),
-                    new UITypeInfo(typeof(MenuWorkshopLocalizationUI))
-                    {
-                        Parent = typeof(MenuWorkshopUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuWorkshopLocalizationUI)
-                    }
-                },
-                {
-                    typeof(MenuWorkshopSpawnsUI),
-                    new UITypeInfo(typeof(MenuWorkshopSpawnsUI))
-                    {
-                        Parent = typeof(MenuWorkshopUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuWorkshopSpawnsUI)
-                    }
-                },
-                {
-                    typeof(MenuWorkshopSubmitUI),
-                    new UITypeInfo(typeof(MenuWorkshopSubmitUI))
-                    {
-                        Parent = typeof(MenuWorkshopUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuWorkshopSubmitUI)
-                    }
-                },
-                {
-                    typeof(MenuWorkshopSubscriptionsUI),
-                    new UITypeInfo(typeof(MenuWorkshopSubscriptionsUI))
-                    {
-                        Parent = typeof(MenuWorkshopUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuWorkshopSubscriptionsUI)
-                    }
-                },
-                {
-                    typeof(MenuWorkshopUI),
-                    new UITypeInfo(typeof(MenuWorkshopUI))
-                    {
-                        Parent = typeof(MenuDashboardUI),
-                        Scene = UIScene.Menu,
-                        EmitProperty = nameof(MenuWorkshopUI)
-                    }
-                },
-                {
-                    typeof(PlayerBarricadeLibraryUI),
-                    new UITypeInfo(typeof(PlayerBarricadeLibraryUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(PlayerBarricadeMannequinUI),
-                    new UITypeInfo(typeof(PlayerBarricadeMannequinUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        EmitProperty = nameof(PlayerBarricadeMannequinUI)
-                    }
-                },
-                {
-                    typeof(PlayerBarricadeSignUI),
-                    new UITypeInfo(typeof(PlayerBarricadeSignUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(PlayerBarricadeStereoUI),
-                    new UITypeInfo(typeof(PlayerBarricadeStereoUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        EmitProperty = nameof(PlayerBarricadeStereoUI)
-                    }
-                },
-                {
-                    typeof(PlayerDashboardCraftingUI),
-                    new UITypeInfo(typeof(PlayerDashboardCraftingUI))
-                    {
-                        Parent = typeof(PlayerDashboardUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(PlayerDashboardInformationUI),
-                    new UITypeInfo(typeof(PlayerDashboardInformationUI))
-                    {
-                        Parent = typeof(PlayerDashboardUI),
-                        Scene = UIScene.Player,
-                        EmitProperty = nameof(PlayerDashboardInformationUI)
-                    }
-                },
-                {
-                    typeof(PlayerDashboardInventoryUI),
-                    new UITypeInfo(typeof(PlayerDashboardInventoryUI))
-                    {
-                        Parent = typeof(PlayerDashboardUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(PlayerDashboardSkillsUI),
-                    new UITypeInfo(typeof(PlayerDashboardSkillsUI))
-                    {
-                        Parent = typeof(PlayerDashboardUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(PlayerDashboardUI),
-                    new UITypeInfo(typeof(PlayerDashboardUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        EmitProperty = nameof(PlayerDashboardUI)
-                    }
-                },
-                {
-                    typeof(PlayerDeathUI),
-                    new UITypeInfo(typeof(PlayerDeathUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(PlayerLifeUI),
-                    new UITypeInfo(typeof(PlayerLifeUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        EmitProperty = nameof(PlayerLifeUI)
-                    }
-                },
-                {
-                    typeof(PlayerNPCDialogueUI),
-                    new UITypeInfo(typeof(PlayerNPCDialogueUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(PlayerNPCQuestUI),
-                    new UITypeInfo(typeof(PlayerNPCQuestUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(PlayerNPCVendorUI),
-                    new UITypeInfo(typeof(PlayerNPCVendorUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-                {
-                    typeof(PlayerPauseUI),
-                    new UITypeInfo(typeof(PlayerPauseUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        EmitProperty = nameof(PlayerPauseUI)
-                    }
-                },
-                {
-                    typeof(PlayerUI),
-                    new UITypeInfo(typeof(PlayerUI), emptyMethods, emptyMethods,
-                        typeof(PlayerUI).GetMethod("InitializePlayer", BindingFlags.NonPublic | BindingFlags.Instance) is { } method3 ? new MethodBase[] { method3 } : emptyMethods
-                        , hasActiveMember: false)
-                    {
-                        Scene = UIScene.Player,
-                        EmitProperty = nameof(PlayerUI),
-                        OpenOnInitialize = true,
-                        DefaultOpenState = true,
-                        CloseOnDestroy = true,
-                        IsActiveMember = typeof(PlayerUI).GetProperty(nameof(PlayerUI.window), BindingFlags.Static | BindingFlags.Public)
-                    }
-                },
-                {
-                    typeof(PlayerWorkzoneUI),
-                    new UITypeInfo(typeof(PlayerWorkzoneUI))
-                    {
-                        Parent = typeof(PlayerUI),
-                        Scene = UIScene.Player,
-                        IsStaticUI = true
-                    }
-                },
-            };
-                if (EditorEnvironmentNodesUIType != null)
-                {
-                    typeInfo.Add(
-                        EditorEnvironmentNodesUIType,
-                        new UITypeInfo(EditorEnvironmentNodesUIType, hasActiveMember: false)
-                        {
-                            Parent = typeof(EditorEnvironmentUI),
-                            Scene = UIScene.Editor,
-                            EmitProperty = nameof(EditorEnvironmentNodesUI)
-                        });
-                }
-                if (EditorVolumesUIType != null)
-                {
-                    typeInfo.Add(
-                        EditorVolumesUIType,
-                        new UITypeInfo(EditorVolumesUIType, hasActiveMember: false)
-                        {
-                            Parent = typeof(EditorLevelUI),
-                            Scene = UIScene.Editor,
-                            EmitProperty = nameof(EditorVolumesUI)
-                        });
-                }
-                if (EditorTerrainHeightUIType != null)
-                {
-                    typeInfo.Add(
-                        EditorTerrainHeightUIType,
-                        new UITypeInfo(EditorTerrainHeightUIType, hasActiveMember: false)
-                        {
-                            Parent = typeof(EditorTerrainUI),
-                            Scene = UIScene.Editor,
-                            EmitProperty = nameof(EditorTerrainHeightUI),
-                            DestroyWhenParentDestroys = true
-                        });
-                }
-                if (EditorTerrainMaterialsUIType != null)
-                {
-                    typeInfo.Add(
-                        EditorTerrainMaterialsUIType,
-                        new UITypeInfo(EditorTerrainMaterialsUIType, hasActiveMember: false)
-                        {
-                            Parent = typeof(EditorTerrainUI),
-                            Scene = UIScene.Editor,
-                            EmitProperty = nameof(EditorTerrainMaterialsUI),
-                            DestroyWhenParentDestroys = true
-                        });
-                }
-                if (EditorTerrainDetailsUIType != null)
-                {
-                    typeInfo.Add(
-                        EditorTerrainDetailsUIType,
-                        new UITypeInfo(EditorTerrainDetailsUIType, hasActiveMember: false)
-                        {
-                            Parent = typeof(EditorTerrainUI),
-                            Scene = UIScene.Editor,
-                            EmitProperty = nameof(EditorTerrainDetailsUI),
-                            DestroyWhenParentDestroys = true
-                        });
-                }
-                if (EditorTerrainTilesUIType != null)
-                {
-                    typeInfo.Add(
-                        EditorTerrainTilesUIType,
-                        new UITypeInfo(EditorTerrainTilesUIType, hasActiveMember: false)
-                        {
-                            Parent = typeof(EditorTerrainUI),
-                            Scene = UIScene.Editor,
-                            EmitProperty = nameof(EditorTerrainTilesUI),
-                            DestroyWhenParentDestroys = true
-                        });
-                }
-                if (PlayerBrowserRequestUIType != null)
-                {
-                    typeInfo.Add(
-                        PlayerBrowserRequestUIType,
-                        new UITypeInfo(PlayerBrowserRequestUIType)
-                        {
-                            Parent = typeof(PlayerUI),
-                            Scene = UIScene.Player,
-                            EmitProperty = nameof(PlayerBrowserRequestUI)
-                        });
-                }
-                else
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.PlayerBrowserRequestUI.");
-                if (PlayerGroupUIType != null)
-                {
-                    typeInfo.Add(
-                        PlayerGroupUIType,
-                        new UITypeInfo(PlayerGroupUIType, emptyMethods, emptyMethods, hasActiveMember: false)
-                        {
-                            Parent = typeof(PlayerUI),
-                            Scene = UIScene.Player,
-                            EmitProperty = nameof(PlayerGroupUI),
-                            OpenOnInitialize = true,
-                            DefaultOpenState = true,
-                            CloseOnDestroy = true
-                        });
-                }
-                else
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.PlayerGroupUI.");
-                if (ItemStoreMenuType != null)
-                {
-                    typeInfo.Add(
-                        ItemStoreMenuType,
-                        new UITypeInfo(ItemStoreMenuType, hasActiveMember: false)
-                        {
-                            Parent = typeof(MenuSurvivorsClothingUI),
-                            Scene = UIScene.Menu,
-                            EmitProperty = nameof(ItemStoreMenu)
-                        });
-                }
-                else
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.ItemStoreMenu.");
-                if (ItemStoreCartMenuType != null)
-                {
-                    typeInfo.Add(
-                        ItemStoreCartMenuType,
-                        new UITypeInfo(ItemStoreCartMenuType, hasActiveMember: false)
-                        {
-                            Parent = ItemStoreMenuType,
-                            Scene = UIScene.Menu,
-                            EmitProperty = nameof(ItemStoreCartMenu)
-                        });
 
-                    if (ItemStoreDetailsMenuType != null)
+                Dictionary<Type, UITypeInfo> typeInfo = new Dictionary<Type, UITypeInfo>(32);
+
+                void Add(UITypeInfo type)
+                {
+                    if (type.Type == typeof(object))
                     {
-                        typeInfo.Add(
-                            ItemStoreDetailsMenuType,
-                            new UITypeInfo(ItemStoreDetailsMenuType, hasActiveMember: false)
-                            {
-                                Parent = ItemStoreMenuType,
-                                Scene = UIScene.Menu,
-                                EmitProperty = nameof(ItemStoreDetailsMenu)
-                            });
+                        CommandWindow.LogError($"Missing UI: {type.ExpectedTypeName}.");
+                        return;
                     }
-                    else
-                        CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.ItemStoreDetailsMenu.");
+
+                    if (type.Parent == typeof(object))
+                    {
+                        CommandWindow.LogError($"Missing parent of UI: {type.Type.FullName}.");
+                        return;
+                    }
+
+                    if (typeInfo.ContainsKey(type.Type))
+                    {
+                        CommandWindow.LogError($"Duplicate UI: {type.Type.FullName}.");
+                        return;
+                    }
+
+                    typeInfo.Add(type.Type, type);
                 }
-                else
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.ItemStoreCartMenu.");
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.EditorDashboardUI), emptyMethods, emptyMethods, hasActiveMember: false)
+                {
+                    ParentName = nameof(SDG.Unturned.EditorUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorDashboardUI),
+                    OpenOnInitialize = true,
+                    DefaultOpenState = true,
+                    CloseOnDestroy = true
+                });
+
+                Add(new UITypeInfo(nameof(EditorEnvironmentLightingUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorEnvironmentUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(EditorEnvironmentNavigationUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorEnvironmentUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(EditorEnvironmentRoadsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorEnvironmentUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.EditorEnvironmentUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorDashboardUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorEnvironmentUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.EditorLevelObjectsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorLevelUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorLevelObjectsUI)
+                });
+
+                Add(new UITypeInfo(nameof(EditorLevelPlayersUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorLevelUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.EditorLevelUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorDashboardUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorLevelUI)
+                });
+
+                Add(new UITypeInfo(nameof(EditorLevelVisibilityUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorLevelUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(EditorPauseUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorDashboardUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(EditorSpawnsAnimalsUI))
+                {
+                    ParentName = nameof(EditorSpawnsUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(EditorSpawnsItemsUI))
+                {
+                    ParentName = nameof(EditorSpawnsUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(EditorSpawnsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorDashboardUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(EditorSpawnsVehiclesUI))
+                {
+                    ParentName = nameof(EditorSpawnsUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(EditorSpawnsZombiesUI))
+                {
+                    ParentName = nameof(EditorSpawnsUI),
+                    Scene = UIScene.Editor,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.EditorTerrainUI))
+                {
+                    ParentName = nameof(SDG.Unturned.EditorDashboardUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorTerrainUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.EditorUI), emptyMethods, emptyMethods,
+                    typeof(EditorUI).GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance) is { } method1 ? new MethodBase[] { method1 } : emptyMethods,
+                    hasActiveMember: false)
+                {
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorUI),
+                    OpenOnInitialize = true,
+                    DefaultOpenState = true,
+                    CloseOnDestroy = true,
+                    IsActiveMember = FindUIType(nameof(SDG.Unturned.EditorUI))?.GetProperty(nameof(EditorUI.window), BindingFlags.Static | BindingFlags.Public)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.LoadingUI), emptyMethods, emptyMethods, hasActiveMember: false)
+                {
+                    Scene = UIScene.Loading,
+                    EmitProperty = nameof(LoadingUI),
+                    OpenOnInitialize = true,
+                    DefaultOpenState = true,
+                    CloseOnDestroy = true,
+                    IsActiveMember = FindUIType(nameof(SDG.Unturned.LoadingUI))?.GetProperty(nameof(LoadingUI.isBlocked), BindingFlags.Static | BindingFlags.Public)
+                });
+
+                Add(new UITypeInfo(nameof(MenuConfigurationControlsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuConfigurationUI),
+                    Scene = UIScene.Menu,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(MenuConfigurationDisplayUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuConfigurationUI),
+                    Scene = UIScene.Menu,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(MenuConfigurationGraphicsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuConfigurationUI),
+                    Scene = UIScene.Menu,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(MenuConfigurationOptionsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuConfigurationUI),
+                    Scene = UIScene.Menu,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuConfigurationUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuDashboardUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuConfigurationUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuCreditsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuDashboardUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuCreditsUI)
+                });
+                
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuDashboardUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuDashboardUI),
+                    DefaultOpenState = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPauseUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuDashboardUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPauseUI)
+                });
+
+                Add(new UITypeInfo(nameof(MenuPlayConfigUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuDashboardUI),
+                    Scene = UIScene.Menu,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayConnectUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPlayConnectUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayLobbiesUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPlayLobbiesUI)
+                });
+
+                FieldInfo? menuPlayServersListFiltersUiField = FindUIType(nameof(SDG.Unturned.MenuPlayServersUI))?
+                        .GetField("serverListFiltersUI", BindingFlags.Static | BindingFlags.Public);
+                Add(new UITypeInfo(nameof(MenuPlayServerListFiltersUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayServersUI),
+                    Scene = UIScene.Menu,
+                    CustomEmitter = menuPlayServersListFiltersUiField != null
+                            ? (_, generator) => generator.Emit(OpCodes.Ldsfld, menuPlayServersListFiltersUiField)
+                            : null,
+                    CustomTranspiler = menuPlayServersListFiltersUiField != null
+                            ? (_, _) => new CodeInstruction[] { new CodeInstruction(OpCodes.Ldsfld, menuPlayServersListFiltersUiField) }
+                            : null
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayServerInfoUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPlayServerInfoUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayServersUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPlayServersUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlaySingleplayerUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPlaySingleplayerUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuDashboardUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPlayUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuServerPasswordUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayServerInfoUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuServerPasswordUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuSurvivorsAppearanceUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuSurvivorsUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuSurvivorsAppearanceUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuSurvivorsCharacterUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuSurvivorsUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuSurvivorsCharacterUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuSurvivorsClothingBoxUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuSurvivorsClothingUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuSurvivorsClothingBoxUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuSurvivorsClothingDeleteUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuSurvivorsClothingUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuSurvivorsClothingDeleteUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuSurvivorsClothingInspectUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuSurvivorsClothingUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuSurvivorsClothingInspectUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuSurvivorsClothingItemUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuSurvivorsClothingUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuSurvivorsClothingItemUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuSurvivorsClothingUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuSurvivorsUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuSurvivorsClothingUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuSurvivorsGroupUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuSurvivorsUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuSurvivorsGroupUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuSurvivorsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuDashboardUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuSurvivorsUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuTitleUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuDashboardUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuTitleUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuUI), emptyMethods, emptyMethods, hasActiveMember: false)
+                {
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuUI),
+                    OpenOnInitialize = true,
+                    DefaultOpenState = true,
+                    CloseOnDestroy = true,
+                    IsActiveMember = FindUIType(nameof(SDG.Unturned.MenuUI))?.GetProperty(nameof(MenuUI.window), BindingFlags.Static | BindingFlags.Public)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuWorkshopEditorUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuWorkshopUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuWorkshopEditorUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuWorkshopErrorUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuWorkshopUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuWorkshopErrorUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuWorkshopLocalizationUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuWorkshopUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuWorkshopLocalizationUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuWorkshopSpawnsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuWorkshopUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuWorkshopSpawnsUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuWorkshopSubmitUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuWorkshopUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuWorkshopSubmitUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuWorkshopSubscriptionsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuWorkshopUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuWorkshopSubscriptionsUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuWorkshopUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuDashboardUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuWorkshopUI)
+                });
+
+                Add(new UITypeInfo(typeof(PlayerBarricadeLibraryUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.PlayerBarricadeMannequinUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    EmitProperty = nameof(PlayerBarricadeMannequinUI)
+                });
+
+                Add(new UITypeInfo(nameof(PlayerBarricadeSignUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.PlayerBarricadeStereoUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    EmitProperty = nameof(PlayerBarricadeStereoUI)
+                });
+
+                Add(new UITypeInfo(nameof(PlayerDashboardCraftingUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerDashboardUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.PlayerDashboardInformationUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerDashboardUI),
+                    Scene = UIScene.Player,
+                    EmitProperty = nameof(PlayerDashboardInformationUI)
+                });
+
+                Add(new UITypeInfo(nameof(PlayerDashboardInventoryUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerDashboardUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(PlayerDashboardSkillsUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerDashboardUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.PlayerDashboardUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    EmitProperty = nameof(PlayerDashboardUI)
+                });
+
+                Add(new UITypeInfo(nameof(PlayerDeathUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.PlayerLifeUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    EmitProperty = nameof(PlayerLifeUI)
+                });
+
+                Add(new UITypeInfo(nameof(PlayerNPCDialogueUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(PlayerNPCQuestUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(PlayerNPCVendorUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.PlayerPauseUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    EmitProperty = nameof(PlayerPauseUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.PlayerUI), emptyMethods, emptyMethods,
+                    typeof(PlayerUI).GetMethod("InitializePlayer", BindingFlags.NonPublic | BindingFlags.Instance) is { } method3 ? new MethodBase[] { method3 } : emptyMethods
+                    , hasActiveMember: false)
+                {
+                    Scene = UIScene.Player,
+                    EmitProperty = nameof(PlayerUI),
+                    OpenOnInitialize = true,
+                    DefaultOpenState = true,
+                    CloseOnDestroy = true,
+                    IsActiveMember = FindUIType(nameof(SDG.Unturned.PlayerUI))?.GetProperty(nameof(PlayerUI.window), BindingFlags.Static | BindingFlags.Public)
+                });
+
+                Add(new UITypeInfo(nameof(PlayerWorkzoneUI))
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    IsStaticUI = true
+                });
+
+                Add(new UITypeInfo("EditorEnvironmentNodesUI", hasActiveMember: false)
+                {
+                    ParentName = nameof(SDG.Unturned.EditorEnvironmentUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorEnvironmentNodesUI)
+                });
+
+                Add(new UITypeInfo("EditorVolumesUI", hasActiveMember: false)
+                {
+                    ParentName = nameof(SDG.Unturned.EditorLevelUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorVolumesUI)
+                });
+
+                Add(new UITypeInfo("EditorTerrainHeightUI", hasActiveMember: false)
+                {
+                    ParentName = nameof(SDG.Unturned.EditorTerrainUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorTerrainHeightUI),
+                    DestroyWhenParentDestroys = true
+                });
+
+                Add(new UITypeInfo("EditorTerrainMaterialsUI", hasActiveMember: false)
+                {
+                    ParentName = nameof(SDG.Unturned.EditorTerrainUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorTerrainMaterialsUI),
+                    DestroyWhenParentDestroys = true
+                });
+
+                Add(new UITypeInfo("EditorTerrainDetailsUI", hasActiveMember: false)
+                {
+                    ParentName = nameof(SDG.Unturned.EditorTerrainUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorTerrainDetailsUI),
+                    DestroyWhenParentDestroys = true
+                });
+
+                Add(new UITypeInfo("EditorTerrainTilesUI", hasActiveMember: false)
+                {
+                    ParentName = nameof(SDG.Unturned.EditorTerrainUI),
+                    Scene = UIScene.Editor,
+                    EmitProperty = nameof(EditorTerrainTilesUI),
+                    DestroyWhenParentDestroys = true
+                });
+
+                Add(new UITypeInfo("PlayerBrowserRequestUI")
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    EmitProperty = nameof(PlayerBrowserRequestUI)
+                });
+
+                Add(new UITypeInfo("PlayerGroupUI", emptyMethods, emptyMethods, hasActiveMember: false)
+                {
+                    ParentName = nameof(SDG.Unturned.PlayerUI),
+                    Scene = UIScene.Player,
+                    EmitProperty = nameof(PlayerGroupUI),
+                    OpenOnInitialize = true,
+                    DefaultOpenState = true,
+                    CloseOnDestroy = true
+                });
+
+                Add(new UITypeInfo("ItemStoreMenu", hasActiveMember: false)
+                {
+                    ParentName = nameof(SDG.Unturned.MenuSurvivorsClothingUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(ItemStoreMenu)
+                });
+
+                Add(new UITypeInfo("ItemStoreCartMenu", hasActiveMember: false)
+                {
+                    Parent = ItemStoreMenuType ?? typeof(object),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(ItemStoreCartMenu)
+                });
+
+                Add(new UITypeInfo("ItemStoreDetailsMenu", hasActiveMember: false)
+                {
+                    Parent = ItemStoreMenuType ?? typeof(object),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(ItemStoreDetailsMenu)
+                });
+
 
                 try
                 {
@@ -2226,7 +2057,7 @@ public static class UIAccessor
                                      typeof(SleekWrapper).IsAssignableFrom(x)))
                     {
                         MenuTypes[menuType.DeclaringType] = menuType;
-                        if (typeof(VolumeBase).IsAssignableFrom(menuType.DeclaringType))
+                        if (typeof(VolumeBase).IsAssignableFrom(menuType.DeclaringType) && EditorVolumesUIType != null)
                         {
                             typeInfo[menuType] = new UITypeInfo(menuType, emptyMethods, emptyMethods, hasActiveMember: false)
                             {
@@ -2239,7 +2070,7 @@ public static class UIAccessor
                                 CustomOnDestroy = sleekWrapperHandler
                             };
                         }
-                        else if (typeof(TempNodeBase).IsAssignableFrom(menuType.DeclaringType))
+                        else if (typeof(TempNodeBase).IsAssignableFrom(menuType.DeclaringType) && EditorEnvironmentNodesUIType != null)
                         {
                             typeInfo[menuType] = new UITypeInfo(menuType, emptyMethods, emptyMethods, hasActiveMember: false)
                             {
@@ -2273,27 +2104,31 @@ public static class UIAccessor
                     }
                     CommandWindow.Log($"[{Source}] Discovered {typeInfo.Count - c} UI wrapper type(s).");
                     c = typeInfo.Count;
-                    CustomUseableHandler useableHandler = new CustomUseableHandler();
-                    foreach (Type useable in types.Where(x => typeof(Useable).IsAssignableFrom(x)))
+                    Type? playerUi = FindUIType(nameof(SDG.Unturned.PlayerUI));
+                    if (playerUi != null)
                     {
-                        if (typeInfo.ContainsKey(useable))
-                            continue;
-                        FieldInfo[] fields = useable.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                        PropertyInfo[] properties = useable.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                        if (!fields.Any(x => typeof(ISleekElement).IsAssignableFrom(x.FieldType) && !properties.Any(x => typeof(ISleekElement).IsAssignableFrom(x.PropertyType))))
-                            continue;
-
-                        typeInfo.Add(useable, new UITypeInfo(useable, emptyMethods, emptyMethods, emptyMethods, hasActiveMember: false)
+                        CustomUseableHandler useableHandler = new CustomUseableHandler();
+                        foreach (Type useable in types.Where(x => typeof(Useable).IsAssignableFrom(x)))
                         {
-                            Parent = typeof(PlayerUI),
-                            Scene = UIScene.Player,
-                            CustomEmitter = EmitUseable,
-                            CustomTranspiler = EnumerateUseable,
-                            CloseOnDestroy = true,
-                            OpenOnInitialize = true,
-                            CustomOnInitialize = useableHandler,
-                            CustomOnDestroy = useableHandler
-                        });
+                            if (typeInfo.ContainsKey(useable))
+                                continue;
+                            FieldInfo[] fields = useable.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                            PropertyInfo[] properties = useable.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                            if (!fields.Any(x => typeof(ISleekElement).IsAssignableFrom(x.FieldType) && !properties.Any(x => typeof(ISleekElement).IsAssignableFrom(x.PropertyType))))
+                                continue;
+
+                            typeInfo.Add(useable, new UITypeInfo(useable, emptyMethods, emptyMethods, emptyMethods, hasActiveMember: false)
+                            {
+                                Parent = playerUi,
+                                Scene = UIScene.Player,
+                                CustomEmitter = EmitUseable,
+                                CustomTranspiler = EnumerateUseable,
+                                CloseOnDestroy = true,
+                                OpenOnInitialize = true,
+                                CustomOnInitialize = useableHandler,
+                                CustomOnDestroy = useableHandler
+                            });
+                        }
                     }
                     CommandWindow.Log($"[{Source}] Discovered {typeInfo.Count - c} useable UI type(s).");
                 }
@@ -2390,14 +2225,19 @@ public static class UIAccessor
         FieldInfo? field = EditorVolumesUIType?.GetField("focusedItemMenu", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (field == null)
             throw new MemberAccessException("Unable to find field: EditorVolumesUI.focusedItemMenu.");
-        Label lbl = generator.DefineLabel();
-        yield return new CodeInstruction(OpCodes.Call, typeof(UIAccessor).GetProperty(nameof(EditorVolumesUI), BindingFlags.Public | BindingFlags.Static)!.GetMethod);
-        yield return new CodeInstruction(OpCodes.Dup);
-        yield return new CodeInstruction(OpCodes.Brfalse, lbl);
-        yield return new CodeInstruction(OpCodes.Ldfld, field);
-        yield return new CodeInstruction(OpCodes.Isinst, info.Type);
 
-        yield return new CodeInstruction(OpCodes.Nop).WithLabels(lbl);
+        Label lbl = generator.DefineLabel();
+
+        return new CodeInstruction[]
+        {
+            new CodeInstruction(OpCodes.Call, typeof(UIAccessor).GetProperty(nameof(EditorVolumesUI), BindingFlags.Public | BindingFlags.Static)!.GetMethod),
+            new CodeInstruction(OpCodes.Dup),
+            new CodeInstruction(OpCodes.Brfalse, lbl),
+            new CodeInstruction(OpCodes.Ldfld, field),
+            new CodeInstruction(OpCodes.Isinst, info.Type),
+
+            new CodeInstruction(OpCodes.Nop).WithLabels(lbl)
+        };
     }
     private static IEnumerable<CodeInstruction> EnumerateNodeMenu(UITypeInfo info, ILGenerator generator)
     {
@@ -2405,13 +2245,17 @@ public static class UIAccessor
         if (field == null)
             throw new MemberAccessException("Unable to find field: EditorEnvironmentNodesUI.focusedItemMenu.");
         Label lbl = generator.DefineLabel();
-        yield return new CodeInstruction(OpCodes.Call, typeof(UIAccessor).GetProperty(nameof(EditorEnvironmentNodesUI), BindingFlags.Public | BindingFlags.Static)!.GetMethod);
-        yield return new CodeInstruction(OpCodes.Dup);
-        yield return new CodeInstruction(OpCodes.Brfalse, lbl);
-        yield return new CodeInstruction(OpCodes.Ldfld, field);
-        yield return new CodeInstruction(OpCodes.Isinst, info.Type);
 
-        yield return new CodeInstruction(OpCodes.Nop).WithLabels(lbl);
+        return new CodeInstruction[]
+        {
+            new CodeInstruction(OpCodes.Call, typeof(UIAccessor).GetProperty(nameof(EditorEnvironmentNodesUI), BindingFlags.Public | BindingFlags.Static)!.GetMethod),
+            new CodeInstruction(OpCodes.Dup),
+            new CodeInstruction(OpCodes.Brfalse, lbl),
+            new CodeInstruction(OpCodes.Ldfld, field),
+            new CodeInstruction(OpCodes.Isinst, info.Type),
+
+            new CodeInstruction(OpCodes.Nop).WithLabels(lbl)
+        };
     }
     private static IEnumerable<CodeInstruction> EnumerateUseable(UITypeInfo info, ILGenerator generator)
     {
@@ -2421,15 +2265,20 @@ public static class UIAccessor
         if (useableProp == null)
             throw new MemberAccessException("Unable to find at least one of the properties: Player.player, Player.equipment, PlayerEquipment.useable.");
 
+        
         Label lbl = generator.DefineLabel();
-        yield return new CodeInstruction(playerProp!.GetCall(), playerProp!);
-        yield return new CodeInstruction(OpCodes.Dup);
-        yield return new CodeInstruction(OpCodes.Brfalse, lbl);
-        yield return new CodeInstruction(playerEquipmentProp!.GetCall(), playerEquipmentProp!);
-        yield return new CodeInstruction(useableProp.GetCall(), useableProp);
-        yield return new CodeInstruction(OpCodes.Isinst, info.Type);
 
-        yield return new CodeInstruction(OpCodes.Nop).WithLabels(lbl);
+        return new CodeInstruction[]
+        {
+            new CodeInstruction(playerProp!.GetCall(), playerProp!),
+            new CodeInstruction(OpCodes.Dup),
+            new CodeInstruction(OpCodes.Brfalse, lbl),
+            new CodeInstruction(playerEquipmentProp!.GetCall(), playerEquipmentProp!),
+            new CodeInstruction(useableProp.GetCall(), useableProp),
+            new CodeInstruction(OpCodes.Isinst, info.Type),
+
+            new CodeInstruction(OpCodes.Nop).WithLabels(lbl)
+        };
     }
 
     [HarmonyPatch(typeof(EditorUI), "Start")]
