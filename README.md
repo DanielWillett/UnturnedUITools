@@ -52,6 +52,29 @@ private ISleekLabel MessageLabel { get; set; }
 private readonly ISleekLabel _messageLabel;
 ```
 
+### Common Mistake
+```cs
+// Setting this to null here to fix nullable references will run after the fields
+// are initialized but before the constructor so _container will have a null value.
+// 
+// Instead use #nullable disable and #nullable restore to do this.
+
+// BAD
+[ExistingMember("container")]
+private readonly SleekFullscreenBox _container = null!;
+
+// GOOD
+#nullable disable
+
+// ...
+
+[ExistingMember("container")]
+private readonly SleekFullscreenBox _container;
+
+// ...
+#nullable restore
+```
+
 ### Static Compatability
 The system is designed to be able to be accessed from a static context (like a patch, for example).
 ```cs
