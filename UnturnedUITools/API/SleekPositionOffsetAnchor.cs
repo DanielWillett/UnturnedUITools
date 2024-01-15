@@ -5,7 +5,7 @@ namespace DanielWillett.UITools.API;
 /// <summary>
 /// Defines how <see cref="SleekElementBuilder{TElement}"/> offsets elements.
 /// </summary>
-public enum SleekOffsetAnchor
+public enum SleekPositionOffsetAnchor
 {
     /// <summary>
     /// Positive values offset towards the top left of the parent's bounding box.

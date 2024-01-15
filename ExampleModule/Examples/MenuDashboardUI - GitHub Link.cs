@@ -53,34 +53,64 @@ internal class MenuDashboardUIExtension : UIExtension, IDisposable
          */
 
         // old
-        _githubButton = Glazier.Get().CreateButton();
+        //_githubButton = Glazier.Get().CreateButton();
 
-        _githubButton.CopyTransformFrom(_exitButton);
-        _githubButton.PositionOffset_Y -= 60;
-        _githubButton.Text = "UITools GitHub";
-        _githubButton.FontSize = ESleekFontSize.Medium;
-        _githubButton.OnClicked += OnClickedGithubButton;
-        _githubButton.BackgroundColor = ESleekTint.BACKGROUND;
+        //_githubButton.CopyTransformFrom(_exitButton);
+        //_githubButton.PositionOffset_Y -= 60;
+        //_githubButton.Text = "UITools GitHub";
+        //_githubButton.FontSize = ESleekFontSize.Medium;
+        //_githubButton.OnClicked += OnClickedGithubButton;
+        //_githubButton.BackgroundColor = ESleekTint.BACKGROUND;
 
-        _container.AddChild(_githubButton);
+        //_container.AddChild(_githubButton);
 
-        // new
-        _githubButton2 = Glazier.Get().ConfigureButton()
+        for (int i = 0; i < 9; ++i)
+        {
+            Glazier.Get().ConfigureBox()
+                .Anchor((SleekPositionScaleAnchor)i)
+                .WithText(((SleekPositionScaleAnchor)i).ToString())
+                    .WithFontStyle(FontStyle.Bold)
+                    .WithTextAnchor((TextAnchor)i)
+                    .WithTextColor(Color.yellow)
+                    .WithFontSize(ESleekFontSize.Large)
 
-            .WithOrigin(_exitButton)
-                .AddRawOffsetPixels(0f, -60f)
-            
-            // or
+                .WithBackgroundColor(Color.green)
+                .WithSizeScale(0.1f, 0.1f)
+                .WithPositionScale(0.2f, 0.2f)
+                .BuildAndParent(_container);
+        }
 
-            .BottomLeft()
-                .WithPreset(in SleekTransformPresets.LargeButton)
-                .WithOffsetPixels(0f, 110f, offsetTowards: SleekOffsetAnchor.Center)  // can configure which direction to move in, default is center
-            
-            .WithText("UITools GitHub")
-                .WithFontSize(ESleekFontSize.Medium)
-
-            .WhenAnyClicked(OnClickedGithubButton)
-            .BuildAndParent(_container);
+        // Glazier.Get().ConfigureBox()
+        //     .TopRight()
+        //     .WithSizePixels(200f, 200f)
+        //     .WithPositionPixels(100f, 100f)
+        //     .BuildAndParent(_container);
+        // 
+        // Glazier.Get().ConfigureLabel()
+        //     .TopCenter()
+        //     .WithSizePixels(200f, 20f)
+        //     .WithPositionPixels(0f, 10f)
+        //     .WithText("Text")
+        //         .Bold()
+        //     .WithContrastContext(ETextContrastContext.InconspicuousBackdrop)
+        //     .BuildAndParent(_container);
+        // 
+        // Glazier.Get().ConfigureButton()
+        // 
+        //     .WithOrigin(_exitButton)
+        //         .AddRawPositionPixels(0f, -60f)
+        //     
+        //     // or
+        // 
+        //     .BottomLeft()
+        //         .WithPreset(in SleekTransformPresets.LargeButton)
+        //         .WithPositionPixels(0f, 110f, offsetTowards: SleekOffsetAnchor.Center)  // can configure which direction to move in, default is center
+        // 
+        //     .WithText("UITools GitHub")
+        //         .WithFontSize(ESleekFontSize.Medium)
+        // 
+        //     .WhenAnyClicked(OnClickedGithubButton)
+        //     .BuildAndParent(_container);
     }
 
     private static void OnClickedGithubButton(ISleekElement button)

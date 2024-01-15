@@ -50,5 +50,11 @@ public enum SleekResizeAnchor
     /// <summary>
     /// Scale out from the bottom right of the object.
     /// </summary>
-    BottomRight
+    BottomRight,
+
+    /// <summary>
+    /// Scale from the corner closest to which corner the object's in within it's parent's bounding box.
+    /// </summary>
+    /// <remarks>This scales the object towards the center of its parent's bounding box.</remarks>
+    Auto
 }

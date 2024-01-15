@@ -79,7 +79,7 @@ internal static class InternalExtensions
     [Pure]
     public static int RangeSign(this float gameScale)
     {
-        if (gameScale == 0.5f)
+        if (gameScale - 0.5f is < 0.001f and > -0.001f)
             return 0;
         if (gameScale < 0.5f)
             return -1;
