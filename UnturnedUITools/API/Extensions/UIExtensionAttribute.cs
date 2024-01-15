@@ -15,6 +15,11 @@ namespace DanielWillett.UITools.API.Extensions;
 public sealed class UIExtensionAttribute : Attribute
 {
     /// <summary>
+    /// Type of the vanilla UI being extended as it was entered as a string.
+    /// </summary>
+    public string? SearchedParentType { get; }
+
+    /// <summary>
     /// Type of the vanilla UI being extended.
     /// </summary>
     public Type ParentType { get; }
@@ -40,6 +45,7 @@ public sealed class UIExtensionAttribute : Attribute
     public UIExtensionAttribute(string parentType)
     {
         Assembly sdg = typeof(Provider).Assembly;
+        SearchedParentType = parentType;
         ParentType = Type.GetType(parentType, false, true) ?? sdg.GetType(parentType, false, true) ?? sdg.GetType("SDG.Unturned." + parentType, true, true);
     }
 }

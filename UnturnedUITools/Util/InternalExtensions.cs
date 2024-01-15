@@ -53,4 +53,36 @@ internal static class InternalExtensions
 
         return rtn;
     }
+
+    /*
+     * Game scale
+     * (0, 0)         (1, 0)
+     * 0--                 ]
+     * |                   ]
+     * [                   ]
+     * (0, 1)         (1, 1)
+     *
+     * Range scale
+     * (-1, -1)      (1, -1)
+     * [         |         ]
+     * [       --0--       ]
+     * [         |         ]
+     * (-1, 1)        (1, 1)
+     */
+
+    [Pure]
+    public static float ToRangeScale(this float gameScale) => gameScale * 2f - 1f;
+
+    [Pure]
+    public static float ToGameScale(this float rangeScale) => (rangeScale + 1f) / 2f;
+
+    [Pure]
+    public static int RangeSign(this float gameScale)
+    {
+        if (gameScale == 0.5f)
+            return 0;
+        if (gameScale < 0.5f)
+            return -1;
+        return 1;
+    }
 }

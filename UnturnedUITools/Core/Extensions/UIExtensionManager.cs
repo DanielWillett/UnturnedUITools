@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
+using UnityEngine;
 using Module = SDG.Framework.Modules.Module;
 
 namespace DanielWillett.UITools.Core.Extensions;
@@ -20,11 +21,13 @@ namespace DanielWillett.UITools.Core.Extensions;
 /// <summary>
 /// Default implementation of <see cref="IUIExtensionManager"/>, manages UI extensions.
 /// </summary>
-public class UIExtensionManager : IUIExtensionManager, IDisposable
+public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposable
 {
     internal const string Source = "UI EXT MNGR";
     private readonly List<UIExtensionInfo> _extensions = new List<UIExtensionInfo>(8);
     private readonly List<IUnpatchableExtension> _pendingUnpatches = new List<IUnpatchableExtension>();
+
+    private bool _isAnActualObject;
 
     /// <summary>
     /// Stores all extensions in a mutable dictionary.
@@ -76,18 +79,30 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
     {
         ParentTypeInfo = new ReadOnlyDictionary<Type, UIExtensionParentTypeInfo>(ParentTypeInfoIntl);
         Extensions = _extensions.AsReadOnly();
+        _isAnActualObject = false;
+    }
+
+    [UsedImplicitly]
+    private void Awake()
+    {
+        _isAnActualObject = true;
     }
 
     /// <summary>
     /// Run any start-up requirements. This should not include any extension searching, as those will be registered with <see cref="RegisterFromModuleAssembly"/> and <see cref="RegisterExtension"/>.
     /// </summary>
-    protected virtual void Initialize() { }
+    protected virtual void Initialize()
+    {
+        ThreadUtil.assertIsGameThread();
+    }
 
     /// <summary>
     /// Clean up any patches.
     /// </summary>
     protected virtual void Dispose()
     {
+        ThreadUtil.assertIsGameThread();
+
         if (DebugLogging)
             LogDebug("Cleaning up extensions...");
 
@@ -104,11 +119,11 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
                 UIExtensionInstanceInfo instanceInfo = parentTypeInfo.InstancesIntl[j];
                 if (close && instanceInfo.VanillaInstance.IsOpen)
                 {
-                    if (instanceInfo.Instance is UIExtension ext)
+                    if (instanceInfo.Instance is IUIExtension ext)
                     {
                         try
                         {
-                            ext.InvokeOnClosed();
+                            ext.OnClosed();
                         }
                         catch (Exception ex)
                         {
@@ -131,6 +146,10 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
                         CommandWindow.LogError(ex);
                     }
                 }
+
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                if (_isAnActualObject && instanceInfo.Instance is UnityEngine.Object obj && obj != null)
+                    DestroyImmediate(obj);
 
                 if (instanceInfo.Extension.InstantiationsIntl.Count == 1 && instanceInfo.Extension.InstantiationsIntl[0] == instanceInfo.Instance)
                 {
@@ -374,9 +393,15 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
             if (Attribute.GetCustomAttribute(type, typeof(UIExtensionAttribute)) is not UIExtensionAttribute attribute)
                 continue;
 
+            if (attribute.ParentType == null)
+            {
+                LogError($"Error initializing UI extension: {type.Name}. Unknown parent type in [UIExtension] attribute: \"{attribute.SearchedParentType ?? "<unknown>"}\".", module, type.Assembly);
+                continue;
+            }
+
             PriorityAttribute? priority = Attribute.GetCustomAttribute(type, typeof(PriorityAttribute)) as PriorityAttribute;
 
-            UIExtensionInfo info = new UIExtensionInfo(type, attribute.ParentType, priority == null ? 0 : priority.Priority, module)
+            UIExtensionInfo info = new UIExtensionInfo(type, attribute.ParentType, priority?.Priority ?? 0, module)
             {
                 SuppressUIExtensionParentWarning = attribute.SuppressUIExtensionParentWarning
             };
@@ -459,11 +484,11 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
             if (DebugLogging)
                 LogDebug($"* Opening instance of: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
 
-            if (instanceInfo.Instance is UIExtension ext)
+            if (instanceInfo.Instance is IUIExtension ext)
             {
                 try
                 {
-                    ext.InvokeOnOpened();
+                    ext.OnOpened();
                 }
                 catch (Exception ex)
                 {
@@ -544,11 +569,11 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
             if (DebugLogging)
                 LogDebug($"* Closing instance of: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
 
-            if (instanceInfo.Instance is UIExtension ext)
+            if (instanceInfo.Instance is IUIExtension ext)
             {
                 try
                 {
-                    ext.InvokeOnClosed();
+                    ext.OnClosed();
                 }
                 catch (Exception ex)
                 {
@@ -590,11 +615,11 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
             if (ext == null) continue;
             if (DebugLogging)
                 LogDebug($"* Initialized: {info.ImplementationType.Name}.", info.Module, info.Assembly);
-            if ((info.TypeInfo.OpenOnInitialize || info.TypeInfo.DefaultOpenState) && ext is UIExtension ext2)
+            if ((info.TypeInfo.OpenOnInitialize || info.TypeInfo.DefaultOpenState) && ext is IUIExtension ext2)
             {
                 try
                 {
-                    ext2.InvokeOnOpened();
+                    ext2.OnOpened();
                 }
                 catch (Exception ex)
                 {
@@ -695,11 +720,11 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
             if (DebugLogging)
                 LogDebug($"* Destroying instance of: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
 
-            if (close && instanceInfo.Instance is UIExtension ext)
+            if (close && instanceInfo.Instance is IUIExtension ext)
             {
                 try
                 {
-                    ext.InvokeOnClosed();
+                    ext.OnClosed();
                 }
                 catch (Exception ex)
                 {
@@ -724,6 +749,15 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
 
                 if (DebugLogging)
                     LogDebug($"  * Disposed: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+            }
+
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (_isAnActualObject && instanceInfo.Instance is UnityEngine.Object obj && obj != null)
+            {
+                Destroy(obj);
+
+                if (DebugLogging)
+                    LogDebug($"  * Destroyed: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
             }
 
             if (instanceInfo.Extension.InstantiationsIntl.Count == 1 && instanceInfo.Extension.InstantiationsIntl[0] == instanceInfo.Instance)
@@ -758,7 +792,7 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
 
         PriorityAttribute? priority = Attribute.GetCustomAttribute(extensionType, typeof(PriorityAttribute)) as PriorityAttribute;
 
-        UIExtensionInfo info = new UIExtensionInfo(extensionType, parentType, priority == null ? 0 : priority.Priority, module)
+        UIExtensionInfo info = new UIExtensionInfo(extensionType, parentType, priority?.Priority ?? 0, module)
         {
             SuppressUIExtensionParentWarning = attribute == null || attribute.SuppressUIExtensionParentWarning
         };
@@ -798,9 +832,9 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
     /// <exception cref="AggregateException">Something went wrong initializing the extension.</exception>
     protected virtual void InitializeExtension(UIExtensionInfo info)
     {
-        if (!info.SuppressUIExtensionParentWarning && !typeof(UIExtension).IsAssignableFrom(info.ImplementationType))
+        if (!info.SuppressUIExtensionParentWarning && !typeof(IUIExtension).IsAssignableFrom(info.ImplementationType))
         {
-            LogWarning($"It's recommended to derive UI extensions from the {nameof(UIExtension)} class (unlike {info.ImplementationType.Name}).", info.Module, info.Assembly);
+            LogWarning($"It's recommended to derive UI extensions from the {nameof(UIExtension)} class or the {nameof(IUIExtension)} interface (unlike {info.ImplementationType.Name}).", info.Module, info.Assembly);
             LogInfo($"Alternatively set SuppressUIExtensionParentWarning to True in a {nameof(UIExtensionAttribute)} on the extension class.", info.Module, info.Assembly);
         }
 
@@ -859,10 +893,43 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
             MethodInfo getTypeFromHandle = Accessor.GetMethod(Type.GetTypeFromHandle)!;
             MethodInfo getUninitObject = Accessor.GetMethod(FormatterServices.GetUninitializedObject)!;
 
+            bool isUnityObject = typeof(Component).IsAssignableFrom(info.ImplementationType);
+
+            MethodInfo? getGameObjectProperty = !isUnityObject ? null : typeof(Component).GetProperty(nameof(transform), BindingFlags.Instance | BindingFlags.Public)?.GetMethod;
+            MethodInfo? addComponentMethod = !isUnityObject ? null : typeof(GameObject).GetMethod(nameof(GameObject.AddComponent),
+                BindingFlags.Instance | BindingFlags.Public, null, CallingConventions.Any, [ typeof(Type) ], null);
+            MethodInfo? equalsMethod = !isUnityObject ? null : typeof(UnityEngine.Object).GetMethod(nameof(object.Equals),
+                BindingFlags.Instance | BindingFlags.Public, null, CallingConventions.Any,
+                new Type[] { typeof(object) }, null);
+            if (isUnityObject)
+            {
+                if (!_isAnActualObject)
+                {
+                    LogWarning($"Unity component {info.ImplementationType.Name} will not be instantiated properly because the UIExtensionManager was not initialized as a component.");
+                    isUnityObject = false;
+                }
+                if (getGameObjectProperty == null)
+                {
+                    LogWarning($"Unknown property: get UnityEngine.Component.gameObject. Unity component {info.ImplementationType.Name} will not be instantiated properly.");
+                    isUnityObject = false;
+                }
+                if (addComponentMethod == null)
+                {
+                    LogWarning($"Unknown method: UnityEngine.GameObject.AddComponent. Unity component {info.ImplementationType.Name} will not be instantiated properly.");
+                    isUnityObject = false;
+                }
+                if (equalsMethod == null)
+                {
+                    LogWarning($"Unknown method: UnityEngine.Object.Equals. Unity component {info.ImplementationType.Name} will not be instantiated properly.");
+                    isUnityObject = false;
+                }
+            }
+
             DynamicMethod dynMethod = new DynamicMethod("<DS_UIEXT>_CreateExtensionImpl",
                 MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName, CallingConventions.Standard, typeof(object),
-                new Type[] { typeof(object) }, info.ImplementationType, true);
-            dynMethod.DefineParameter(0, ParameterAttributes.None, "uiInstance");
+                [ typeof(IUIExtensionManager), typeof(object) ], info.ImplementationType, true);
+            dynMethod.DefineParameter(0, ParameterAttributes.None, "extensionManager");
+            dynMethod.DefineParameter(1, ParameterAttributes.None, "uiInstance");
             ILGenerator il = dynMethod.GetILGenerator();
 
             il.DeclareLocal(info.ImplementationType); // 0
@@ -870,7 +937,7 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
 
             Label useProvidedLocal1 = il.DefineLabel();
             Label setLocal1 = il.DefineLabel();
-            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Brtrue_S, useProvidedLocal1);
             if (!staticUI)
             {
@@ -887,15 +954,55 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
                 il.Emit(OpCodes.Ldnull);
             il.Emit(OpCodes.Br, setLocal1);
             il.MarkLabel(useProvidedLocal1);
-            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Castclass, info.ParentType);
             il.MarkLabel(setLocal1);
             il.Emit(OpCodes.Stloc_1);
+            Label? skipLbl = null;
+            Label? fallbackLbl = null;
+            if (isUnityObject)
+            {
+                skipLbl = il.DefineLabel();
+                fallbackLbl = il.DefineLabel();
+                Label isGameObjectLbl = il.DefineLabel();
+
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Isinst, typeof(Component));
+                il.Emit(OpCodes.Dup);
+
+                il.Emit(OpCodes.Brtrue, isGameObjectLbl);
+                il.Emit(OpCodes.Pop);
+                il.Emit(OpCodes.Br, fallbackLbl.Value);
+
+                il.MarkLabel(isGameObjectLbl);
+                isGameObjectLbl = il.DefineLabel();
+
+                il.Emit(OpCodes.Dup);
+                il.Emit(OpCodes.Ldnull);
+                il.Emit(OpCodes.Call, equalsMethod!);
+                il.Emit(OpCodes.Brfalse, isGameObjectLbl);
+                il.Emit(OpCodes.Pop);
+                il.Emit(OpCodes.Br, fallbackLbl.Value);
+
+                il.MarkLabel(isGameObjectLbl);
+                il.Emit(OpCodes.Call, getGameObjectProperty!);
+                il.Emit(OpCodes.Ldtoken, info.ImplementationType);
+                il.Emit(getTypeFromHandle.GetCallRuntime(), getTypeFromHandle);
+                il.Emit(OpCodes.Call, addComponentMethod!);
+                il.Emit(OpCodes.Br, skipLbl.Value);
+            }
+
+            if (fallbackLbl.HasValue)
+                il.MarkLabel(fallbackLbl.Value);
 
             il.Emit(OpCodes.Ldtoken, info.ImplementationType);
             il.Emit(getTypeFromHandle.GetCallRuntime(), getTypeFromHandle);
             il.Emit(getUninitObject.GetCallRuntime(), getUninitObject);
             il.Emit(OpCodes.Castclass, info.ImplementationType);
+
+            if (skipLbl.HasValue)
+                il.MarkLabel(skipLbl.Value);
+
             il.Emit(OpCodes.Stloc_0);
 
             if (typeof(UIExtension).IsAssignableFrom(info.ImplementationType))
@@ -905,6 +1012,13 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
                 {
                     il.Emit(OpCodes.Ldloc_0);
                     il.Emit(OpCodes.Ldloc_1);
+                    il.Emit(OpCodes.Call, setter);
+                }
+                setter = typeof(UIExtension).GetProperty(nameof(UIExtension.Manager), BindingFlags.Public | BindingFlags.Instance)?.GetSetMethod(true);
+                if (setter != null)
+                {
+                    il.Emit(OpCodes.Ldloc_0);
+                    il.Emit(OpCodes.Ldarg_0);
                     il.Emit(OpCodes.Call, setter);
                 }
             }
@@ -921,15 +1035,36 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
                 member.EmitApply(il);
             }
 
-            il.Emit(OpCodes.Ldloc_0);
-            if (constructor!.GetParameters().Length == 1)
-                il.Emit(OpCodes.Ldloc_1);
-            il.Emit(OpCodes.Call, constructor);
+            if (!isUnityObject)
+            {
+                il.Emit(OpCodes.Ldloc_0);
+                if (constructor!.GetParameters().Length == 1)
+                    il.Emit(OpCodes.Ldloc_1);
+                il.Emit(OpCodes.Call, constructor);
+            }
+
+            if (typeof(IUIExtensionReadyListener).IsAssignableFrom(info.ImplementationType))
+            {
+                MethodInfo? onReadyMethod = typeof(IUIExtensionReadyListener).GetMethod(nameof(IUIExtensionReadyListener.OnReady), BindingFlags.Public | BindingFlags.Instance);
+                if (onReadyMethod != null)
+                    onReadyMethod = Accessor.GetImplementedMethod(info.ImplementationType, onReadyMethod);
+
+                if (onReadyMethod == null)
+                {
+                    LogWarning($"Unable to find implemented OnReady method of IUIExtensionReadyListener for {info.ImplementationType.Name}.");
+                }
+                else
+                {
+                    il.Emit(OpCodes.Ldloc_0);
+                    il.Emit(OpCodes.Ldloc_1);
+                    il.Emit(OpCodes.Callvirt, onReadyMethod);
+                }
+            }
 
             if (!AddInstanceMethod.IsStatic)
             {
-                MethodInfo managerGetter = typeof(UnturnedUIToolsNexus).GetProperty(nameof(UnturnedUIToolsNexus.UIExtensionManager), BindingFlags.Public | BindingFlags.Static)!.GetMethod;
-                il.Emit(managerGetter.GetCallRuntime(), managerGetter);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Castclass, typeof(UIExtensionManager));
             }
             il.Emit(OpCodes.Ldloc_1);
             il.Emit(OpCodes.Ldloc_0);
@@ -980,6 +1115,15 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
                                 LogWarning($"Error disposing UI extension: {extInfo.ImplementationType.Name}.", extInfo.Module, extInfo.Assembly);
                                 CommandWindow.LogWarning(ex2);
                             }
+                        }
+
+                        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                        if (instance is UnityEngine.Object obj && obj != null)
+                        {
+                            UnityEngine.Object.Destroy(obj);
+
+                            if (DebugLogging)
+                                LogDebug($"  * Destroyed: {extInfo.ImplementationType.Name}.", extInfo.Module, extInfo.Assembly);
                         }
 
                         _extensions.Remove(extInfo);
@@ -1085,7 +1229,7 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
             object? instance;
             lock (this)
             {
-                instance = info.CreateCallback(uiInstance);
+                instance = info.CreateCallback(this, uiInstance);
 
                 if (instance == null)
                 {
@@ -1811,5 +1955,5 @@ public class UIExtensionManager : IUIExtensionManager, IDisposable
     /// <summary>
     /// Represents a method to create a UI extension object.
     /// </summary>
-    public delegate object? CreateUIExtension(object? uiInstance);
+    public delegate object? CreateUIExtension(IUIExtensionManager extensionManager, object? uiInstance);
 }

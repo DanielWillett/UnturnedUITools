@@ -4,6 +4,8 @@ using DanielWillett.UITools.Util;
 using SDG.Unturned;
 using System;
 using System.Diagnostics;
+using DanielWillett.UITools.API;
+using UnityEngine;
 
 namespace ExampleModule.Examples;
 
@@ -22,6 +24,7 @@ internal class MenuDashboardUIExtension : UIExtension, IDisposable
     private const string Url = "https://github.com/DanielWillett/UnturnedUITools";
 
     private readonly ISleekButton _githubButton;
+    private readonly ISleekButton _githubButton2;
 
     /*
      * Existing members allow us to get fields and properties from the original UI class.
@@ -49,6 +52,7 @@ internal class MenuDashboardUIExtension : UIExtension, IDisposable
          *   the Opened method and adding it there instead.
          */
 
+        // old
         _githubButton = Glazier.Get().CreateButton();
 
         _githubButton.CopyTransformFrom(_exitButton);
@@ -59,6 +63,24 @@ internal class MenuDashboardUIExtension : UIExtension, IDisposable
         _githubButton.BackgroundColor = ESleekTint.BACKGROUND;
 
         _container.AddChild(_githubButton);
+
+        // new
+        _githubButton2 = Glazier.Get().ConfigureButton()
+
+            .WithOrigin(_exitButton)
+                .AddRawOffsetPixels(0f, -60f)
+            
+            // or
+
+            .BottomLeft()
+                .WithPreset(in SleekTransformPresets.LargeButton)
+                .WithOffsetPixels(0f, 110f, offsetTowards: SleekOffsetAnchor.Center)  // can configure which direction to move in, default is center
+            
+            .WithText("UITools GitHub")
+                .WithFontSize(ESleekFontSize.Medium)
+
+            .WhenAnyClicked(OnClickedGithubButton)
+            .BuildAndParent(_container);
     }
 
     private static void OnClickedGithubButton(ISleekElement button)

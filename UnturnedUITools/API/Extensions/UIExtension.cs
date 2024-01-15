@@ -6,12 +6,17 @@ namespace DanielWillett.UITools.API.Extensions;
 /// Optional base class for UI extensions (defined with <see cref="UIExtensionAttribute"/>). Provides OnOpened and OnClosed events, as well as overridable methods for the same events.
 /// Also provides an <see cref="Instance"/> property for accessing the vanilla UI instance (will be <see langword="null"/> for static UIs).
 /// </summary>
-public abstract class UIExtension
+public abstract class UIExtension : IUIExtension
 {
     /// <summary>
     /// The vanilla UI instance, or <see langword="null"/> when the vanilla UI is a static UI.
     /// </summary>
     public object? Instance { get; internal set; }
+
+    /// <summary>
+    /// The extension manager that created this extension.
+    /// </summary>
+    public IUIExtensionManager Manager { get; internal set; } = null!;
 
     /// <summary>
     /// Called when the vanilla UI is opened.
@@ -32,14 +37,12 @@ public abstract class UIExtension
     /// Called when the vanilla UI is closed, after <see cref="OnClosed"/>.
     /// </summary>
     protected virtual void Closed() { }
-
-    internal void InvokeOnOpened()
+    void IUIExtension.OnOpened()
     {
         Opened();
         OnOpened?.Invoke();
     }
-
-    internal void InvokeOnClosed()
+    void IUIExtension.OnClosed()
     {
         OnClosed?.Invoke();
         Closed();

@@ -79,6 +79,10 @@ public class UnturnedUIToolsNexus : IModuleNexus
                 if (old is IDisposable disposable)
                     disposable.Dispose();
 
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                if (old is UnityEngine.Object obj && obj != null)
+                    UnityEngine.Object.Destroy(obj);
+
                 if (_init)
                 {
                     value.Initialize();
@@ -110,6 +114,10 @@ public class UnturnedUIToolsNexus : IModuleNexus
         IUIExtensionManager? oldManager = Interlocked.Exchange(ref _uiExtensionManager, null!);
         if (oldManager is IDisposable disposable)
             disposable.Dispose();
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        if (oldManager is UnityEngine.Object obj && obj != null)
+            UnityEngine.Object.DestroyImmediate(obj);
     }
     private void OnModulesInitialized()
     {
