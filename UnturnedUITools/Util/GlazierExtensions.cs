@@ -30,7 +30,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekBox"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekBox> ConfigureBox(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekBox> ConfigureBox(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -42,7 +42,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekButton"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekButton> ConfigureButton(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekButton> ConfigureButton(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -54,7 +54,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekElement"/> frame and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekElement> ConfigureFrame(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekElement> ConfigureFrame(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -66,7 +66,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekConstraintFrame"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekConstraintFrame> ConfigureConstraintFrame(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekConstraintFrame> ConfigureConstraintFrame(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -78,7 +78,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekImage"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekImage> ConfigureImage(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekImage> ConfigureImage(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -90,7 +90,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekSprite"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> ConfigureSprite(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekSprite> ConfigureSprite(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -102,7 +102,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekLabel"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekLabel> ConfigureLabel(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekLabel> ConfigureLabel(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -114,7 +114,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekScrollView"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> ConfigureScrollView(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> ConfigureScrollView(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -126,7 +126,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekSlider"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> ConfigureSlider(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekSlider> ConfigureSlider(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -138,7 +138,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekField"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekField> ConfigureStringField(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekField> ConfigureStringField(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -150,7 +150,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekToggle"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> ConfigureToggle(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekToggle> ConfigureToggle(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -162,7 +162,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekUInt8Field"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekUInt8Field> ConfigureUInt8Field(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekUInt8Field> ConfigureUInt8Field(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -174,7 +174,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekUInt16Field"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekUInt16Field> ConfigureUInt16Field(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekUInt16Field> ConfigureUInt16Field(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -186,7 +186,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekUInt32Field"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekUInt32Field> ConfigureUInt32Field(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekUInt32Field> ConfigureUInt32Field(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -198,7 +198,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekInt32Field"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekInt32Field> ConfigureInt32Field(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekInt32Field> ConfigureInt32Field(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -210,7 +210,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekFloat32Field"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekFloat32Field> ConfigureFloat32Field(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekFloat32Field> ConfigureFloat32Field(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -222,7 +222,7 @@ public static class GlazierExtensions
     /// Create an <see cref="ISleekFloat64Field"/> and a builder for it.
     /// </summary>
     /// <exception cref="NotSupportedException">Not on main thread.</exception>
-    public static ref SleekElementBuilder<ISleekFloat64Field> ConfigureFloat64Field(this IGlazier glazier)
+    public static ref readonly SleekElementBuilder<ISleekFloat64Field> ConfigureFloat64Field(this IGlazier glazier)
     {
         ThreadUtil.assertIsGameThread();
 

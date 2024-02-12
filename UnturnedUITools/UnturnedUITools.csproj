@@ -10,7 +10,7 @@
 
     <PackageId>DanielWillett.UnturnedUITools</PackageId>
     <Title>Unturned Glazier UI Tools</Title>
-    <Version>1.3.1</Version>
+    <Version>1.4.0</Version>
     <Authors>Daniel Willett</Authors>
     <Product>DanielWillett.UnturnedUITools</Product>
     <Description>Tools for working with vanilla (Glazier, Sleek, etc.) UIs in Unturned, including an extension system.</Description>
@@ -21,7 +21,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/DanielWillett/UnturnedUITools</RepositoryUrl>
     <PackageTags>reflection, modding, utility, utilities, glazier, sleek, ui, unturned, module</PackageTags>
-    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageReleaseNotes>New fluent API for defining UIs. Added support for ISleekElement.ChildAutoLayoutPadding (v3.24.1.0).</PackageReleaseNotes>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>

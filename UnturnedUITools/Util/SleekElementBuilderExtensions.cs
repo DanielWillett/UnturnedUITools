@@ -18,10 +18,9 @@ public static class SleekElementBuilderExtensions
     /// Finalize the builder.
     /// </summary>
     /// <returns>The finished element.</returns>
-    public static TSleekElement Build<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static TSleekElement Build<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         TSleekElement element = builder.Element;
-        builder = default;
         return element;
     }
 
@@ -30,10 +29,9 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>The same as calling <see cref="ISleekElement.AddChild"/> on the parent after building.</remarks>
     /// <returns>The finished element.</returns>
-    public static TSleekElement BuildAndParent<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, ISleekElement parent) where TSleekElement : class
+    public static TSleekElement BuildAndParent<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, ISleekElement parent) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
-        builder = default;
 
         if (parent.FindIndexOfChild(element) == -1)
             parent.AddChild(element);
@@ -52,7 +50,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Fills the entire bounding area with the element.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> Fill<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> Fill<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -70,7 +68,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Copies all basic transforms from <see cref="ISleekElement"/>.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> WithOrigin<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, ISleekElement transform) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithOrigin<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, ISleekElement transform) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -88,7 +86,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Copies all basic transforms from <see cref="ISleekElement"/>.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> WithPreset<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, [ValueProvider("DanielWillett.UITools.Util.SleekTransformPresets")] in SleekTransformPreset preset) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithPreset<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, [ValueProvider("DanielWillett.UITools.Util.SleekTransformPresets")] in SleekTransformPreset preset) where TSleekElement : class
     {
         preset.Apply((ISleekElement)builder.Element);
         return ref builder;
@@ -97,7 +95,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the desired point on the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> Anchor<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, SleekPositionScaleAnchor anchor) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> Anchor<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, SleekPositionScaleAnchor anchor) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -137,7 +135,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the top left corner of the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> TopLeft<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> TopLeft<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -151,7 +149,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the top center of the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> TopCenter<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> TopCenter<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -165,7 +163,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the top right corner of the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> TopRight<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> TopRight<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -179,7 +177,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the bottom left corner of the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> BottomLeft<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> BottomLeft<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -193,7 +191,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the top left corner of the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> BottomCenter<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> BottomCenter<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -207,7 +205,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the top left corner of the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> BottomRight<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> BottomRight<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -221,7 +219,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the left center of the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> LeftCenter<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> LeftCenter<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -235,7 +233,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the center of the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> Center<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> Center<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -249,7 +247,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Moves the element to the right center of the screen and resets any offsets.
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> RightCenter<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> RightCenter<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -264,7 +262,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position offset without any manipulation
     /// </summary>
     /// <remarks>In pixels.</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithRawOffsetPixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector2 offset) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithRawOffsetPixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector2 offset) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -277,7 +275,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position offset without any manipulation
     /// </summary>
     /// <remarks>In pixels.</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithRawOffsetPixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float offsetX, float offsetY) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithRawOffsetPixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float offsetX, float offsetY) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -290,7 +288,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position offset without any manipulation
     /// </summary>
     /// <remarks>In pixels.</remarks>
-    public static ref SleekElementBuilder<TSleekElement> AddRawPositionPixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector2 offset) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> AddRawPositionPixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector2 offset) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -303,7 +301,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position offset without any manipulation
     /// </summary>
     /// <remarks>In pixels.</remarks>
-    public static ref SleekElementBuilder<TSleekElement> AddRawPositionPixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float offsetX, float offsetY) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> AddRawPositionPixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float offsetX, float offsetY) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -316,7 +314,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's size without any manipulation
     /// </summary>
     /// <remarks>In pixels.</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithRawSizePixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector2 size) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithRawSizePixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector2 size) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -329,7 +327,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's size without any manipulation
     /// </summary>
     /// <remarks>In pixels.</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithRawSizePixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float sizeX, float sizeY) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithRawSizePixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float sizeX, float sizeY) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -342,7 +340,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position scale without any manipulation
     /// </summary>
     /// <remarks>Normalized value usually in [0, 1].</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithRawPositionScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector2 scale) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithRawPositionScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector2 scale) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -355,7 +353,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position scale without any manipulation
     /// </summary>
     /// <remarks>Normalized value usually in [0, 1].</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithRawPositionScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float scaleX, float scaleY) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithRawPositionScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float scaleX, float scaleY) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -368,7 +366,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position scale without any manipulation
     /// </summary>
     /// <remarks>Normalized value usually in [0, 1].</remarks>
-    public static ref SleekElementBuilder<TSleekElement> AddRawPositionScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector2 scale) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> AddRawPositionScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector2 scale) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -381,7 +379,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position scale without any manipulation
     /// </summary>
     /// <remarks>Normalized value usually in [0, 1].</remarks>
-    public static ref SleekElementBuilder<TSleekElement> AddRawPositionScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float scaleX, float scaleY) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> AddRawPositionScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float scaleX, float scaleY) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -394,7 +392,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position scale without any manipulation
     /// </summary>
     /// <remarks>Normalized value usually in [0, 1].</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithRawSizeScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector2 scale) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithRawSizeScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector2 scale) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -407,7 +405,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the raw values of the element's position scale without any manipulation
     /// </summary>
     /// <remarks>Normalized value usually in [0, 1].</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithRawSizeScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float scaleX, float scaleY) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithRawSizeScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float scaleX, float scaleY) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -422,7 +420,7 @@ public static class SleekElementBuilderExtensions
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <param name="offsetTowards">Where to offset towards (relative to parent's bounding box).</param>
     /// <exception cref="ArgumentOutOfRangeException">Anchor was not a valid value.</exception>
-    public static ref SleekElementBuilder<TSleekElement> WithPositionPixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector2 offset, SleekPositionOffsetAnchor offsetTowards = SleekPositionOffsetAnchor.Inwards) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithPositionPixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector2 offset, SleekPositionOffsetAnchor offsetTowards = SleekPositionOffsetAnchor.Inwards) where TSleekElement : class
         => ref builder.WithPositionPixels(offset.x, offset.y, offsetTowards);
 
     /// <summary>
@@ -431,7 +429,7 @@ public static class SleekElementBuilderExtensions
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <param name="offsetTowards">Where to offset towards (relative to parent's bounding box).</param>
     /// <exception cref="ArgumentOutOfRangeException">Anchor was not a valid value.</exception>
-    public static ref SleekElementBuilder<TSleekElement> WithPositionPixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float offsetX, float offsetY, SleekPositionOffsetAnchor offsetTowards = SleekPositionOffsetAnchor.Inwards) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithPositionPixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float offsetX, float offsetY, SleekPositionOffsetAnchor offsetTowards = SleekPositionOffsetAnchor.Inwards) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -444,42 +442,43 @@ public static class SleekElementBuilderExtensions
             or SleekPositionOffsetAnchor.TopOutwardsCenter or SleekPositionOffsetAnchor.LeftOutwardsCenter
             or SleekPositionOffsetAnchor.RightOutwardsCenter ? -1 : 1;
 
+        float x, y;
         if (!top && !bottom && !left && !right)
         {
             if (offsetTowards != SleekPositionOffsetAnchor.Inwards && outwardsScale != -1)
                 throw new ArgumentOutOfRangeException(nameof(offsetTowards));
 
-            int xNorm = element.PositionScale_X.RangeSign() * outwardsScale;
-            int yNorm = element.PositionScale_Y.RangeSign() * outwardsScale;
+            int xNorm = (element.PositionScale_X + element.SizeScale_X / 2f).RangeSign() * outwardsScale;
+            int yNorm = (element.PositionScale_Y + element.SizeScale_Y / 2f).RangeSign() * outwardsScale;
 
-            element.PositionOffset_X = xNorm * -offsetX;
-            element.PositionOffset_Y = yNorm * -offsetY;
+            x = xNorm * -offsetX;
+            y = yNorm * -offsetY;
         }
         else
         {
-            if (top)
-                element.PositionOffset_Y = offsetY;
-            else if (bottom)
-                element.PositionOffset_Y = -offsetY;
+            if (bottom)
+                y = offsetY;
+            else if (top)
+                y = -offsetY;
             else
             {
-                int yNorm = element.PositionScale_Y.RangeSign() * outwardsScale;
-                element.PositionOffset_Y = yNorm * offsetY;
+                int yNorm = (element.PositionScale_Y + element.SizeScale_Y / 2f).RangeSign() * outwardsScale;
+                y = yNorm * offsetY;
             }
 
-            if (left)
-                element.PositionOffset_X = offsetX;
-            else if (right)
-                element.PositionOffset_X = -offsetX;
+            if (right)
+                x = offsetX;
+            else if (left)
+                x = -offsetX;
             else
             {
-                int xNorm = element.PositionScale_X.RangeSign() * outwardsScale;
-                element.PositionOffset_X = xNorm * -offsetX;
+                int xNorm = (element.PositionScale_X + element.SizeScale_X / 2f).RangeSign() * outwardsScale;
+                x = xNorm * -offsetX;
             }
         }
 
-        element.PositionOffset_X -= element.SizeOffset_X / 2f;
-        element.PositionOffset_Y -= element.SizeOffset_Y / 2f;
+        element.PositionOffset_X = x - element.SizeOffset_X / 2f;
+        element.PositionOffset_Y = y - element.SizeOffset_Y / 2f;
 
         return ref builder;
     }
@@ -490,7 +489,7 @@ public static class SleekElementBuilderExtensions
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <param name="offsetTowards">Where to offset towards (relative to parent's bounding box).</param>
     /// <exception cref="ArgumentOutOfRangeException">Anchor was not a valid value.</exception>
-    public static ref SleekElementBuilder<TSleekElement> WithPositionScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector2 offset, SleekPositionOffsetAnchor offsetTowards = SleekPositionOffsetAnchor.Inwards) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithPositionScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector2 offset, SleekPositionOffsetAnchor offsetTowards = SleekPositionOffsetAnchor.Inwards) where TSleekElement : class
         => ref builder.WithPositionScale(offset.x, offset.y, offsetTowards);
 
     /// <summary>
@@ -499,7 +498,7 @@ public static class SleekElementBuilderExtensions
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <param name="offsetTowards">Where to offset towards (relative to parent's bounding box).</param>
     /// <exception cref="ArgumentOutOfRangeException">Anchor was not a valid value.</exception>
-    public static ref SleekElementBuilder<TSleekElement> WithPositionScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float offsetX, float offsetY, SleekPositionOffsetAnchor offsetTowards = SleekPositionOffsetAnchor.Inwards) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithPositionScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float offsetX, float offsetY, SleekPositionOffsetAnchor offsetTowards = SleekPositionOffsetAnchor.Inwards) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -512,44 +511,43 @@ public static class SleekElementBuilderExtensions
             or SleekPositionOffsetAnchor.TopOutwardsCenter or SleekPositionOffsetAnchor.LeftOutwardsCenter
             or SleekPositionOffsetAnchor.RightOutwardsCenter ? -1 : 1;
 
+        float x, y;
         if (!top && !bottom && !left && !right)
         {
             if (offsetTowards != SleekPositionOffsetAnchor.Inwards && outwardsScale != -1)
                 throw new ArgumentOutOfRangeException(nameof(offsetTowards));
 
-            int xSign = element.PositionScale_X.RangeSign();
-            int ySign = element.PositionScale_Y.RangeSign();
-            int xNorm = xSign * outwardsScale;
-            int yNorm = ySign * outwardsScale;
+            int xNorm = (element.PositionScale_X + element.SizeScale_X / 2f).RangeSign() * outwardsScale;
+            int yNorm = (element.PositionScale_Y + element.SizeScale_Y / 2f).RangeSign() * outwardsScale;
 
-            element.PositionScale_X += xNorm * -offsetX;
-            element.PositionScale_Y += yNorm * -offsetY;
+            x = xNorm * -offsetX + ((float)xNorm).ToGameScale();
+            y = yNorm * -offsetY + ((float)yNorm).ToGameScale();
         }
         else
         {
-            if (top)
-                element.PositionScale_Y += offsetY;
-            else if (bottom)
-                element.PositionScale_Y -= offsetY;
+            if (bottom)
+                y = offsetY;
+            else if (top)
+                y = -offsetY;
             else
             {
-                int yNorm = element.PositionScale_Y.RangeSign() * outwardsScale;
-                element.PositionScale_Y += yNorm * offsetY;
+                int yNorm = (element.PositionScale_Y + element.SizeScale_Y / 2f).RangeSign() * outwardsScale;
+                y = yNorm * -offsetY + ((float)yNorm).ToGameScale();
             }
 
-            if (left)
-                element.PositionScale_X += offsetX;
-            else if (right)
-                element.PositionScale_X -= offsetX;
+            if (right)
+                x = offsetX;
+            else if (left)
+                x = -offsetX;
             else
             {
-                int xNorm = element.PositionScale_X.RangeSign() * outwardsScale;
-                element.PositionScale_X += xNorm * -offsetX;
+                int xNorm = (element.PositionScale_X + element.SizeScale_X / 2f).RangeSign() * outwardsScale;
+                x = xNorm * -offsetX + ((float)xNorm).ToGameScale();
             }
         }
 
-        element.PositionScale_X -= element.SizeScale_X / 2f;
-        element.PositionScale_Y -= element.SizeScale_Y / 2f;
+        element.PositionScale_X = x - element.SizeScale_X / 2f;
+        element.PositionScale_Y = y - element.SizeScale_Y / 2f;
 
         return ref builder;
     }
@@ -558,14 +556,14 @@ public static class SleekElementBuilderExtensions
     /// Changes the absolute position of the element. This is a normalized value in [-1, 1] following the default XY plane layout.
     /// </summary>
     /// <remarks>Default value: (-1f, 1f) (top left).</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithNormalizedPosition<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector2 normalizedPosition) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithNormalizedPosition<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector2 normalizedPosition) where TSleekElement : class
         => ref builder.WithNormalizedPosition(normalizedPosition.x, normalizedPosition.y);
 
     /// <summary>
     /// Changes the absolute position of the element. This is a normalized value in [-1, 1] following the default XY plane layout.
     /// </summary>
     /// <remarks>Default value: (-1f, 1f) (top left).</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithNormalizedPosition<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float normalizedPositionX, float normalizedPositionY) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithNormalizedPosition<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float normalizedPositionX, float normalizedPositionY) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -580,7 +578,7 @@ public static class SleekElementBuilderExtensions
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <param name="anchor">Where to scale from (relative to the current scale anchor).</param>
     /// <exception cref="ArgumentOutOfRangeException">Anchor was not a valid value.</exception>
-    public static ref SleekElementBuilder<TSleekElement> WithSizePixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector3 size, SleekResizeAnchor anchor = SleekResizeAnchor.Auto) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithSizePixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector3 size, SleekResizeAnchor anchor = SleekResizeAnchor.Auto) where TSleekElement : class
         => ref builder.WithSizePixels(size.x, size.y, anchor);
 
     /// <summary>
@@ -589,17 +587,12 @@ public static class SleekElementBuilderExtensions
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <param name="anchor">Where to scale from (relative to the current scale anchor).</param>
     /// <exception cref="ArgumentOutOfRangeException">Anchor was not a valid value.</exception>
-    public static ref SleekElementBuilder<TSleekElement> WithSizePixels<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float sizeX, float sizeY, SleekResizeAnchor anchor = SleekResizeAnchor.Auto) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithSizePixels<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float sizeX, float sizeY, SleekResizeAnchor anchor = SleekResizeAnchor.Auto) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
         if (anchor == SleekResizeAnchor.Auto)
-        {
-            int signX = element.PositionScale_X.RangeSign();
-            int signY = element.PositionScale_Y.RangeSign();
-
-            anchor = (SleekResizeAnchor)(signX + 1 + (signY + 1) * 3);
-        }
+            anchor = GetResizeAnchorFromAuto(element);
 
         bool top = anchor is SleekResizeAnchor.TopCenter or SleekResizeAnchor.TopRight or SleekResizeAnchor.TopLeft,
              bottom = anchor is SleekResizeAnchor.BottomCenter or SleekResizeAnchor.BottomRight or SleekResizeAnchor.BottomLeft,
@@ -648,7 +641,7 @@ public static class SleekElementBuilderExtensions
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <param name="anchor">Where to scale from (relative to the current scale anchor).</param>
     /// <exception cref="ArgumentOutOfRangeException">Anchor was not a valid value.</exception>
-    public static ref SleekElementBuilder<TSleekElement> WithSizeScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Vector3 scale, SleekResizeAnchor anchor = SleekResizeAnchor.Auto) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithSizeScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Vector3 scale, SleekResizeAnchor anchor = SleekResizeAnchor.Auto) where TSleekElement : class
         => ref builder.WithSizeScale(scale.x, scale.y, anchor);
 
     /// <summary>
@@ -657,17 +650,12 @@ public static class SleekElementBuilderExtensions
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <param name="anchor">Where to scale from (relative to the current scale anchor).</param>
     /// <exception cref="ArgumentOutOfRangeException">Anchor was not a valid value.</exception>
-    public static ref SleekElementBuilder<TSleekElement> WithSizeScale<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, float scaleX, float scaleY, SleekResizeAnchor anchor = SleekResizeAnchor.Auto) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithSizeScale<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float scaleX, float scaleY, SleekResizeAnchor anchor = SleekResizeAnchor.Auto) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
         if (anchor == SleekResizeAnchor.Auto)
-        {
-            int signX = element.PositionScale_X.RangeSign();
-            int signY = element.PositionScale_Y.RangeSign();
-
-            anchor = (SleekResizeAnchor)(signX + 1 + (signY + 1) * 3);
-        }
+            anchor = GetResizeAnchorFromAuto(element);
 
         bool top = anchor is SleekResizeAnchor.TopCenter or SleekResizeAnchor.TopRight or SleekResizeAnchor.TopLeft,
              bottom = anchor is SleekResizeAnchor.BottomCenter or SleekResizeAnchor.BottomRight or SleekResizeAnchor.BottomLeft,
@@ -681,14 +669,13 @@ public static class SleekElementBuilderExtensions
 
             float cx = element.PositionScale_X + element.SizeScale_X / 2f;
             float cy = element.PositionScale_Y + element.SizeScale_Y / 2f;
-
             element.PositionScale_X = cx - scaleX / 2f;
             element.PositionScale_Y = cy - scaleY / 2f;
         }
         else
         {
             if (bottom)
-                element.PositionScale_Y -= element.SizeScale_Y;
+                element.PositionScale_Y -= scaleY - element.SizeScale_Y;
             else if (!top)
             {
                 float cy = element.PositionScale_Y + element.SizeScale_Y / 2f;
@@ -696,7 +683,7 @@ public static class SleekElementBuilderExtensions
             }
 
             if (right)
-                element.PositionScale_X -= element.SizeScale_X;
+                element.PositionScale_X -= scaleX - element.SizeScale_X;
             else if (!left)
             {
                 float cx = element.PositionScale_X + element.SizeScale_X / 2f;
@@ -709,6 +696,13 @@ public static class SleekElementBuilderExtensions
 
         return ref builder;
     }
+    private static SleekResizeAnchor GetResizeAnchorFromAuto(ISleekElement element)
+    {
+        int xNorm = (element.PositionScale_X + element.SizeScale_X / 2f).RangeSign();
+        int yNorm = (element.PositionScale_Y + element.SizeScale_Y / 2f).RangeSign();
+
+        return (SleekResizeAnchor)(xNorm + 1 + (yNorm + 1) * 3);
+    }
 
     /// <summary>
     /// Add a side label to the element.
@@ -716,7 +710,7 @@ public static class SleekElementBuilderExtensions
     /// <param name="text">Text to display on the label.</param>
     /// <param name="side">Which side of the element to put the label on.</param>
     /// <param name="configureLabelAction">Optional configuration method.</param>
-    public static ref SleekElementBuilder<TSleekElement> AddLabel<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, string text, ESleekSide side, Action<ISleekLabel>? configureLabelAction = null) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> AddLabel<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, string text, ESleekSide side, Action<ISleekLabel>? configureLabelAction = null) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -735,7 +729,7 @@ public static class SleekElementBuilderExtensions
     /// <param name="textColor">Color of the label's text.</param>
     /// <param name="side">Which side of the element to put the label on.</param>
     /// <param name="configureLabelAction">Optional configuration method.</param>
-    public static ref SleekElementBuilder<TSleekElement> AddLabel<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, string text, Color textColor, ESleekSide side, Action<ISleekLabel>? configureLabelAction = null) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> AddLabel<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, string text, Color textColor, ESleekSide side, Action<ISleekLabel>? configureLabelAction = null) where TSleekElement : class
     {
         ISleekElement element = (ISleekElement)builder.Element;
 
@@ -750,7 +744,7 @@ public static class SleekElementBuilderExtensions
     /// <summary>
     /// Further configure this element (without using the fluent API).
     /// </summary>
-    public static ref SleekElementBuilder<TSleekElement> Configure<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, Action<TSleekElement> configureAction) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> Configure<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, Action<TSleekElement> configureAction) where TSleekElement : class
     {
         configureAction?.Invoke(builder.Element);
         return ref builder;
@@ -760,23 +754,33 @@ public static class SleekElementBuilderExtensions
     /// Sets <see cref="ISleekElement.IsVisible"/> to <see langword="true"/>.
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (enabled).</remarks>
-    public static ref SleekElementBuilder<TSleekElement> Enable<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> Enable<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
         => ref builder.WithIsVisible(true);
 
     /// <summary>
     /// Sets <see cref="ISleekElement.IsVisible"/> to <see langword="false"/>.
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (enabled).</remarks>
-    public static ref SleekElementBuilder<TSleekElement> Hide<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> Hide<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder) where TSleekElement : class
         => ref builder.WithIsVisible(false);
 
     /// <summary>
     /// Sets <see cref="ISleekElement.IsVisible"/> to <paramref name="isVisible"/>.
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (enabled).</remarks>
-    public static ref SleekElementBuilder<TSleekElement> WithIsVisible<TSleekElement>(this ref SleekElementBuilder<TSleekElement> builder, bool isVisible) where TSleekElement : class
+    public static ref readonly SleekElementBuilder<TSleekElement> WithIsVisible<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, bool isVisible) where TSleekElement : class
     {
         builder.SleekElement.IsVisible = isVisible;
+        return ref builder;
+    }
+
+    /// <summary>
+    /// Sets <see cref="ISleekElement.ChildAutoLayoutPadding"/> to <paramref name="childAutoLayoutPadding"/>.
+    /// </summary>
+    /// <remarks>Default value: 0.</remarks>
+    public static ref readonly SleekElementBuilder<TSleekElement> WithChildAutoLayoutPadding<TSleekElement>(this in SleekElementBuilder<TSleekElement> builder, float childAutoLayoutPadding) where TSleekElement : class
+    {
+        builder.SleekElement.ChildAutoLayoutPadding = childAutoLayoutPadding;
         return ref builder;
     }
 
@@ -784,7 +788,7 @@ public static class SleekElementBuilderExtensions
     /// Sets the background color of an <see cref="ISleekBox"/>.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekBox> WithBackgroundColor(this ref SleekElementBuilder<ISleekBox> builder,
+    public static ref readonly SleekElementBuilder<ISleekBox> WithBackgroundColor(this in SleekElementBuilder<ISleekBox> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor backgroundColor)
     {
         builder.Element.BackgroundColor = backgroundColor;
@@ -797,7 +801,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.BACKGROUND"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> WithBackgroundColor(this ref SleekElementBuilder<ISleekButton> builder,
+    public static ref readonly SleekElementBuilder<ISleekButton> WithBackgroundColor(this in SleekElementBuilder<ISleekButton> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor backgroundColor)
     {
         builder.Element.BackgroundColor = backgroundColor;
@@ -810,7 +814,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> Interactable(this ref SleekElementBuilder<ISleekButton> builder)
+    public static ref readonly SleekElementBuilder<ISleekButton> Interactable(this in SleekElementBuilder<ISleekButton> builder)
         => ref builder.WithIsInteractable(true);
 
     /// <summary>
@@ -819,7 +823,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> NotInteractable(this ref SleekElementBuilder<ISleekButton> builder)
+    public static ref readonly SleekElementBuilder<ISleekButton> NotInteractable(this in SleekElementBuilder<ISleekButton> builder)
         => ref builder.WithIsInteractable(false);
 
     /// <summary>
@@ -828,7 +832,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> WithIsInteractable(this ref SleekElementBuilder<ISleekButton> builder, bool isClickable)
+    public static ref readonly SleekElementBuilder<ISleekButton> WithIsInteractable(this in SleekElementBuilder<ISleekButton> builder, bool isClickable)
     {
         if (builder.Element.IsClickable != isClickable)
             builder.Element.IsClickable = isClickable;
@@ -841,7 +845,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (raycast target).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> RaycastTarget(this ref SleekElementBuilder<ISleekButton> builder)
+    public static ref readonly SleekElementBuilder<ISleekButton> RaycastTarget(this in SleekElementBuilder<ISleekButton> builder)
         => ref builder.WithIsRaycastTarget(true);
 
     /// <summary>
@@ -849,7 +853,7 @@ public static class SleekElementBuilderExtensions
     /// <para>Should the button view consume clicks?</para>
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (raycast target).</remarks>v
-    public static ref SleekElementBuilder<ISleekButton> RaycastIgnored(this ref SleekElementBuilder<ISleekButton> builder)
+    public static ref readonly SleekElementBuilder<ISleekButton> RaycastIgnored(this in SleekElementBuilder<ISleekButton> builder)
         => ref builder.WithIsRaycastTarget(false);
 
     /// <summary>
@@ -858,7 +862,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (raycast target).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> WithIsRaycastTarget(this ref SleekElementBuilder<ISleekButton> builder, bool isRaycastTarget)
+    public static ref readonly SleekElementBuilder<ISleekButton> WithIsRaycastTarget(this in SleekElementBuilder<ISleekButton> builder, bool isRaycastTarget)
     {
         if (builder.Element.IsRaycastTarget != isRaycastTarget)
             builder.Element.IsRaycastTarget = isRaycastTarget;
@@ -869,7 +873,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when an <see cref="ISleekButton"/> is left clicked.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> WhenLeftClicked(this ref SleekElementBuilder<ISleekButton> builder, ClickedButton callback)
+    public static ref readonly SleekElementBuilder<ISleekButton> WhenLeftClicked(this in SleekElementBuilder<ISleekButton> builder, ClickedButton callback)
     {
         builder.Element.OnClicked += callback;
         return ref builder;
@@ -879,7 +883,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when an <see cref="ISleekButton"/> is right clicked.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> WhenRightClicked(this ref SleekElementBuilder<ISleekButton> builder, ClickedButton callback)
+    public static ref readonly SleekElementBuilder<ISleekButton> WhenRightClicked(this in SleekElementBuilder<ISleekButton> builder, ClickedButton callback)
     {
         builder.Element.OnRightClicked += callback;
         return ref builder;
@@ -889,7 +893,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when an <see cref="ISleekButton"/> is left or right clicked.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> WhenAnyClicked(this ref SleekElementBuilder<ISleekButton> builder, ClickedButton callback)
+    public static ref readonly SleekElementBuilder<ISleekButton> WhenAnyClicked(this in SleekElementBuilder<ISleekButton> builder, ClickedButton callback)
     {
         builder.Element.OnClicked += callback;
         builder.Element.OnRightClicked += callback;
@@ -903,7 +907,7 @@ public static class SleekElementBuilderExtensions
     /// <remarks>Default value: <see cref="ESleekConstraint.NONE"/>.</remarks>
     /// <exception cref="InvalidOperationException">Constraint was set more than once.</exception>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekConstraintFrame> WithConstraintMode(this ref SleekElementBuilder<ISleekConstraintFrame> builder, ESleekConstraint constraint)
+    public static ref readonly SleekElementBuilder<ISleekConstraintFrame> WithConstraintMode(this in SleekElementBuilder<ISleekConstraintFrame> builder, ESleekConstraint constraint)
     {
         if (builder.Element.Constraint == constraint)
             return ref builder;
@@ -922,7 +926,7 @@ public static class SleekElementBuilderExtensions
     /// <param name="aspectRatio">Aspect ratio to scale the content to. Calculated by dividing the width by the height.</param>
     /// <remarks>Default value: 1.0f.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekConstraintFrame> WithAspectRatio(this ref SleekElementBuilder<ISleekConstraintFrame> builder, float aspectRatio)
+    public static ref readonly SleekElementBuilder<ISleekConstraintFrame> WithAspectRatio(this in SleekElementBuilder<ISleekConstraintFrame> builder, float aspectRatio)
     {
         if (builder.Element.AspectRatio != aspectRatio)
             builder.Element.AspectRatio = aspectRatio;
@@ -935,7 +939,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.BACKGROUND"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> WithBackgroundColor(this ref SleekElementBuilder<ISleekField> builder,
+    public static ref readonly SleekElementBuilder<ISleekField> WithBackgroundColor(this in SleekElementBuilder<ISleekField> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor backgroundColor)
     {
         builder.Element.BackgroundColor = backgroundColor;
@@ -947,7 +951,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (not password field).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> PasswordField(this ref SleekElementBuilder<ISleekField> builder)
+    public static ref readonly SleekElementBuilder<ISleekField> PasswordField(this in SleekElementBuilder<ISleekField> builder)
         => ref builder.WithIsPasswordField(true);
 
     /// <summary>
@@ -955,7 +959,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (not password field).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> NotPasswordField(this ref SleekElementBuilder<ISleekField> builder)
+    public static ref readonly SleekElementBuilder<ISleekField> NotPasswordField(this in SleekElementBuilder<ISleekField> builder)
         => ref builder.WithIsPasswordField(false);
 
     /// <summary>
@@ -963,7 +967,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (not password field).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> WithIsPasswordField(this ref SleekElementBuilder<ISleekField> builder, bool isPasswordField)
+    public static ref readonly SleekElementBuilder<ISleekField> WithIsPasswordField(this in SleekElementBuilder<ISleekField> builder, bool isPasswordField)
     {
         if (builder.Element.IsPasswordField != isPasswordField)
             builder.Element.IsPasswordField = isPasswordField;
@@ -976,7 +980,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (singleline).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> Multiline(this ref SleekElementBuilder<ISleekField> builder)
+    public static ref readonly SleekElementBuilder<ISleekField> Multiline(this in SleekElementBuilder<ISleekField> builder)
         => ref builder.WithIsMultiline(true);
 
     /// <summary>
@@ -984,7 +988,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (singleline).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> Singleline(this ref SleekElementBuilder<ISleekField> builder)
+    public static ref readonly SleekElementBuilder<ISleekField> Singleline(this in SleekElementBuilder<ISleekField> builder)
         => ref builder.WithIsMultiline(false);
 
     /// <summary>
@@ -992,7 +996,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/>. (singleline)</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> WithIsMultiline(this ref SleekElementBuilder<ISleekField> builder, bool isMultiline)
+    public static ref readonly SleekElementBuilder<ISleekField> WithIsMultiline(this in SleekElementBuilder<ISleekField> builder, bool isMultiline)
     {
         if (builder.Element.IsMultiline != isMultiline)
             builder.Element.IsMultiline = isMultiline;
@@ -1005,7 +1009,7 @@ public static class SleekElementBuilderExtensions
     /// <param name="maxLength">Maximum amount of characters in this field.</param>
     /// <remarks>Default value: 100.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> WithMaxLength(this ref SleekElementBuilder<ISleekField> builder, int maxLength)
+    public static ref readonly SleekElementBuilder<ISleekField> WithMaxLength(this in SleekElementBuilder<ISleekField> builder, int maxLength)
     {
         if (builder.Element.MaxLength != maxLength)
             builder.Element.MaxLength = maxLength;
@@ -1017,7 +1021,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="null"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> WithPlaceholder(this ref SleekElementBuilder<ISleekField> builder, string placeholderText)
+    public static ref readonly SleekElementBuilder<ISleekField> WithPlaceholder(this in SleekElementBuilder<ISleekField> builder, string placeholderText)
     {
         if (!ReferenceEquals(builder.Element.PlaceholderText, placeholderText))
             builder.Element.PlaceholderText = placeholderText;
@@ -1028,7 +1032,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when text is submitted in an <see cref="ISleekField"/>.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> WhenTextSubmitted(this ref SleekElementBuilder<ISleekField> builder, Entered callback)
+    public static ref readonly SleekElementBuilder<ISleekField> WhenTextSubmitted(this in SleekElementBuilder<ISleekField> builder, Entered callback)
     {
         builder.Element.OnTextSubmitted += callback;
         return ref builder;
@@ -1038,7 +1042,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when the text in an <see cref="ISleekField"/> is modified.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> WhenTextTyped(this ref SleekElementBuilder<ISleekField> builder, Typed callback)
+    public static ref readonly SleekElementBuilder<ISleekField> WhenTextTyped(this in SleekElementBuilder<ISleekField> builder, Typed callback)
     {
         builder.Element.OnTextChanged += callback;
         return ref builder;
@@ -1048,7 +1052,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when the focus is lost for an <see cref="ISleekField"/>.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> WhenFocusLeft(this ref SleekElementBuilder<ISleekField> builder, Escaped callback)
+    public static ref readonly SleekElementBuilder<ISleekField> WhenFocusLeft(this in SleekElementBuilder<ISleekField> builder, Escaped callback)
     {
         builder.Element.OnTextEscaped += callback;
         return ref builder;
@@ -1059,7 +1063,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when a value is submitted in an <see cref="ISleekFloat32Field"/>.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekFloat32Field> WhenValueSubmitted(this ref SleekElementBuilder<ISleekFloat32Field> builder, TypedSingle callback)
+    public static ref readonly SleekElementBuilder<ISleekFloat32Field> WhenValueSubmitted(this in SleekElementBuilder<ISleekFloat32Field> builder, TypedSingle callback)
     {
         builder.Element.OnValueSubmitted += callback;
         return ref builder;
@@ -1069,7 +1073,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when the value in an <see cref="ISleekFloat32Field"/> is modified.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekFloat32Field> WhenValueTyped(this ref SleekElementBuilder<ISleekFloat32Field> builder, TypedSingle callback)
+    public static ref readonly SleekElementBuilder<ISleekFloat32Field> WhenValueTyped(this in SleekElementBuilder<ISleekFloat32Field> builder, TypedSingle callback)
     {
         builder.Element.OnValueChanged += callback;
         return ref builder;
@@ -1080,7 +1084,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.0f.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekFloat32Field> WithInitialValue(this ref SleekElementBuilder<ISleekFloat32Field> builder, float value)
+    public static ref readonly SleekElementBuilder<ISleekFloat32Field> WithInitialValue(this in SleekElementBuilder<ISleekFloat32Field> builder, float value)
     {
         if (builder.Element.Value != value)
             builder.Element.Value = value;
@@ -1092,7 +1096,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when the value in an <see cref="ISleekFloat64Field"/> is modified.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekFloat64Field> WhenValueTyped(this ref SleekElementBuilder<ISleekFloat64Field> builder, TypedDouble callback)
+    public static ref readonly SleekElementBuilder<ISleekFloat64Field> WhenValueTyped(this in SleekElementBuilder<ISleekFloat64Field> builder, TypedDouble callback)
     {
         builder.Element.OnValueChanged += callback;
         return ref builder;
@@ -1103,7 +1107,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.0d.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekFloat64Field> WithInitialValue(this ref SleekElementBuilder<ISleekFloat64Field> builder, double value)
+    public static ref readonly SleekElementBuilder<ISleekFloat64Field> WithInitialValue(this in SleekElementBuilder<ISleekFloat64Field> builder, double value)
     {
         if (builder.Element.Value != value)
             builder.Element.Value = value;
@@ -1116,9 +1120,9 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <param name="shouldDestroyTexture">Should <see cref="UnityEngine.Object.Destroy(UnityEngine.Object)" /> be called on the texture when the element is destroyed.</param>
     /// <remarks>Default value: <see langword="null"/>.</remarks>
-    /// <seealso cref="WithTexture(ref SleekElementBuilder{ISleekImage},Bundle,string,bool)"/>
+    /// <seealso cref="WithTexture(in SleekElementBuilder{ISleekImage},Bundle,string,bool)"/>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WithTexture(this ref SleekElementBuilder<ISleekImage> builder, Texture? texture, bool shouldDestroyTexture)
+    public static ref readonly SleekElementBuilder<ISleekImage> WithTexture(this in SleekElementBuilder<ISleekImage> builder, Texture? texture, bool shouldDestroyTexture)
     {
         if (texture is Texture2D t2d)
             builder.Element.SetTextureAndShouldDestroy(t2d, shouldDestroyTexture);
@@ -1136,9 +1140,9 @@ public static class SleekElementBuilderExtensions
     /// <param name="shouldDestroyTexture">Should <see cref="UnityEngine.Object.Destroy(UnityEngine.Object)" /> be called on the texture when the element is destroyed.</param>
     /// <exception cref="ArgumentException">Unable to find a <see cref="Texture2D"/> at <paramref name="path"/> in <paramref name="bundle"/>.</exception>
     /// <remarks>Default value: <see langword="null"/>.</remarks>
-    /// <seealso cref="WithTexture(ref SleekElementBuilder{ISleekImage},Texture,bool)"/>
+    /// <seealso cref="WithTexture(in SleekElementBuilder{ISleekImage},Texture,bool)"/>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WithTexture(this ref SleekElementBuilder<ISleekImage> builder, Bundle bundle, string path, bool shouldDestroyTexture)
+    public static ref readonly SleekElementBuilder<ISleekImage> WithTexture(this in SleekElementBuilder<ISleekImage> builder, Bundle bundle, string path, bool shouldDestroyTexture)
     {
         Texture2D? texture = bundle.load<Texture2D>(path);
         if (texture == null)
@@ -1152,9 +1156,9 @@ public static class SleekElementBuilderExtensions
     /// Sets the texture of an <see cref="ISleekImage"/>.
     /// </summary>
     /// <remarks>Default value: <see langword="null"/>.</remarks>
-    /// <seealso cref="WithTexture(ref SleekElementBuilder{ISleekImage},Bundle,string)"/>
+    /// <seealso cref="WithTexture(in SleekElementBuilder{ISleekImage},Bundle,string)"/>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WithTexture(this ref SleekElementBuilder<ISleekImage> builder, Texture? texture)
+    public static ref readonly SleekElementBuilder<ISleekImage> WithTexture(this in SleekElementBuilder<ISleekImage> builder, Texture? texture)
     {
         if (texture is Texture2D t2d)
             builder.Element.UpdateTexture(t2d);
@@ -1168,9 +1172,9 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <exception cref="ArgumentException">Unable to find a <see cref="Texture2D"/> at <paramref name="path"/> in <paramref name="bundle"/>.</exception>
     /// <remarks>Default value: <see langword="null"/>.</remarks>
-    /// <seealso cref="WithTexture(ref SleekElementBuilder{ISleekImage},Texture)"/>
+    /// <seealso cref="WithTexture(in SleekElementBuilder{ISleekImage},Texture)"/>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WithTexture(this ref SleekElementBuilder<ISleekImage> builder, Bundle bundle, string path)
+    public static ref readonly SleekElementBuilder<ISleekImage> WithTexture(this in SleekElementBuilder<ISleekImage> builder, Bundle bundle, string path)
     {
         Texture2D? texture = bundle.load<Texture2D>(path);
         if (texture == null)
@@ -1186,7 +1190,7 @@ public static class SleekElementBuilderExtensions
     /// <param name="angleDeg">Angle to render the image at in degrees.</param>
     /// <remarks>Default value: 0.0f (can't rotate).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WithRotationAngle(this ref SleekElementBuilder<ISleekImage> builder, float angleDeg)
+    public static ref readonly SleekElementBuilder<ISleekImage> WithRotationAngle(this in SleekElementBuilder<ISleekImage> builder, float angleDeg)
     {
         if (builder.Element.CanRotate && builder.Element.RotationAngle == angleDeg)
             return ref builder;
@@ -1201,7 +1205,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.0f (can't rotate).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WithNoRotation(this ref SleekElementBuilder<ISleekImage> builder)
+    public static ref readonly SleekElementBuilder<ISleekImage> WithNoRotation(this in SleekElementBuilder<ISleekImage> builder)
     {
         if (builder.Element is { CanRotate: false, RotationAngle: 0f })
             return ref builder;
@@ -1216,7 +1220,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.NONE"/> (<see cref="Color.white"/>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WithTintColor(this ref SleekElementBuilder<ISleekImage> builder,
+    public static ref readonly SleekElementBuilder<ISleekImage> WithTintColor(this in SleekElementBuilder<ISleekImage> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor tintColor)
     {
         builder.Element.TintColor = tintColor;
@@ -1228,7 +1232,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (keep texture alive).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> DestroyTexture(this ref SleekElementBuilder<ISleekImage> builder)
+    public static ref readonly SleekElementBuilder<ISleekImage> DestroyTexture(this in SleekElementBuilder<ISleekImage> builder)
         => ref builder.WithShouldDestroyTexture(true);
 
     /// <summary>
@@ -1236,7 +1240,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (keep texture alive).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> KeepTextureAlive(this ref SleekElementBuilder<ISleekImage> builder)
+    public static ref readonly SleekElementBuilder<ISleekImage> KeepTextureAlive(this in SleekElementBuilder<ISleekImage> builder)
         => ref builder.WithShouldDestroyTexture(false);
 
     /// <summary>
@@ -1244,7 +1248,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (keep texture alive).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WithShouldDestroyTexture(this ref SleekElementBuilder<ISleekImage> builder, bool shouldDestroyTexture)
+    public static ref readonly SleekElementBuilder<ISleekImage> WithShouldDestroyTexture(this in SleekElementBuilder<ISleekImage> builder, bool shouldDestroyTexture)
     {
         if (builder.Element.ShouldDestroyTexture != shouldDestroyTexture)
             builder.Element.ShouldDestroyTexture = shouldDestroyTexture;
@@ -1255,7 +1259,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when an <see cref="ISleekImage"/> is left clicked.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WhenLeftClicked(this ref SleekElementBuilder<ISleekImage> builder, Action callback)
+    public static ref readonly SleekElementBuilder<ISleekImage> WhenLeftClicked(this in SleekElementBuilder<ISleekImage> builder, Action callback)
     {
         builder.Element.OnClicked += callback;
         return ref builder;
@@ -1265,7 +1269,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when an <see cref="ISleekImage"/> is right clicked.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WhenRightClicked(this ref SleekElementBuilder<ISleekImage> builder, Action callback)
+    public static ref readonly SleekElementBuilder<ISleekImage> WhenRightClicked(this in SleekElementBuilder<ISleekImage> builder, Action callback)
     {
         builder.Element.OnRightClicked += callback;
         return ref builder;
@@ -1275,7 +1279,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when an <see cref="ISleekImage"/> is left or right clicked.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekImage> WhenAnyClicked(this ref SleekElementBuilder<ISleekImage> builder, Action callback)
+    public static ref readonly SleekElementBuilder<ISleekImage> WhenAnyClicked(this in SleekElementBuilder<ISleekImage> builder, Action callback)
     {
         builder.Element.OnClicked += callback;
         builder.Element.OnRightClicked += callback;
@@ -1287,7 +1291,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when the value in an <see cref="ISleekInt32Field"/> is modified.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekInt32Field> WhenValueTyped(this ref SleekElementBuilder<ISleekInt32Field> builder, TypedInt32 callback)
+    public static ref readonly SleekElementBuilder<ISleekInt32Field> WhenValueTyped(this in SleekElementBuilder<ISleekInt32Field> builder, TypedInt32 callback)
     {
         builder.Element.OnValueChanged += callback;
         return ref builder;
@@ -1298,7 +1302,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekInt32Field> WithInitialValue(this ref SleekElementBuilder<ISleekInt32Field> builder, int value)
+    public static ref readonly SleekElementBuilder<ISleekInt32Field> WithInitialValue(this in SleekElementBuilder<ISleekInt32Field> builder, int value)
     {
         if (builder.Element.Value != value)
             builder.Element.Value = value;
@@ -1311,7 +1315,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="null"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> WithText<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder, string text) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> WithText<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder, string text) where TSleekLabel : class, ISleekLabel
     {
         if (!ReferenceEquals(builder.Element.Text, text))
             builder.Element.Text = text;
@@ -1323,7 +1327,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="FontStyle.Normal"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> WithFontStyle<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder, FontStyle fontStyle) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> WithFontStyle<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder, FontStyle fontStyle) where TSleekLabel : class, ISleekLabel
     {
         if (builder.Element.FontStyle != fontStyle)
             builder.Element.FontStyle = fontStyle;
@@ -1335,7 +1339,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="FontStyle.Normal"/>. If the font style is already <see cref="FontStyle.Italic"/> it will be set to <see cref="FontStyle.BoldAndItalic"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> Bold<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> Bold<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder) where TSleekLabel : class, ISleekLabel
     {
         FontStyle fontStyle = builder.Element.FontStyle == FontStyle.Italic ? FontStyle.BoldAndItalic : FontStyle.Bold;
 
@@ -1349,7 +1353,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="FontStyle.Normal"/>. If the font style is already <see cref="FontStyle.Bold"/> it will be set to <see cref="FontStyle.BoldAndItalic"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> Italic<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> Italic<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder) where TSleekLabel : class, ISleekLabel
     {
         FontStyle fontStyle = builder.Element.FontStyle == FontStyle.Bold ? FontStyle.BoldAndItalic : FontStyle.Italic;
 
@@ -1363,7 +1367,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="FontStyle.Normal"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> BoldAndItalic<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> BoldAndItalic<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder) where TSleekLabel : class, ISleekLabel
     {
         if (builder.Element.FontStyle != FontStyle.BoldAndItalic)
             builder.Element.FontStyle = FontStyle.BoldAndItalic;
@@ -1375,7 +1379,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="TextAnchor.MiddleCenter"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> WithTextAnchor<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder, TextAnchor textAnchor) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> WithTextAnchor<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder, TextAnchor textAnchor) where TSleekLabel : class, ISleekLabel
     {
         if (builder.Element.TextAlignment != textAnchor)
             builder.Element.TextAlignment = textAnchor;
@@ -1387,7 +1391,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default values: <see cref="TextAlignment.Center"/>, <see cref="VerticalTextAlignment.Center"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> WithTextAnchor<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder, TextAlignment horizontalAlignment, VerticalTextAlignment verticalAlignment) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> WithTextAnchor<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder, TextAlignment horizontalAlignment, VerticalTextAlignment verticalAlignment) where TSleekLabel : class, ISleekLabel
     {
         TextAnchor textAnchor = (TextAnchor)((int)horizontalAlignment + (int)verticalAlignment * 3);
         if (builder.Element.TextAlignment != textAnchor)
@@ -1400,7 +1404,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="TextAlignment.Center"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> WithHorizontalTextAlignment<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder, TextAlignment textAlignment) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> WithHorizontalTextAlignment<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder, TextAlignment textAlignment) where TSleekLabel : class, ISleekLabel
     {
         TextAnchor textAnchor = (TextAnchor)((int)builder.Element.TextAlignment / 3 + (int)textAlignment);
         if (builder.Element.TextAlignment != textAnchor)
@@ -1413,7 +1417,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="VerticalTextAlignment.Center"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> WithVerticalTextAlignment<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder, VerticalTextAlignment textAlignment) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> WithVerticalTextAlignment<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder, VerticalTextAlignment textAlignment) where TSleekLabel : class, ISleekLabel
     {
         TextAnchor textAnchor = (TextAnchor)((int)builder.Element.TextAlignment % 3 + (int)textAlignment * 3);
         if (builder.Element.TextAlignment != textAnchor)
@@ -1426,7 +1430,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekFontSize.Default"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> WithFontSize<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder, ESleekFontSize fontSize) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> WithFontSize<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder, ESleekFontSize fontSize) where TSleekLabel : class, ISleekLabel
     {
         if (builder.Element.FontSize != fontSize)
             builder.Element.FontSize = fontSize;
@@ -1438,7 +1442,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ETextContrastContext.Default"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekLabel> WithContrastContext<TSleekLabel>(this ref SleekElementBuilder<TSleekLabel> builder, ETextContrastContext contrastContext) where TSleekLabel : class, ISleekLabel
+    public static ref readonly SleekElementBuilder<TSleekLabel> WithContrastContext<TSleekLabel>(this in SleekElementBuilder<TSleekLabel> builder, ETextContrastContext contrastContext) where TSleekLabel : class, ISleekLabel
     {
         if (builder.Element.TextContrastContext != contrastContext)
             builder.Element.TextContrastContext = contrastContext;
@@ -1450,7 +1454,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.FONT"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekLabel> WithTextColor(this ref SleekElementBuilder<ISleekLabel> builder,
+    public static ref readonly SleekElementBuilder<ISleekLabel> WithTextColor(this in SleekElementBuilder<ISleekLabel> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor textColor)
     {
         builder.Element.TextColor = textColor;
@@ -1462,7 +1466,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.FONT"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekButton> WithTextColor(this ref SleekElementBuilder<ISleekButton> builder,
+    public static ref readonly SleekElementBuilder<ISleekButton> WithTextColor(this in SleekElementBuilder<ISleekButton> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor textColor)
     {
         builder.Element.TextColor = textColor;
@@ -1474,7 +1478,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.FONT"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekBox> WithTextColor(this ref SleekElementBuilder<ISleekBox> builder,
+    public static ref readonly SleekElementBuilder<ISleekBox> WithTextColor(this in SleekElementBuilder<ISleekBox> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor textColor)
     {
         builder.Element.TextColor = textColor;
@@ -1486,7 +1490,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.FONT"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekField> WithTextColor(this ref SleekElementBuilder<ISleekField> builder,
+    public static ref readonly SleekElementBuilder<ISleekField> WithTextColor(this in SleekElementBuilder<ISleekField> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor textColor)
     {
         builder.Element.TextColor = textColor;
@@ -1499,7 +1503,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.FONT"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekNumericField> WithTextColor<TSleekNumericField>(this ref SleekElementBuilder<TSleekNumericField> builder,
+    public static ref readonly SleekElementBuilder<TSleekNumericField> WithTextColor<TSleekNumericField>(this in SleekElementBuilder<TSleekNumericField> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor textColor) where TSleekNumericField : class, ISleekNumericField
     {
         builder.Element.TextColor = textColor;
@@ -1511,7 +1515,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.BACKGROUND"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekNumericField> WithBackgroundColor<TSleekNumericField>(this ref SleekElementBuilder<TSleekNumericField> builder,
+    public static ref readonly SleekElementBuilder<TSleekNumericField> WithBackgroundColor<TSleekNumericField>(this in SleekElementBuilder<TSleekNumericField> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor backgroundColor) where TSleekNumericField : class, ISleekNumericField
     {
         builder.Element.BackgroundColor = backgroundColor;
@@ -1525,7 +1529,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (don't scale content).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> ScaleContentToWidth(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> ScaleContentToWidth(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldScaleContentToWidth(true);
 
     /// <summary>
@@ -1534,7 +1538,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (don't scale content).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> DoNotScaleContentToWidth(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> DoNotScaleContentToWidth(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldScaleContentToWidth(false);
 
     /// <summary>
@@ -1543,7 +1547,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (don't scale content).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithShouldScaleContentToWidth(this ref SleekElementBuilder<ISleekScrollView> builder, bool shouldScaleContentToWidth)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithShouldScaleContentToWidth(this in SleekElementBuilder<ISleekScrollView> builder, bool shouldScaleContentToWidth)
     {
         if (builder.Element.ScaleContentToWidth != shouldScaleContentToWidth)
             builder.Element.ScaleContentToWidth = shouldScaleContentToWidth;
@@ -1556,7 +1560,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (don't scale content).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> ScaleContentToHeight(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> ScaleContentToHeight(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldScaleContentToHeight(true);
 
     /// <summary>
@@ -1565,7 +1569,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (don't scale content).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> DoNotScaleContentToHeight(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> DoNotScaleContentToHeight(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldScaleContentToHeight(false);
 
     /// <summary>
@@ -1574,7 +1578,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (don't scale content).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithShouldScaleContentToHeight(this ref SleekElementBuilder<ISleekScrollView> builder, bool verticalScrollbarVisibility)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithShouldScaleContentToHeight(this in SleekElementBuilder<ISleekScrollView> builder, bool verticalScrollbarVisibility)
     {
         if (builder.Element.ScaleContentToHeight != verticalScrollbarVisibility)
             builder.Element.ScaleContentToHeight = verticalScrollbarVisibility;
@@ -1587,7 +1591,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.0f.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithInitialScaleFactor(this ref SleekElementBuilder<ISleekScrollView> builder, float scaleFactor)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithInitialScaleFactor(this in SleekElementBuilder<ISleekScrollView> builder, float scaleFactor)
     {
         if (builder.Element.ContentScaleFactor != scaleFactor)
             builder.Element.ContentScaleFactor = scaleFactor;
@@ -1600,7 +1604,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (reduce width).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> ReduceWidthWhenScrollbarVisible(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> ReduceWidthWhenScrollbarVisible(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldScaleContentToHeight(true);
 
     /// <summary>
@@ -1609,7 +1613,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (reduce width).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> KeepWidthWhenScrollbarVisible(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> KeepWidthWhenScrollbarVisible(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldScaleContentToHeight(false);
 
     /// <summary>
@@ -1618,7 +1622,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (reduce width).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithScrollbarVisibleWidthBehavior(this ref SleekElementBuilder<ISleekScrollView> builder, bool reduceWidthWhenScrollbarVisible)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithScrollbarVisibleWidthBehavior(this in SleekElementBuilder<ISleekScrollView> builder, bool reduceWidthWhenScrollbarVisible)
     {
         if (builder.Element.ReduceWidthWhenScrollbarVisible != reduceWidthWhenScrollbarVisible)
             builder.Element.ReduceWidthWhenScrollbarVisible = reduceWidthWhenScrollbarVisible;
@@ -1630,7 +1634,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekScrollbarVisibility.Default"/> (vertical scrollbar visible).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithVerticalScrollbar(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithVerticalScrollbar(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithVerticalScrollbarVisibility(ESleekScrollbarVisibility.Default);
 
     /// <summary>
@@ -1638,7 +1642,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekScrollbarVisibility.Default"/> (vertical scrollbar visible).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithoutVerticalScrollbar(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithoutVerticalScrollbar(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithVerticalScrollbarVisibility(ESleekScrollbarVisibility.Hidden);
 
     /// <summary>
@@ -1646,7 +1650,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekScrollbarVisibility.Default"/> (vertical scrollbar visible).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithVerticalScrollbarVisibility(this ref SleekElementBuilder<ISleekScrollView> builder, ESleekScrollbarVisibility verticalScrollbarVisibility)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithVerticalScrollbarVisibility(this in SleekElementBuilder<ISleekScrollView> builder, ESleekScrollbarVisibility verticalScrollbarVisibility)
     {
         builder.Element.VerticalScrollbarVisibility = verticalScrollbarVisibility;
         return ref builder;
@@ -1658,7 +1662,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithContentSizeOffset(this ref SleekElementBuilder<ISleekScrollView> builder, float contentSizeOffsetX, float contentSizeOffsetY)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithContentSizeOffset(this in SleekElementBuilder<ISleekScrollView> builder, float contentSizeOffsetX, float contentSizeOffsetY)
         => ref builder.WithContentSizeOffset(new Vector2(contentSizeOffsetX, contentSizeOffsetY));
 
     /// <summary>
@@ -1667,7 +1671,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithContentSizeOffset(this ref SleekElementBuilder<ISleekScrollView> builder, Vector2 contentSizeOffset)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithContentSizeOffset(this in SleekElementBuilder<ISleekScrollView> builder, Vector2 contentSizeOffset)
     {
         if (builder.Element.ContentSizeOffset != contentSizeOffset)
             builder.Element.ContentSizeOffset = contentSizeOffset;
@@ -1680,7 +1684,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithInitialScrollOffset(this ref SleekElementBuilder<ISleekScrollView> builder, float contentSizeOffsetX, float contentSizeOffsetY)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithInitialScrollOffset(this in SleekElementBuilder<ISleekScrollView> builder, float contentSizeOffsetX, float contentSizeOffsetY)
         => ref builder.WithContentSizeOffset(new Vector2(contentSizeOffsetX, contentSizeOffsetY));
 
     /// <summary>
@@ -1689,7 +1693,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: (0.0f, 0.0f).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithInitialScrollOffset(this ref SleekElementBuilder<ISleekScrollView> builder, Vector2 contentSizeOffset)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithInitialScrollOffset(this in SleekElementBuilder<ISleekScrollView> builder, Vector2 contentSizeOffset)
     {
         builder.Element.NormalizedStateCenter = contentSizeOffset;
         return ref builder;
@@ -1700,7 +1704,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (handle scrolling).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> HandleScrolling(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> HandleScrolling(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.ShouldHandleScrolling(true);
 
     /// <summary>
@@ -1708,7 +1712,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (handle scrolling).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> DoNotHandleScrolling(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> DoNotHandleScrolling(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.ShouldHandleScrolling(false);
 
     /// <summary>
@@ -1716,7 +1720,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (handle scrolling).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> ShouldHandleScrolling(this ref SleekElementBuilder<ISleekScrollView> builder, bool handleScrolling)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> ShouldHandleScrolling(this in SleekElementBuilder<ISleekScrollView> builder, bool handleScrolling)
     {
         builder.Element.HandleScrollWheel = handleScrolling;
         return ref builder;
@@ -1727,7 +1731,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.BACKGROUND"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithBackgroundColor(this ref SleekElementBuilder<ISleekScrollView> builder,
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithBackgroundColor(this in SleekElementBuilder<ISleekScrollView> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor backgroundColor)
     {
         builder.Element.BackgroundColor = backgroundColor;
@@ -1739,7 +1743,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.FOREGROUND"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithForegroundColor(this ref SleekElementBuilder<ISleekScrollView> builder,
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithForegroundColor(this in SleekElementBuilder<ISleekScrollView> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor foregroundColor)
     {
         builder.Element.ForegroundColor = foregroundColor;
@@ -1751,7 +1755,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (manual layout).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithManualLayout(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithManualLayout(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldUseManualLayout(true);
 
     /// <summary>
@@ -1759,7 +1763,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (manual layout).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithAutomaticLayout(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithAutomaticLayout(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldUseManualLayout(false);
 
     /// <summary>
@@ -1767,7 +1771,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (manual layout).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithShouldUseManualLayout(this ref SleekElementBuilder<ISleekScrollView> builder, bool useManualLayout)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithShouldUseManualLayout(this in SleekElementBuilder<ISleekScrollView> builder, bool useManualLayout)
     {
         builder.Element.ContentUseManualLayout = useManualLayout;
         return ref builder;
@@ -1778,7 +1782,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (top aligned).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithBottomAlignedContent(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithBottomAlignedContent(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldAlignContentToBottom(true);
 
     /// <summary>
@@ -1786,7 +1790,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (top aligned).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithTopAlignedContent(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithTopAlignedContent(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithShouldAlignContentToBottom(false);
 
     /// <summary>
@@ -1794,7 +1798,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (top aligned).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithShouldAlignContentToBottom(this ref SleekElementBuilder<ISleekScrollView> builder, bool alignContentToBottom)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithShouldAlignContentToBottom(this in SleekElementBuilder<ISleekScrollView> builder, bool alignContentToBottom)
     {
         builder.Element.AlignContentToBottom = alignContentToBottom;
         return ref builder;
@@ -1806,7 +1810,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (raycast target).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> RaycastTarget(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> RaycastTarget(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithIsRaycastTarget(true);
 
     /// <summary>
@@ -1815,7 +1819,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (raycast target).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> RaycastIgnored(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> RaycastIgnored(this in SleekElementBuilder<ISleekScrollView> builder)
         => ref builder.WithIsRaycastTarget(false);
 
     /// <summary>
@@ -1824,7 +1828,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (raycast target).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WithIsRaycastTarget(this ref SleekElementBuilder<ISleekScrollView> builder, bool isRaycastTarget)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WithIsRaycastTarget(this in SleekElementBuilder<ISleekScrollView> builder, bool isRaycastTarget)
     {
         if (builder.Element.IsRaycastTarget != isRaycastTarget)
             builder.Element.IsRaycastTarget = isRaycastTarget;
@@ -1836,7 +1840,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.0f (start at top).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> StartAtTop(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> StartAtTop(this in SleekElementBuilder<ISleekScrollView> builder)
     {
         if (builder.Element.NormalizedVerticalPosition != 0f)
             builder.Element.ScrollToTop();
@@ -1848,7 +1852,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.0f (start at top).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> StartAtBottom(this ref SleekElementBuilder<ISleekScrollView> builder)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> StartAtBottom(this in SleekElementBuilder<ISleekScrollView> builder)
     {
         if (builder.Element.NormalizedVerticalPosition != 1f)
             builder.Element.ScrollToBottom();
@@ -1860,7 +1864,7 @@ public static class SleekElementBuilderExtensions
     /// <para>Top to bottom or left to right depending on orientation.</para>
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekScrollView> WhenScrollOffsetChanged(this ref SleekElementBuilder<ISleekScrollView> builder, Action<Vector2> callback)
+    public static ref readonly SleekElementBuilder<ISleekScrollView> WhenScrollOffsetChanged(this in SleekElementBuilder<ISleekScrollView> builder, Action<Vector2> callback)
     {
         builder.Element.OnNormalizedValueChanged += callback;
         return ref builder;
@@ -1873,7 +1877,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.0f.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> WithInitialProgress(this ref SleekElementBuilder<ISleekSlider> builder, float progress)
+    public static ref readonly SleekElementBuilder<ISleekSlider> WithInitialProgress(this in SleekElementBuilder<ISleekSlider> builder, float progress)
     {
         progress = Mathf.Clamp01(progress);
         if (builder.Element.Value != progress)
@@ -1887,7 +1891,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekOrientation.VERTICAL"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> WithVerticalOrientation(this ref SleekElementBuilder<ISleekSlider> builder)
+    public static ref readonly SleekElementBuilder<ISleekSlider> WithVerticalOrientation(this in SleekElementBuilder<ISleekSlider> builder)
         => ref builder.WithOrientation(ESleekOrientation.VERTICAL);
 
     /// <summary>
@@ -1896,7 +1900,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekOrientation.VERTICAL"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> WithHorizontalOrientation(this ref SleekElementBuilder<ISleekSlider> builder)
+    public static ref readonly SleekElementBuilder<ISleekSlider> WithHorizontalOrientation(this in SleekElementBuilder<ISleekSlider> builder)
         => ref builder.WithOrientation(ESleekOrientation.HORIZONTAL);
 
     /// <summary>
@@ -1905,7 +1909,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekOrientation.VERTICAL"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> WithOrientation(this ref SleekElementBuilder<ISleekSlider> builder, ESleekOrientation orientation)
+    public static ref readonly SleekElementBuilder<ISleekSlider> WithOrientation(this in SleekElementBuilder<ISleekSlider> builder, ESleekOrientation orientation)
     {
         if (builder.Element.Orientation != orientation)
             builder.Element.Orientation = orientation;
@@ -1918,7 +1922,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> Interactable(this ref SleekElementBuilder<ISleekSlider> builder)
+    public static ref readonly SleekElementBuilder<ISleekSlider> Interactable(this in SleekElementBuilder<ISleekSlider> builder)
         => ref builder.WithIsInteractable(true);
 
     /// <summary>
@@ -1927,7 +1931,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> NotInteractable(this ref SleekElementBuilder<ISleekSlider> builder)
+    public static ref readonly SleekElementBuilder<ISleekSlider> NotInteractable(this in SleekElementBuilder<ISleekSlider> builder)
         => ref builder.WithIsInteractable(false);
 
     /// <summary>
@@ -1936,7 +1940,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> WithIsInteractable(this ref SleekElementBuilder<ISleekSlider> builder, bool isInteractable)
+    public static ref readonly SleekElementBuilder<ISleekSlider> WithIsInteractable(this in SleekElementBuilder<ISleekSlider> builder, bool isInteractable)
     {
         if (builder.Element.IsInteractable != isInteractable)
             builder.Element.IsInteractable = isInteractable;
@@ -1948,7 +1952,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.BACKGROUND"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> WithBackgroundColor(this ref SleekElementBuilder<ISleekSlider> builder,
+    public static ref readonly SleekElementBuilder<ISleekSlider> WithBackgroundColor(this in SleekElementBuilder<ISleekSlider> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor backgroundColor)
     {
         builder.Element.BackgroundColor = backgroundColor;
@@ -1960,7 +1964,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.FOREGROUND"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> WithForegroundColor(this ref SleekElementBuilder<ISleekSlider> builder,
+    public static ref readonly SleekElementBuilder<ISleekSlider> WithForegroundColor(this in SleekElementBuilder<ISleekSlider> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor foregroundColor)
     {
         builder.Element.ForegroundColor = foregroundColor;
@@ -1972,7 +1976,7 @@ public static class SleekElementBuilderExtensions
     /// <para>Top to bottom or left to right depending on orientation.</para>
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSlider> WhenProgressChanged(this ref SleekElementBuilder<ISleekSlider> builder, Dragged callback)
+    public static ref readonly SleekElementBuilder<ISleekSlider> WhenProgressChanged(this in SleekElementBuilder<ISleekSlider> builder, Dragged callback)
     {
         builder.Element.OnValueChanged += callback;
         return ref builder;
@@ -1983,9 +1987,9 @@ public static class SleekElementBuilderExtensions
     /// Sets the sprite of an <see cref="ISleekSprite"/>.
     /// </summary>
     /// <remarks>Default value: <see langword="null"/>.</remarks>
-    /// <seealso cref="WithSprite(ref SleekElementBuilder{ISleekSprite},Bundle,string)"/>
+    /// <seealso cref="WithSprite(in SleekElementBuilder{ISleekSprite},Bundle,string)"/>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> WithSprite(this ref SleekElementBuilder<ISleekSprite> builder, Sprite? sprite)
+    public static ref readonly SleekElementBuilder<ISleekSprite> WithSprite(this in SleekElementBuilder<ISleekSprite> builder, Sprite? sprite)
     {
         if (builder.Element.Sprite != sprite)
             builder.Element.Sprite = sprite;
@@ -1997,9 +2001,9 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <exception cref="ArgumentException">Unable to find a <see cref="Sprite"/> at <paramref name="path"/> in <paramref name="bundle"/>.</exception>
     /// <remarks>Default value: <see langword="null"/>.</remarks>
-    /// <seealso cref="WithSprite(ref SleekElementBuilder{ISleekSprite},Sprite)"/>
+    /// <seealso cref="WithSprite(in SleekElementBuilder{ISleekSprite},Sprite)"/>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> WithSprite(this ref SleekElementBuilder<ISleekSprite> builder, Bundle bundle, string path)
+    public static ref readonly SleekElementBuilder<ISleekSprite> WithSprite(this in SleekElementBuilder<ISleekSprite> builder, Bundle bundle, string path)
     {
         Sprite? sprite = bundle.load<Sprite>(path);
         if (sprite == null)
@@ -2014,7 +2018,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.NONE"/> (<see cref="Color.white"/>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> WithTintColor(this ref SleekElementBuilder<ISleekSprite> builder,
+    public static ref readonly SleekElementBuilder<ISleekSprite> WithTintColor(this in SleekElementBuilder<ISleekSprite> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor tintColor)
     {
         builder.Element.TintColor = tintColor;
@@ -2025,7 +2029,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when an <see cref="ISleekSprite"/> is left clicked.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> WhenLeftClicked(this ref SleekElementBuilder<ISleekSprite> builder, Action callback)
+    public static ref readonly SleekElementBuilder<ISleekSprite> WhenLeftClicked(this in SleekElementBuilder<ISleekSprite> builder, Action callback)
     {
         builder.Element.OnClicked += callback;
         return ref builder;
@@ -2037,7 +2041,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (raycast target).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> RaycastTarget(this ref SleekElementBuilder<ISleekSprite> builder)
+    public static ref readonly SleekElementBuilder<ISleekSprite> RaycastTarget(this in SleekElementBuilder<ISleekSprite> builder)
         => ref builder.WithIsRaycastTarget(true);
 
     /// <summary>
@@ -2046,7 +2050,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (raycast target).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> RaycastIgnored(this ref SleekElementBuilder<ISleekSprite> builder)
+    public static ref readonly SleekElementBuilder<ISleekSprite> RaycastIgnored(this in SleekElementBuilder<ISleekSprite> builder)
         => ref builder.WithIsRaycastTarget(false);
 
     /// <summary>
@@ -2055,7 +2059,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (raycast target).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> WithIsRaycastTarget(this ref SleekElementBuilder<ISleekSprite> builder, bool isRaycastTarget)
+    public static ref readonly SleekElementBuilder<ISleekSprite> WithIsRaycastTarget(this in SleekElementBuilder<ISleekSprite> builder, bool isRaycastTarget)
     {
         if (builder.Element.IsRaycastTarget != isRaycastTarget)
             builder.Element.IsRaycastTarget = isRaycastTarget;
@@ -2068,7 +2072,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekSpriteType.Tiled"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> WithSlicedDrawMethod(this ref SleekElementBuilder<ISleekSprite> builder)
+    public static ref readonly SleekElementBuilder<ISleekSprite> WithSlicedDrawMethod(this in SleekElementBuilder<ISleekSprite> builder)
     {
         if (builder.Element.DrawMethod != ESleekSpriteType.Sliced)
             builder.Element.DrawMethod = ESleekSpriteType.Sliced;
@@ -2081,7 +2085,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekSpriteType.Tiled"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> WithSingularDrawMethod(this ref SleekElementBuilder<ISleekSprite> builder)
+    public static ref readonly SleekElementBuilder<ISleekSprite> WithSingularDrawMethod(this in SleekElementBuilder<ISleekSprite> builder)
     {
         if (builder.Element.DrawMethod != ESleekSpriteType.Regular)
             builder.Element.DrawMethod = ESleekSpriteType.Regular;
@@ -2095,7 +2099,7 @@ public static class SleekElementBuilderExtensions
     /// <param name="tilingDimensions">Number of images to tile in each direction. Used for the UIToolkit <see cref="Glazier"/> set.</param>
     /// <remarks>Default value: <see cref="ESleekSpriteType.Tiled"/> (you still should pass tiling dimensions if you want more than a 1x1).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> WithTiledDrawMethod(this ref SleekElementBuilder<ISleekSprite> builder, Vector2Int tilingDimensions)
+    public static ref readonly SleekElementBuilder<ISleekSprite> WithTiledDrawMethod(this in SleekElementBuilder<ISleekSprite> builder, Vector2Int tilingDimensions)
     {
         if (builder.Element.DrawMethod != ESleekSpriteType.Tiled)
             builder.Element.DrawMethod = ESleekSpriteType.Tiled;
@@ -2105,12 +2109,12 @@ public static class SleekElementBuilderExtensions
 
     /// <summary>
     /// Sets the draw method of an <see cref="ISleekSprite"/> to <see cref="ESleekSpriteType.Regular"/>.
-    /// <para>Defines how sprites are drawn. Use <see cref="WithTiledDrawMethod(ref SleekElementBuilder{ISleekSprite},Vector2Int)"/> to set the mode to <see cref="ESleekSpriteType.Tiled"/> (this method throws an exception in that case).</para>
+    /// <para>Defines how sprites are drawn. Use <see cref="WithTiledDrawMethod(in SleekElementBuilder{ISleekSprite},Vector2Int)"/> to set the mode to <see cref="ESleekSpriteType.Tiled"/> (this method throws an exception in that case).</para>
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekSpriteType.Tiled"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    /// <exception cref="ArgumentException">Use <see cref="WithTiledDrawMethod(ref SleekElementBuilder{ISleekSprite},Vector2Int)"/> to set tiling mode.</exception>
-    public static ref SleekElementBuilder<ISleekSprite> WithDrawMethod(this ref SleekElementBuilder<ISleekSprite> builder, ESleekSpriteType drawMethod)
+    /// <exception cref="ArgumentException">Use <see cref="WithTiledDrawMethod(in SleekElementBuilder{ISleekSprite},Vector2Int)"/> to set tiling mode.</exception>
+    public static ref readonly SleekElementBuilder<ISleekSprite> WithDrawMethod(this in SleekElementBuilder<ISleekSprite> builder, ESleekSpriteType drawMethod)
     {
         if (drawMethod == ESleekSpriteType.Tiled)
             throw new ArgumentException("Use the overload that takes a Vector2Int for the tiled draw method.", nameof(drawMethod));
@@ -2126,7 +2130,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (not checked).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> InitiallyChecked(this ref SleekElementBuilder<ISleekToggle> builder)
+    public static ref readonly SleekElementBuilder<ISleekToggle> InitiallyChecked(this in SleekElementBuilder<ISleekToggle> builder)
         => ref builder.WithInitialState(true);
 
     /// <summary>
@@ -2134,7 +2138,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (not checked).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> InitiallyUnchecked(this ref SleekElementBuilder<ISleekToggle> builder)
+    public static ref readonly SleekElementBuilder<ISleekToggle> InitiallyUnchecked(this in SleekElementBuilder<ISleekToggle> builder)
         => ref builder.WithInitialState(false);
 
     /// <summary>
@@ -2142,7 +2146,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="false"/> (not checked).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> WithInitialState(this ref SleekElementBuilder<ISleekToggle> builder, bool isChecked)
+    public static ref readonly SleekElementBuilder<ISleekToggle> WithInitialState(this in SleekElementBuilder<ISleekToggle> builder, bool isChecked)
     {
         if (builder.Element.Value != isChecked)
             builder.Element.Value = isChecked;
@@ -2155,7 +2159,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> Interactable(this ref SleekElementBuilder<ISleekToggle> builder)
+    public static ref readonly SleekElementBuilder<ISleekToggle> Interactable(this in SleekElementBuilder<ISleekToggle> builder)
         => ref builder.WithIsInteractable(true);
 
     /// <summary>
@@ -2164,7 +2168,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> NotInteractable(this ref SleekElementBuilder<ISleekToggle> builder)
+    public static ref readonly SleekElementBuilder<ISleekToggle> NotInteractable(this in SleekElementBuilder<ISleekToggle> builder)
         => ref builder.WithIsInteractable(false);
 
     /// <summary>
@@ -2173,7 +2177,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> WithIsInteractable(this ref SleekElementBuilder<ISleekToggle> builder, bool isInteractable)
+    public static ref readonly SleekElementBuilder<ISleekToggle> WithIsInteractable(this in SleekElementBuilder<ISleekToggle> builder, bool isInteractable)
     {
         if (builder.Element.IsInteractable != isInteractable)
             builder.Element.IsInteractable = isInteractable;
@@ -2185,7 +2189,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.BACKGROUND"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> WithBackgroundColor(this ref SleekElementBuilder<ISleekToggle> builder,
+    public static ref readonly SleekElementBuilder<ISleekToggle> WithBackgroundColor(this in SleekElementBuilder<ISleekToggle> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor backgroundColor)
     {
         builder.Element.BackgroundColor = backgroundColor;
@@ -2198,7 +2202,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see cref="ESleekTint.FOREGROUND"/> (from settings, default value <c>RGB01(0.9, 0.9, 0.9)</c>).</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> WithForegroundColor(this ref SleekElementBuilder<ISleekToggle> builder,
+    public static ref readonly SleekElementBuilder<ISleekToggle> WithForegroundColor(this in SleekElementBuilder<ISleekToggle> builder,
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor foregroundColor)
     {
         builder.Element.ForegroundColor = foregroundColor;
@@ -2209,7 +2213,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when the checked state of an <see cref="ISleekToggle"/> is changed.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekToggle> WhenStateChanged(this ref SleekElementBuilder<ISleekToggle> builder, Toggled callback)
+    public static ref readonly SleekElementBuilder<ISleekToggle> WhenStateChanged(this in SleekElementBuilder<ISleekToggle> builder, Toggled callback)
     {
         builder.Element.OnValueChanged += callback;
         return ref builder;
@@ -2220,7 +2224,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when the value in an <see cref="ISleekUInt16Field"/> is modified.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekUInt16Field> WhenValueTyped(this ref SleekElementBuilder<ISleekUInt16Field> builder, TypedUInt16 callback)
+    public static ref readonly SleekElementBuilder<ISleekUInt16Field> WhenValueTyped(this in SleekElementBuilder<ISleekUInt16Field> builder, TypedUInt16 callback)
     {
         builder.Element.OnValueChanged += callback;
         return ref builder;
@@ -2231,7 +2235,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekUInt16Field> WithInitialValue(this ref SleekElementBuilder<ISleekUInt16Field> builder, ushort value)
+    public static ref readonly SleekElementBuilder<ISleekUInt16Field> WithInitialValue(this in SleekElementBuilder<ISleekUInt16Field> builder, ushort value)
     {
         if (builder.Element.Value != value)
             builder.Element.Value = value;
@@ -2243,7 +2247,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekUInt16Field> WithMinimumValue(this ref SleekElementBuilder<ISleekUInt16Field> builder, ushort value)
+    public static ref readonly SleekElementBuilder<ISleekUInt16Field> WithMinimumValue(this in SleekElementBuilder<ISleekUInt16Field> builder, ushort value)
     {
         if (builder.Element.MinValue != value)
             builder.Element.MinValue = value;
@@ -2255,7 +2259,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 65535.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekUInt16Field> WithMaximumValue(this ref SleekElementBuilder<ISleekUInt16Field> builder, ushort value)
+    public static ref readonly SleekElementBuilder<ISleekUInt16Field> WithMaximumValue(this in SleekElementBuilder<ISleekUInt16Field> builder, ushort value)
     {
         if (builder.Element.MaxValue != value)
             builder.Element.MaxValue = value;
@@ -2267,7 +2271,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when the value in an <see cref="ISleekUInt32Field"/> is modified.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekUInt32Field> WhenValueTyped(this ref SleekElementBuilder<ISleekUInt32Field> builder, TypedUInt32 callback)
+    public static ref readonly SleekElementBuilder<ISleekUInt32Field> WhenValueTyped(this in SleekElementBuilder<ISleekUInt32Field> builder, TypedUInt32 callback)
     {
         builder.Element.OnValueChanged += callback;
         return ref builder;
@@ -2278,7 +2282,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekUInt32Field> WithInitialValue(this ref SleekElementBuilder<ISleekUInt32Field> builder, uint value)
+    public static ref readonly SleekElementBuilder<ISleekUInt32Field> WithInitialValue(this in SleekElementBuilder<ISleekUInt32Field> builder, uint value)
     {
         if (builder.Element.Value != value)
             builder.Element.Value = value;
@@ -2290,7 +2294,7 @@ public static class SleekElementBuilderExtensions
     /// Adds a callback for when the value in an <see cref="ISleekUInt8Field"/> is modified.
     /// </summary>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekUInt8Field> WhenValueTyped(this ref SleekElementBuilder<ISleekUInt8Field> builder, TypedByte callback)
+    public static ref readonly SleekElementBuilder<ISleekUInt8Field> WhenValueTyped(this in SleekElementBuilder<ISleekUInt8Field> builder, TypedByte callback)
     {
         builder.Element.OnValueChanged += callback;
         return ref builder;
@@ -2301,7 +2305,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: 0.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<ISleekUInt8Field> WithInitialValue(this ref SleekElementBuilder<ISleekUInt8Field> builder, byte value)
+    public static ref readonly SleekElementBuilder<ISleekUInt8Field> WithInitialValue(this in SleekElementBuilder<ISleekUInt8Field> builder, byte value)
     {
         if (builder.Element.Value != value)
             builder.Element.Value = value;
@@ -2315,7 +2319,7 @@ public static class SleekElementBuilderExtensions
     /// </summary>
     /// <remarks>Default value: <see langword="null"/>.</remarks>
     /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
-    public static ref SleekElementBuilder<TSleekWithTooltip> WithTooltip<TSleekWithTooltip>(this ref SleekElementBuilder<TSleekWithTooltip> builder, string? tooltip) where TSleekWithTooltip : class, ISleekWithTooltip
+    public static ref readonly SleekElementBuilder<TSleekWithTooltip> WithTooltip<TSleekWithTooltip>(this in SleekElementBuilder<TSleekWithTooltip> builder, string? tooltip) where TSleekWithTooltip : class, ISleekWithTooltip
     {
         if (tooltip is { Length: 0 })
             tooltip = null;

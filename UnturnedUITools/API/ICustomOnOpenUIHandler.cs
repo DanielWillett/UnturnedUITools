@@ -1,16 +1,4 @@
-﻿
-/* Unmerged change from project 'UnturnedUITools (net461)'
-Before:
-using System;
-After:
-using System;
-using DanielWillett;
-using DanielWillett.UITools;
-using DanielWillett.UITools.API;
-using DanielWillett.UITools.API;
-using DanielWillett.UITools.API.Extensions;
-*/
-using System;
+﻿using System;
 
 namespace DanielWillett.UITools.API;
 

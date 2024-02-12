@@ -467,6 +467,11 @@
             Sets the value of <see cref="P:UnityEngine.UI.LayoutElement.ignoreLayout"/> for this element.
             </summary>
         </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._childAutoLayoutPadding">
+            <summary>
+            Sets the padding of a <see cref="T:UnityEngine.UI.HorizontalLayoutGroup"/> or <see cref="T:UnityEngine.UI.VerticalLayoutGroup"/>.
+            </summary>
+        </member>
         <member name="P:SDG.Unturned.GlazierElementBase.IsVisible">
             <inheritdoc />
         </member>
@@ -525,6 +530,9 @@
             <inheritdoc />
         </member>
         <member name="P:SDG.Unturned.GlazierElementBase.IgnoreLayout">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.ChildAutoLayoutPadding">
             <inheritdoc />
         </member>
         <member name="M:SDG.Unturned.GlazierElementBase.InternalDestroy">
@@ -896,6 +904,11 @@
         <member name="P:SDG.Unturned.ISleekElement.IgnoreLayout">
             <summary>
             Sets the value of <see cref="P:UnityEngine.UI.LayoutElement.ignoreLayout"/> for this element.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.ChildAutoLayoutPadding">
+            <summary>
+            Sets the padding of a <see cref="T:UnityEngine.UI.HorizontalLayoutGroup"/> or <see cref="T:UnityEngine.UI.VerticalLayoutGroup"/>.
             </summary>
         </member>
         <member name="M:SDG.Unturned.ISleekElement.InternalDestroy">
@@ -1749,6 +1762,9 @@
             <inheritdoc />
         </member>
         <member name="P:SDG.Unturned.SleekWrapper.IgnoreLayout">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.ChildAutoLayoutPadding">
             <inheritdoc />
         </member>
         <member name="M:SDG.Unturned.SleekWrapper.InternalDestroy">
