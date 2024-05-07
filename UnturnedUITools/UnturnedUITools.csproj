@@ -1,5 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+
+    <PackageReleaseNotes>Added MenuPlayServerBookmarksUI from preview version v3.24.1.102. Minor updates to SDG.Glazier.Runtime documentation.</PackageReleaseNotes>
+
+    <Version>1.4.1</Version>
+
+  </PropertyGroup>
+  <PropertyGroup>
     <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
@@ -10,7 +17,6 @@
 
     <PackageId>DanielWillett.UnturnedUITools</PackageId>
     <Title>Unturned Glazier UI Tools</Title>
-    <Version>1.4.0</Version>
     <Authors>Daniel Willett</Authors>
     <Product>DanielWillett.UnturnedUITools</Product>
     <Description>Tools for working with vanilla (Glazier, Sleek, etc.) UIs in Unturned, including an extension system.</Description>
@@ -21,7 +27,6 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/DanielWillett/UnturnedUITools</RepositoryUrl>
     <PackageTags>reflection, modding, utility, utilities, glazier, sleek, ui, unturned, module</PackageTags>
-    <PackageReleaseNotes>New fluent API for defining UIs. Added support for ISleekElement.ChildAutoLayoutPadding (v3.24.1.0).</PackageReleaseNotes>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -44,8 +49,8 @@
   <ItemGroup>
     <None Include="../README.md" Pack="true" PackagePath="\" />
     <Reference Include="SDG.Glazier.Runtime" HintPath="ReferenceLibraries/SDG.Glazier.Runtime/SDG.Glazier.Runtime.dll" Private="true" />
-    <TfmSpecificPackageFile Include="ReferenceLibraries/SDG.Glazier.Runtime/SDG.Glazier.Runtime.dll" Pack="true" PackagePath="\lib\$(TargetFramework)" />
-    <TfmSpecificPackageFile Include="ReferenceLibraries/SDG.Glazier.Runtime/SDG.Glazier.Runtime.xml" Pack="true" PackagePath="\lib\$(TargetFramework)" />
+    <TfmSpecificPackageFile Include="ReferenceLibraries/SDG.Glazier.Runtime/$(TargetFramework)/SDG.Glazier.Runtime.dll" Pack="true" PackagePath="\lib\$(TargetFramework)" />
+    <TfmSpecificPackageFile Include="ReferenceLibraries/SDG.Glazier.Runtime/$(TargetFramework)/SDG.Glazier.Runtime.xml" Pack="true" PackagePath="\lib\$(TargetFramework)" />
   </ItemGroup>
 
   <ItemGroup>

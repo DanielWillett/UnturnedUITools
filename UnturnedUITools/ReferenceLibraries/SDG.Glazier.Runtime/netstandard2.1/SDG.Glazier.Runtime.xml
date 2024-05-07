@@ -1,0 +1,1948 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SDG.Glazier.Runtime</name>
+    </assembly>
+    <members>
+        <member name="T:SDG.Unturned.ClickedButton">
+            <summary>
+            Handles when a user left clicks a button.
+            </summary>
+            <param name="button">The button that was pressed. Note that this could be any sleek button type, not just <see cref="T:SDG.Unturned.ISleekButton"/>.</param>
+        </member>
+        <member name="T:SDG.Unturned.Dragged">
+            <summary>
+            Handles when a user interacts with a <see cref="T:SDG.Unturned.ISleekSlider"/> and changes it's position.
+            </summary>
+            <param name="slider">The slider that got dragged.</param>
+            <param name="state">The position of the slider as a linear interpolation between 0 and 1.</param>
+        </member>
+        <member name="T:SDG.Unturned.Entered">
+            <summary>
+            Handles when a user submits text into a <see cref="T:SDG.Unturned.ISleekField"/> (presses enter or clicks out).
+            </summary>
+            <param name="field">The field that text was entered into.</param>
+        </member>
+        <member name="T:SDG.Unturned.Escaped">
+            <summary>
+            Handles when a user presses <c>escape</c> while typing in a <see cref="T:SDG.Unturned.ISleekField"/>.
+            </summary>
+            <param name="field">The field the user escaped from.</param>
+        </member>
+        <member name="T:SDG.Unturned.ESleekChildLayout">
+            <summary>
+            Defines the layout orientation of a UI element.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekChildLayout.None">
+            <summary>
+            No <see cref="T:UnityEngine.UI.LayoutGroup"/> is applied to this element's children.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekChildLayout.Vertical">
+            <summary>
+            A <see cref="T:UnityEngine.UI.VerticalLayoutGroup"/> is applied to this element's children.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekChildLayout.Horizontal">
+            <summary>
+            A <see cref="T:UnityEngine.UI.HorizontalLayoutGroup"/> is applied to this element's children.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ESleekChildPerpendicularAlignment">
+            <summary>
+            Defines how children of layout groups are aligned to a <see cref="T:UnityEngine.UI.HorizontalLayoutGroup"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekChildPerpendicularAlignment.Center">
+            <summary>
+            <see cref="F:UnityEngine.TextAnchor.MiddleLeft"/> alignment of children.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekChildPerpendicularAlignment.Top">
+            <summary>
+            <see cref="F:UnityEngine.TextAnchor.UpperLeft"/> alignment of children.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekChildPerpendicularAlignment.Bottom">
+            <summary>
+            <see cref="F:UnityEngine.TextAnchor.LowerLeft"/> alignment of children.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ESleekConstraint">
+            <summary>
+            Defines how a <see cref="T:SDG.Unturned.ISleekConstraintFrame"/> behaves.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekConstraint.NONE">
+            <summary>
+            No constraining.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekConstraint.FitInParent">
+            <summary>
+            Constraining using a <see cref="T:UnityEngine.UI.AspectRatioFitter"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ESleekFontSize">
+            <summary>
+            Defines presets for font sizes.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekFontSize.Tiny">
+            <summary>
+            Font size of 8 px.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekFontSize.Small">
+            <summary>
+            Font size of 10 px.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekFontSize.Default">
+            <summary>
+            Font size of 12 px.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekFontSize.Medium">
+            <summary>
+            Font size of 14 px.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekFontSize.Large">
+            <summary>
+            Font size of 20 px.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekFontSize.Title">
+            <summary>
+            Font size of 50 px.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ESleekLerp">
+            <summary>
+            Defines a function of time for interpolating a value over an animation.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekLerp.LINEAR">
+            <summary>
+            Constant linear speed.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekLerp.EXPONENTIAL">
+            <summary>
+            Slower speed as the animation is getting closer to ending.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ESleekOrientation">
+            <summary>
+            Defines the orientation of an element (horizontal or vertical).
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekOrientation.HORIZONTAL">
+            <summary>
+            Left to right.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekOrientation.VERTICAL">
+            <summary>
+            Up to down.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ESleekScrollbarVisibility">
+            <summary>
+            Defines the visibility of a scroll bar in a <see cref="T:SDG.Unturned.ISleekScrollView"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekScrollbarVisibility.Default">
+            <summary>
+            Visible when needed, meaning when the content is long enough to be scrollable.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekScrollbarVisibility.Hidden">
+            <summary>
+            Never visible.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ESleekSide">
+            <summary>
+            Horizontal side of an element.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekSide.LEFT">
+            <summary>
+            Left side of the element (lowest X value).
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekSide.RIGHT">
+            <summary>
+            Right side of the element (highest X value).
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ESleekSpriteType">
+            <summary>
+            Defines how sprites are sliced.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekSpriteType.Tiled">
+            <summary>
+            Multiple sprites are tiled next to each other.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekSpriteType.Sliced">
+            <summary>
+            Edges of a sprite are separated from the center, defined in Unity's sprite editor.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekSpriteType.Regular">
+            <summary>
+            Basic image.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ESleekTint">
+            <summary>
+            Color presets translated using <see cref="T:SDG.Unturned.SleekColor"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekTint.NONE">
+            <summary>
+            Custom color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekTint.BACKGROUND">
+            <summary>
+            Background color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekTint.FOREGROUND">
+            <summary>
+            Foreground color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekTint.FONT">
+            <summary>
+            Text color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekTint.RICH_TEXT_DEFAULT">
+            <summary>
+            Text color with rich text support.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekTint.BACKGROUND_IF_LIGHT">
+            <summary>
+            Custom color if <c>pro</c> theme, otherwise background color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ESleekTint.BAD">
+            <summary>
+            Red warning/caution color.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ETextContrastContext">
+            <summary>
+            Describes the recommended contrast settings of text.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastContext.Default">
+            <summary>
+            No extra contrast needed to visibly see the text.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastContext.InconspicuousBackdrop">
+            <summary>
+            Some extra contrast needed to visibly see the text. Usually used for labels with a consistant, light background.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastContext.ColorfulBackdrop">
+            <summary>
+            A lot of extra contrast needed to visible see the text. Usually used when text has no background and is over the viewport.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastContext.Tooltip">
+            <summary>
+            Heavy contrast is needed to make a tooltip stand out. Not usually used by UI elements.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ETextContrastPreference">
+            <summary>
+            Describes the value of a text contrast preference in settings.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastPreference.Default">
+            <summary>
+            Default value based on the <see cref="T:SDG.Unturned.ETextContrastContext"/> provided.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastPreference.Outline">
+            <summary>
+            Heavy shadows.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastPreference.Shadow">
+            <summary>
+            Light shadows.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastPreference.None">
+            <summary>
+            No shadows.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ETextContrastStyle">
+            <summary>
+            Describes how shadows are configured on text.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastStyle.None">
+            <summary>
+            No shadows.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastStyle.Outline">
+            <summary>
+            Heavy shadows.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastStyle.Shadow">
+            <summary>
+            Light shadows.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.ETextContrastStyle.Tooltip">
+            <summary>
+            Extremely heavy shadows.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.Glazier">
+            <summary>
+            Stores the active implementation of <see cref="T:SDG.Unturned.IGlazier"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.Glazier.instance">
+            <summary>
+            Active implementation of <see cref="T:SDG.Unturned.IGlazier"/>, use <see cref="M:SDG.Unturned.Glazier.Get"/> instead.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.Glazier.Get">
+            <summary>
+            Gets the provider for the active glazier mode set in launch options.
+            </summary>
+            <returns>The active implementation of <see cref="T:SDG.Unturned.IGlazier"/>.</returns>
+        </member>
+        <member name="T:SDG.Unturned.GlazierConst">
+            <summary>
+            Default values for <see cref="T:SDG.Unturned.ISleekElement"/> properties.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultBoxBackgroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekBox"/> background color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultButtonBackgroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekButton"/> background color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultFieldBackgroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekField"/> background color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultSliderBackgroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekSlider"/> background color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultSliderForegroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekSlider"/> foreground color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultScrollViewBackgroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekScrollView"/> background color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultScrollViewForegroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekScrollView"/> foreground color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultToggleBackgroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekToggle"/> background color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultToggleForegroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekToggle"/> foreground color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultBoxForegroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekBox"/> foreground color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultButtonForegroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekButton"/> foreground color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultLabelForegroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekLabel"/> foreground color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultFieldForegroundColor">
+            <summary>
+            Default color of <see cref="T:SDG.Unturned.ISleekField"/> foreground color.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultFieldContrastContext">
+            <summary>
+            Default contrast context for <see cref="T:SDG.Unturned.ISleekField"/> text.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultLabelContrastContext">
+            <summary>
+            Default contrast context for <see cref="T:SDG.Unturned.ISleekLabel"/> text.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultLabelFontStyle">
+            <summary>
+            Default font style for <see cref="T:SDG.Unturned.ISleekLabel"/> text.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultFieldFontStyle">
+            <summary>
+            Default font style for <see cref="T:SDG.Unturned.ISleekField"/> text.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierConst.DefaultTextFieldMaxLength">
+            <summary>
+            Default max length for <see cref="T:SDG.Unturned.ISleekField"/> text.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.GlazierElementBase">
+            <summary>
+            Base class with a lot of shared code for all <see cref="T:SDG.Unturned.ISleekElement"/> types.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._isVisible">
+            <summary>
+            Is the element and it's children drawn on the screen?
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase.isTransformDirty">
+            <summary>
+            Have the transform properties been updated this frame?
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._useManualLayout">
+            <summary>
+            Use manual layout instead of conforming to a <see cref="T:UnityEngine.UI.VerticalLayoutGroup"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._useWidthLayoutOverride">
+            <summary>
+            Should this element set <see cref="P:UnityEngine.UI.LayoutElement.preferredWidth"/> and <see cref="P:UnityEngine.UI.LayoutElement.minWidth"/> to <see cref="P:SDG.Unturned.GlazierElementBase.SizeOffset_X"/>?
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._useHeightLayoutOverride">
+            <summary>
+            Should this element set <see cref="P:UnityEngine.UI.LayoutElement.preferredHeight"/> and <see cref="P:UnityEngine.UI.LayoutElement.minHeight"/> to <see cref="P:SDG.Unturned.GlazierElementBase.SizeOffset_Y"/>?
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._useChildAutoLayout">
+            <summary>
+            Set the type of <see cref="T:UnityEngine.UI.LayoutGroup"/> used for this element.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._childPerpendicularAlignment">
+            <summary>
+            Changes the value of <see cref="!:HorizontalLayoutGroup.childAlignment"/> if <see cref="P:SDG.Unturned.GlazierElementBase.UseChildAutoLayout"/> is <see cref="F:SDG.Unturned.ESleekChildLayout.Horizontal"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._expandChildren">
+            <summary>
+            Sets the value of <see cref="P:UnityEngine.UI.HorizontalOrVerticalLayoutGroup.childForceExpandHeight"/> or <see cref="P:UnityEngine.UI.HorizontalOrVerticalLayoutGroup.childForceExpandWidth"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._ignoreLayout">
+            <summary>
+            Sets the value of <see cref="P:UnityEngine.UI.LayoutElement.ignoreLayout"/> for this element.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.GlazierElementBase._childAutoLayoutPadding">
+            <summary>
+            Sets the padding of a <see cref="T:UnityEngine.UI.HorizontalLayoutGroup"/> or <see cref="T:UnityEngine.UI.VerticalLayoutGroup"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.IsVisible">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.Parent">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.SideLabel">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.PositionOffset_X">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.PositionOffset_Y">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.PositionScale_X">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.PositionScale_Y">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.SizeOffset_X">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.SizeOffset_Y">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.SizeScale_X">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.SizeScale_Y">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.AttachmentRoot">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.IsAnimatingTransform">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.UseManualLayout">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.UseWidthLayoutOverride">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.UseHeightLayoutOverride">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.UseChildAutoLayout">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.ChildPerpendicularAlignment">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.ExpandChildren">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.IgnoreLayout">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.GlazierElementBase.ChildAutoLayoutPadding">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.InternalDestroy">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.AnimatePositionOffset(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.AnimatePositionScale(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.AnimateSizeOffset(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.AnimateSizeScale(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.AddChild(SDG.Unturned.ISleekElement)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.AddLabel(System.String,SDG.Unturned.ESleekSide)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.AddLabel(System.String,UnityEngine.Color,SDG.Unturned.ESleekSide)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.UpdateLabel(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.FindIndexOfChild(SDG.Unturned.ISleekElement)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.GetChildAtIndex(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.RemoveChild(SDG.Unturned.ISleekElement)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.RemoveAllChildren">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.Update">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.UpdateChildren">
+            <summary>
+            Call <see cref="M:SDG.Unturned.ISleekElement.Update"/> on all children of this element.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.ViewportToNormalizedPosition(UnityEngine.Vector2)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.GetNormalizedCursorPosition">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.GetAbsoluteSize">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.SetAsFirstSibling">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.UpdateDirtyTransform">
+            <summary>
+            Apply any transform values that have been changed this frame.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.ValidateNotDestroyed">
+            <summary>
+            Conditional check for validating the UI is not destroyed.
+            </summary>
+            <remarks>Only compiles if the <c>VALIDATE_GLAZIER_USE_AFTER_DESTROY</c> compiler flag is set.</remarks>
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.#ctor">
+            <summary>
+            Create a new <see cref="T:SDG.Unturned.GlazierElementBase"/> with default settings and a dirty transform, must be called by an implementing type.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.IGlazier">
+            <summary>
+            <see cref="T:SDG.Unturned.Glazier"/> implementation for supplying UI elements with a different sub-system based on a launch option.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateBox">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekBox"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekBox"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateButton">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekButton"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekButton"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateFrame">
+            <summary>
+            Creates a new instance of an empty <see cref="T:SDG.Unturned.ISleekElement"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekElement"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateConstraintFrame">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekConstraintFrame"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekConstraintFrame"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateImage">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekImage"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekImage"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateImage(UnityEngine.Texture)">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekImage"/> with the given <paramref name="texture"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <param name="texture">The texture to use as the image.</param>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekImage"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateSprite">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekSprite"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekSprite"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateSprite(UnityEngine.Sprite)">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekSprite"/> with the given <paramref name="sprite"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <param name="sprite">The sprite to use as the image.</param>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekSprite"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateLabel">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekLabel"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekLabel"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateScrollView">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekScrollView"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekScrollView"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateSlider">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekSlider"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekSlider"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateStringField">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekField"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekField"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateToggle">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekToggle"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekToggle"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateUInt8Field">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekUInt8Field"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekUInt8Field"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateUInt16Field">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekUInt16Field"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekUInt16Field"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateUInt32Field">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekUInt32Field"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekUInt32Field"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateInt32Field">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekInt32Field"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekInt32Field"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateFloat32Field">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekFloat32Field"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekFloat32Field"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateFloat64Field">
+            <summary>
+            Creates a new instance of an <see cref="T:SDG.Unturned.ISleekFloat64Field"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekFloat64Field"/>, which must be cleaned up when the caller is done with it.</returns>
+        </member>
+        <member name="M:SDG.Unturned.IGlazier.CreateProxyImplementation(SDG.Unturned.SleekWrapper)">
+            <summary>
+            Creates a new instance of a proxy <see cref="T:SDG.Unturned.ISleekElement"/> for a <see cref="T:SDG.Unturned.SleekWrapper"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            </summary>
+            <param name="owner">The instance of <see cref="T:SDG.Unturned.SleekWrapper"/> that the proxy is being created for.</param>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekElement"/>, which must be cleaned up when the parent wrapper is done with it.</returns>
+        </member>
+        <member name="P:SDG.Unturned.IGlazier.Root">
+            <summary>
+            Root window that all elements are children of.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.IGlazier.ShouldGameProcessInput">
+            <summary>
+            Should the game process clicks as input (shooting, etc.)?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.IGlazier.ShouldGameProcessKeyDown">
+            <summary>
+            Should the game process keyboard input as game input (walking, etc.)?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.IGlazier.SupportsDepth">
+            <summary>
+            Supports raycasting depth, as in a component on top of another will block a raycast.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.IGlazier.SupportsRichTextAlpha">
+            <summary>
+            Supports using rich text to set the transparency of text.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.IGlazier.SupportsAutomaticLayout">
+            <summary>
+            Supports laying out elements based on the size of each individual element.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekBox">
+            <summary>
+            Empty panel with a background texture for putting other elements on.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekBox.BackgroundColor">
+            <summary>
+            Background color of the <see cref="T:SDG.Unturned.ISleekBox"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekButton">
+            <summary>
+            Clickable button element.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekButton.OnClicked">
+            <summary>
+            Called when a user left clicks a <see cref="T:SDG.Unturned.ISleekButton"/>.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekButton.OnRightClicked">
+            <summary>
+            Called when a user right clicks a <see cref="T:SDG.Unturned.ISleekButton"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekButton.BackgroundColor">
+            <summary>
+            Background color of the <see cref="T:SDG.Unturned.ISleekButton"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekButton.IsClickable">
+            <summary>
+            Can the user interact with the button (left or right click)?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekButton.IsRaycastTarget">
+            <summary>
+            Should the button consume clicks?
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekConstraintFrame">
+            <summary>
+            UI wrapper that sets up a <see cref="T:UnityEngine.UI.AspectRatioFitter"/> if <see cref="P:SDG.Unturned.ISleekConstraintFrame.Constraint"/> is <see cref="F:SDG.Unturned.ESleekConstraint.FitInParent"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekConstraintFrame.Constraint">
+            <summary>
+            Constraint mode.
+            </summary>
+            <remarks>Can not be changed after it is first set.</remarks>
+        </member>
+        <member name="P:SDG.Unturned.ISleekConstraintFrame.AspectRatio">
+            <summary>
+            Value expressing the relationship between width and height: <c>(Width / Height)</c>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekElement">
+            <summary>
+            Base UI element representing the transform of a given object rendered in 2D on the screen, along with some shared properties.
+            </summary>
+            <remarks>Includes a parent and set of children.</remarks>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.IsVisible">
+            <summary>
+            Is the element and it's children drawn on the screen?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.Parent">
+            <summary>
+            Parent of the element, or <see langword="null"/> for root elements.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.SideLabel">
+            <summary>
+            Label attached to the side of this element, or <see langword="null"/>.
+            </summary>
+            <remarks>Use <see cref="M:SDG.Unturned.ISleekElement.AddLabel(System.String,SDG.Unturned.ESleekSide)"/> or its overload to add a side label.</remarks>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.PositionOffset_X">
+            <summary>
+            How offset the element is from its bounds in the x direction (in pixels). Positive values move the element right, negative values move it left.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.PositionOffset_Y">
+            <summary>
+            How offset the element is from its bounds in the y direction (in pixels). Positive values move the element down, negative values move it up.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.PositionScale_X">
+            <summary>
+            X Position of the top left corner of the element from the left side of the screen (from 0-1, 0 being 0px and 1 being the size of the monitor or parent object).
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.PositionScale_Y">
+            <summary>
+            X Position of the top left corner of the element from the top of the screen (from 0-1, 0 being 0px and 1 being the size of the monitor or parent object).
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.SizeOffset_X">
+            <summary>
+            How much bigger the element is outside of its bounds in the x direction (in pixels). Use negative values to shrink the element.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.SizeOffset_Y">
+            <summary>
+            How much bigger the element is outside of its bounds in the y direction (in pixels). Use negative values to shrink the element.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.SizeScale_X">
+            <summary>
+            Width of the element (from 0-1, 0 being 0px and 1 being the size of the monitor or parent object).
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.SizeScale_Y">
+            <summary>
+            Height of the element (from 0-1, 0 being 0px and 1 being the size of the monitor or parent object).
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.AttachmentRoot">
+            <summary>
+            A <see cref="T:SDG.Unturned.ISleekElement"/> that acts as the implementation of this element. For example, <see cref="T:SDG.Unturned.SleekWrapper"/> passes it's proxy implementation instead of itself.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.IsAnimatingTransform">
+            <summary>
+            Is this <see cref="T:SDG.Unturned.ISleekElement"/> currently animating?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.UseManualLayout">
+            <summary>
+            Use manual layout instead of conforming to a <see cref="T:UnityEngine.UI.VerticalLayoutGroup"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.UseWidthLayoutOverride">
+            <summary>
+            Should this element set <see cref="P:UnityEngine.UI.LayoutElement.preferredWidth"/> and <see cref="P:UnityEngine.UI.LayoutElement.minWidth"/> to <see cref="P:SDG.Unturned.ISleekElement.SizeOffset_X"/>?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.UseHeightLayoutOverride">
+            <summary>
+            Should this element set <see cref="P:UnityEngine.UI.LayoutElement.preferredHeight"/> and <see cref="P:UnityEngine.UI.LayoutElement.minHeight"/> to <see cref="P:SDG.Unturned.ISleekElement.SizeOffset_Y"/>?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.UseChildAutoLayout">
+            <summary>
+            Sets the type of <see cref="T:UnityEngine.UI.LayoutGroup"/> used for this element.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.ChildPerpendicularAlignment">
+            <summary>
+            Changes the value of <see cref="!:HorizontalLayoutGroup.childAlignment"/> if <see cref="P:SDG.Unturned.ISleekElement.UseChildAutoLayout"/> is <see cref="F:SDG.Unturned.ESleekChildLayout.Horizontal"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.ExpandChildren">
+            <summary>
+            Sets the value of <see cref="P:UnityEngine.UI.HorizontalOrVerticalLayoutGroup.childForceExpandHeight"/> or <see cref="P:UnityEngine.UI.HorizontalOrVerticalLayoutGroup.childForceExpandWidth"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.IgnoreLayout">
+            <summary>
+            Sets the value of <see cref="P:UnityEngine.UI.LayoutElement.ignoreLayout"/> for this element.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekElement.ChildAutoLayoutPadding">
+            <summary>
+            Sets the padding of a <see cref="T:UnityEngine.UI.HorizontalLayoutGroup"/> or <see cref="T:UnityEngine.UI.VerticalLayoutGroup"/>.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.InternalDestroy">
+            <summary>
+            Removes and destroyes all children, then destroys this object or puts it back in the pool.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.AnimatePositionOffset(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <summary>
+            Animates <see cref="P:SDG.Unturned.ISleekElement.PositionOffset_X"/> and <see cref="P:SDG.Unturned.ISleekElement.PositionOffset_Y"/> to the provided position over <paramref name="time"/> using a <paramref name="lerp"/> curve.
+            </summary>
+            <param name = "newPositionOffset_X" > New <see cref="P:SDG.Unturned.ISleekElement.PositionOffset_X"/> value.</param>
+            <param name = "newPositionOffset_Y" > New <see cref="P:SDG.Unturned.ISleekElement.PositionOffset_Y"/> value.</param>
+            <param name = "lerp" > Curve to use for interpolating the values as a function of time.</param>
+            <param name = "time" > Length of the animation in seconds.</param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.AnimatePositionScale(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <summary>
+            Animates <see cref="P:SDG.Unturned.ISleekElement.PositionScale_X"/> and <see cref="P:SDG.Unturned.ISleekElement.PositionScale_Y"/> to the provided position over <paramref name="time"/> using a <paramref name="lerp"/> curve.
+            </summary>
+            <param name="newPositionScale_X"> New <see cref="P:SDG.Unturned.ISleekElement.PositionScale_X"/> value.</param>
+            <param name="newPositionScale_Y"> New <see cref="P:SDG.Unturned.ISleekElement.PositionScale_Y"/> value.</param>
+            <param name="lerp"> Curve to use for interpolating the values as a function of time.</param>
+            <param name="time"> Length of the animation in seconds.</param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.AnimateSizeOffset(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <summary>
+            Animates <see cref="P:SDG.Unturned.ISleekElement.SizeOffset_X"/> and <see cref="P:SDG.Unturned.ISleekElement.SizeOffset_Y"/> to the provided size over <paramref name="time"/> using a <paramref name="lerp"/> curve.
+            </summary>
+            <param name="newSizeOffset_X"> New <see cref="P:SDG.Unturned.ISleekElement.SizeOffset_X"/> value.</param>
+            <param name="newSizeOffset_Y"> New <see cref="P:SDG.Unturned.ISleekElement.SizeOffset_Y"/> value.</param>
+            <param name="lerp"> Curve to use for interpolating the values as a function of time.</param>
+            <param name="time"> Length of the animation in seconds.</param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.AnimateSizeScale(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <summary>
+            Animates <see cref="P:SDG.Unturned.ISleekElement.SizeScale_X"/> and <see cref="P:SDG.Unturned.ISleekElement.SizeScale_Y"/> to the provided size over <paramref name="time"/> using a <paramref name="lerp"/> curve.
+            </summary>
+            <param name="newSizeScale_X"> New <see cref="P:SDG.Unturned.ISleekElement.SizeScale_X"/> value.</param>
+            <param name="newSizeScale_Y"> New <see cref="P:SDG.Unturned.ISleekElement.SizeScale_Y"/> value.</param>
+            <param name="lerp"> Curve to use for interpolating the values as a function of time.</param>
+            <param name="time"> Length of the animation in seconds.</param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.AddChild(SDG.Unturned.ISleekElement)">
+            <summary>
+            Adds <paramref name="child"/> as a child of this element.
+            </summary>
+            <param name="child">The element to add as the last child of this element.</param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.AddLabel(System.String,SDG.Unturned.ESleekSide)">
+            <summary>
+            Adds a <see cref="P:SDG.Unturned.ISleekElement.SideLabel"/>, a linked <see cref="T:SDG.Unturned.ISleekLabel"/>, to the <paramref name="side"/> of this object.
+            </summary>
+            <param name="text">Text to put on the label.</param>
+            <param name="side">Which side of this element to put the label.</param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.AddLabel(System.String,UnityEngine.Color,SDG.Unturned.ESleekSide)">
+            <summary>
+            Adds a <see cref="P:SDG.Unturned.ISleekElement.SideLabel"/>, a linked <see cref="T:SDG.Unturned.ISleekLabel"/>, to the <paramref name="side"/> of this object.
+            </summary>
+            <param name="text">Text to put on the label.</param>
+            <param name="color">Text color of the label.</param>
+            <param name="side">Which side of this element to put the label.</param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.UpdateLabel(System.String)">
+            <summary>
+            Changes the text of <see cref="P:SDG.Unturned.ISleekElement.SideLabel"/>.
+            </summary>
+            <param name="text">The new text to put on <see cref="P:SDG.Unturned.ISleekElement.SideLabel"/></param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.FindIndexOfChild(SDG.Unturned.ISleekElement)">
+            <summary>
+            Gets the index of <paramref name="sleek"/> in the child list.
+            </summary>
+            <param name="sleek">The element to look for in this element's child list.</param>
+            <returns>The index of the element in this element's child list, or -1 if it's not found.</returns>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.GetChildAtIndex(System.Int32)">
+            <summary>
+            Gets a child by it's index.
+            </summary>
+            <param name="index">Zero-based index of the child based on the order they were added.</param>
+            <returns>The child at <paramref name="index"/> in the child list.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is greater than or equal to the number of children this object has, or it's less than zero.</exception>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.Update">
+            <summary>
+            Updates the animation and transform changes, then calls <see cref="M:SDG.Unturned.ISleekElement.Update"/> on all it's visible children and <see cref="T:SDG.Unturned.SleekWrapper"/> owner, if present.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.RemoveChild(SDG.Unturned.ISleekElement)">
+            <summary>
+            Removes <paramref name="child"/> from the child list and destroy it.
+            </summary>
+            <param name="child">The child to be removed from the list.</param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.RemoveAllChildren">
+            <summary>
+            Removes all children from the child list and destroy them.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.ViewportToNormalizedPosition(UnityEngine.Vector2)">
+            <summary>
+            Converts a position on the screen to a position with values from 0 - 1 expressing a position on this element's bounds.
+            </summary>
+            <param name="viewportPosition">Screen coordinates.</param>
+            <returns>Normalized local element coordinates converted from <paramref name="viewportPosition"/>.</returns>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.GetNormalizedCursorPosition">
+            <summary>
+            Converts the cursor position on the screen to a position with values from 0 - 1 expressing a position on this element's bounds.
+            </summary>
+            <returns>Normalized local element coordinates converted from the current cursor position.</returns>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.GetAbsoluteSize">
+            <summary>
+            Gets the actual size of this element on the screen.
+            </summary>
+            <returns>The size of this element in screen coordinates.</returns>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.SetAsFirstSibling">
+            <summary>
+            Makes this element the first child in the list of children (effectively bringing it to the front).
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekField">
+            <summary>
+            Input field allowing the user to input text.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekField.OnTextSubmitted">
+            <summary>
+            Called when a user submits text into a <see cref="T:SDG.Unturned.ISleekField"/> (presses enter or clicks out).
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekField.OnTextChanged">
+            <summary>
+            Called when a user types into a <see cref="T:SDG.Unturned.ISleekField"/>.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekField.OnTextEscaped">
+            <summary>
+            Called when a user presses <c>escape</c> while typing in a <see cref="T:SDG.Unturned.ISleekField"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekField.IsPasswordField">
+            <summary>
+            Should the <see cref="T:SDG.Unturned.ISleekField"/>'s content be hidden when typing.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekField.PlaceholderText">
+            <summary>
+            Background text that shows when nothing is typed into the <see cref="T:SDG.Unturned.ISleekField"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekField.IsMultiline">
+            <summary>
+            Allow multiple lines in the <see cref="T:SDG.Unturned.ISleekField"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekField.MaxLength">
+            <summary>
+            Max length in characters of the content in the <see cref="T:SDG.Unturned.ISleekField"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekField.BackgroundColor">
+            <summary>
+            Background color of the <see cref="T:SDG.Unturned.ISleekField"/>.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekField.FocusControl">
+            <summary>
+            Selects the <see cref="T:SDG.Unturned.ISleekField"/>, which leaves the user in the position to be able to type.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekField.ClearFocus">
+            <summary>
+            Removes selection of the <see cref="T:SDG.Unturned.ISleekField"/>, making the user no longer able to type without re-selecting the field.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekFloat32Field">
+            <summary>
+            Input field that can only accept values within the range of a <see cref="T:System.Single"/>.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekFloat32Field.OnValueSubmitted">
+            <summary>
+            Called when a user submits a <see cref="T:System.Single"/> into a <see cref="T:SDG.Unturned.ISleekUInt16Field"/> (presses enter or clicks out).
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekFloat32Field.OnValueChanged">
+            <summary>
+            Called when a user types a <see cref="T:System.Single"/> into a <see cref="T:SDG.Unturned.ISleekUInt16Field"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekFloat32Field.Value">
+            <summary>
+            Current value of the <see cref="T:SDG.Unturned.ISleekFloat32Field"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekFloat64Field">
+            <summary>
+            Input field that can only accept values within the range of a <see cref="T:System.Double"/>.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekFloat64Field.OnValueChanged">
+            <summary>
+            Called when a user types a <see cref="T:System.Double"/> into a <see cref="T:SDG.Unturned.ISleekFloat64Field"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekFloat64Field.Value">
+            <summary>
+            Current value of the <see cref="T:SDG.Unturned.ISleekFloat64Field"/>.
+            </summary>
+            <remarks><see langword="default"/> when there is an invalid or empty value.</remarks>
+        </member>
+        <member name="T:SDG.Unturned.ISleekImage">
+            <summary>
+            UI element to render a Unity <see cref="T:UnityEngine.Texture"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekImage.Texture">
+            <summary>
+            Raw image to show in the UI.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekImage.RotationAngle">
+            <summary>
+            The angle in degrees clockwise at which this <see cref="T:SDG.Unturned.ISleekImage"/> is rotated.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekImage.CanRotate">
+            <summary>
+            Allow this <see cref="T:SDG.Unturned.ISleekImage"/> to be rotated.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekImage.ShouldDestroyTexture">
+            <summary>
+            Should <see cref="M:UnityEngine.Object.Destroy(UnityEngine.Object)"/> be called on the texture when the element is destroyed.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekImage.TintColor">
+            <summary>
+            Overlayed color over the image.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekImage.OnClicked">
+            <summary>
+            Called when a user left clicks a <see cref="T:SDG.Unturned.ISleekImage"/>.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekImage.OnRightClicked">
+            <summary>
+            Called when a user right clicks a <see cref="T:SDG.Unturned.ISleekImage"/>.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekImage.UpdateTexture(UnityEngine.Texture2D)">
+            <summary>
+            Sets a new texture.
+            </summary>
+            <param name="newTexture">The texture to set <see cref="P:SDG.Unturned.ISleekImage.Texture"/> to.</param>
+        </member>
+        <member name="M:SDG.Unturned.ISleekImage.SetTextureAndShouldDestroy(UnityEngine.Texture2D,System.Boolean)">
+            <summary>
+            Set a new texture with a <paramref name="shouldDestroyTexture"/> defining if <see cref="M:UnityEngine.Object.Destroy(UnityEngine.Object)"/> should be called on the texture when the element is destroyed.
+            </summary>
+            <param name="texture">The texture to set <see cref="P:SDG.Unturned.ISleekImage.Texture"/> to.</param>
+            <param name="shouldDestroyTexture">Should <see cref="M:UnityEngine.Object.Destroy(UnityEngine.Object)"/> be called on the texture when the element is destroyed.</param>
+        </member>
+        <member name="T:SDG.Unturned.ISleekInt32Field">
+            <summary>
+            Input field that can only accept values within the range of an <see cref="T:System.Int32"/>.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekInt32Field.OnValueChanged">
+            <summary>
+            Called when a user types an <see cref="T:System.Int32"/> into a <see cref="T:SDG.Unturned.ISleekInt32Field"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekInt32Field.Value">
+            <summary>
+            Current value of the <see cref="T:SDG.Unturned.ISleekInt32Field"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekLabel">
+            <summary>
+            UI text element.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekLabel.Text">
+            <summary>
+            Raw text to display on the label.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekLabel.FontStyle">
+            <summary>
+            Font weight and style. Bold, italic, etc.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekLabel.TextAlignment">
+            <summary>
+            Alignment of the anchor for the text.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekLabel.FontSize">
+            <summary>
+            Font size preset to use.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekLabel.TextContrastContext">
+            <summary>
+            Contrast context for the text. This describes what the backdrop for the text looks like. Text on the HUD would need more contrast than text on a plain background.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekLabel.TextColor">
+            <summary>
+            Color preset of the text.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekLabel.AllowRichText">
+            <summary>
+            Should the text be parsed for rich text tags?
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekNumericField">
+            <summary>
+            Input field that can only accept numeric values.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekNumericField.BackgroundColor">
+            <summary>
+            Background color of the <see cref="T:SDG.Unturned.ISleekNumericField"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekNumericField.TextColor">
+            <summary>
+            Text (foreground) color of the <see cref="T:SDG.Unturned.ISleekNumericField"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekScrollView">
+            <summary>
+            Scroll viewport to manage offsets of scrollable content.
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "P:SDG.Unturned.ISleekScrollView.ScaleContentToWidth" -->
+        <!-- Badly formed XML comment ignored for member "P:SDG.Unturned.ISleekScrollView.ScaleContentToHeight" -->
+        <member name="P:SDG.Unturned.ISleekScrollView.ContentScaleFactor">
+            <summary>
+            How zoomed in the content is.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.ReduceWidthWhenScrollbarVisible">
+            <summary>
+            Should the scroll bar's hiding expand the viewport to the space taken up by the scroll bar previously?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.VerticalScrollbarVisibility">
+            <summary>
+            The visibility of the vertical scroll bar (<see cref="F:SDG.Unturned.ESleekScrollbarVisibility.Hidden"/> or <see cref="F:SDG.Unturned.ESleekScrollbarVisibility.Default"/>).
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.ContentSizeOffset">
+            <summary>
+            Size offset in pixels of the content in the scroll view.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.NormalizedStateCenter">
+            <summary>
+            Position of the scroll view with coordinates in the range of 0 to 1.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.HandleScrollWheel">
+            <summary>
+            If this <see cref="T:SDG.Unturned.ISleekScrollView"/> should respond to the scroll wheel instead of redirecting it to it's parent <see cref="T:SDG.Unturned.ISleekScrollView"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.BackgroundColor">
+            <summary>
+            Background color of the scroll bars.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.ForegroundColor">
+            <summary>
+            Foreground color of the scroll bars.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekScrollView.OnNormalizedValueChanged">
+            <summary>
+            Called when the position of the <see cref="T:SDG.Unturned.ISleekScrollView"/> changes. Values are 0 - 1 from the top left corner.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.NormalizedVerticalPosition">
+            <summary>
+            Position of the scroll view in the y direction.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.NormalizedViewportHeight">
+            <summary>
+            Size of the scroll view's viewport in the y direction.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.ContentUseManualLayout">
+            <summary>
+            Use manual layout instead of a <see cref="T:UnityEngine.UI.VerticalLayoutGroup"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.AlignContentToBottom">
+            <summary>
+            Root of the content is the bottom of the scroll view (like chat).
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.IsRaycastTarget">
+            <summary>
+            Should the scroll view consume clicks?
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekScrollView.ScrollToTop">
+            <summary>
+            Scrolls to the top of the scroll view.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekScrollView.ScrollToBottom">
+            <summary>
+            Scrolls to the bottom of the scroll view.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekSlider">
+            <summary>
+            Slider bar (like a scroll bar) with a value from 0-1.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekSlider.OnValueChanged">
+            <summary>
+            Called when a user interacts with a <see cref="T:SDG.Unturned.ISleekSlider"/> and changes it's position.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSlider.Orientation">
+            <summary>
+            Which axis the slider aligns with.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSlider.Value">
+            <summary>
+            Normalized position of the slider from 0 to 1.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSlider.BackgroundColor">
+            <summary>
+            Background color of the <see cref="T:SDG.Unturned.ISleekSlider"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSlider.ForegroundColor">
+            <summary>
+            Foreground color of the <see cref="T:SDG.Unturned.ISleekSlider"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSlider.IsInteractable">
+            <summary>
+            Can the user interact with the slider (change it's position)?
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekSprite">
+            <summary>
+            UI element to render a Unity <see cref="T:UnityEngine.Sprite"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSprite.Sprite">
+            <summary>
+            Sprite to show in the UI.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSprite.TintColor">
+            <summary>
+            Overlayed color over the image.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSprite.DrawMethod">
+            <summary>
+            How the sprite is sliced.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSprite.IsRaycastTarget">
+            <summary>
+            Should the sprite consume clicks?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekSprite.TileRepeatHintForUITK">
+            <summary>
+            Number of tiled images in each dimension to work around a limitation of the UIToolkit glazier provider.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekSprite.OnClicked">
+            <summary>
+            Called when a user clicks a <see cref="T:SDG.Unturned.ISleekSprite"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekToggle">
+            <summary>
+            Check box that represents a <see cref="T:System.Boolean"/> value.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekToggle.OnValueChanged">
+            <summary>
+            Called when a user checks or unchecks a <see cref="T:SDG.Unturned.ISleekToggle"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekToggle.Value">
+            <summary>
+            Current value of the <see cref="T:SDG.Unturned.ISleekToggle"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekToggle.BackgroundColor">
+            <summary>
+            Background color of the <see cref="T:SDG.Unturned.ISleekToggle"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekToggle.ForegroundColor">
+            <summary>
+            Foreground color of the <see cref="T:SDG.Unturned.ISleekToggle"/> (the check mark).
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekToggle.IsInteractable">
+            <summary>
+            Can the user interact with the check box (change it's value)?
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekUInt16Field">
+            <summary>
+            Input field that can only accept values within the range of a <see cref="T:System.UInt16"/> between <see cref="P:SDG.Unturned.ISleekUInt16Field.MinValue"/> and <see cref="P:SDG.Unturned.ISleekUInt16Field.MaxValue"/>.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekUInt16Field.OnValueChanged">
+            <summary>
+            Called when a user types a <see cref="T:System.UInt16"/> into a <see cref="T:SDG.Unturned.ISleekUInt16Field"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekUInt16Field.Value">
+            <summary>
+            Current value of the <see cref="T:SDG.Unturned.ISleekUInt16Field"/>.
+            </summary>
+            <remarks><see langword="default"/> when there is an invalid or empty value.</remarks>
+        </member>
+        <member name="P:SDG.Unturned.ISleekUInt16Field.MinValue">
+            <summary>
+            Minimum value of the <see cref="T:SDG.Unturned.ISleekUInt16Field"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekUInt16Field.MaxValue">
+            <summary>
+            Maximum value of the <see cref="T:SDG.Unturned.ISleekUInt16Field"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekUInt32Field">
+            <summary>
+            Input field that can only accept values within the range of a <see cref="T:System.UInt32"/>.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekUInt32Field.OnValueChanged">
+            <summary>
+            Called when a user types a <see cref="T:System.UInt32"/> into a <see cref="T:SDG.Unturned.ISleekUInt8Field"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekUInt32Field.Value">
+            <summary>
+            Current value of the <see cref="T:SDG.Unturned.ISleekUInt32Field"/>.
+            </summary>
+            <remarks><see langword="default"/> when there is an invalid or empty value.</remarks>
+        </member>
+        <member name="T:SDG.Unturned.ISleekUInt8Field">
+            <summary>
+            Input field that can only accept values within the range of a <see cref="T:System.Byte"/>.
+            </summary>
+        </member>
+        <member name="E:SDG.Unturned.ISleekUInt8Field.OnValueChanged">
+            <summary>
+            Called when a user types a <see cref="T:System.Byte"/> into a <see cref="T:SDG.Unturned.ISleekUInt8Field"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekUInt8Field.Value">
+            <summary>
+            Current value of the <see cref="T:SDG.Unturned.ISleekUInt8Field"/>.
+            </summary>
+            <remarks><see langword="default"/> when there is an invalid or empty value.</remarks>
+        </member>
+        <member name="T:SDG.Unturned.ISleekWithTooltip">
+            <summary>
+            A <see cref="T:SDG.Unturned.ISleekElement"/> with a tooltip that shows when hovering over the element.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekWithTooltip.TooltipText">
+            <summary>
+            Text that will show when hovering over the element.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.SleekColor">
+            <summary>
+            Color presets for Sleek UI. Uses <see cref="T:SDG.Unturned.ESleekTint"/> for the presets.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.#ctor(SDG.Unturned.ESleekTint)">
+            <summary>
+            Create a <see cref="T:SDG.Unturned.SleekColor"/> from a tint with full opacity.
+            </summary>
+            <param name="tint">The tint preset to use as the color.</param>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.#ctor(SDG.Unturned.ESleekTint,System.Single)">
+            <summary>
+            Create a <see cref="T:SDG.Unturned.SleekColor"/> from a tint with <paramref name="alpha"/> opacity.
+            </summary>
+            <param name="tint">The tint preset to use as the color.</param>
+            <param name="alpha">Value of the alpha channel (transparency) from 0 to 1, where 0 is transparent and 1 is opaque.</param>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.#ctor(UnityEngine.Color)">
+            <summary>
+            Create a <see cref="T:SDG.Unturned.SleekColor"/> from a custom Unity <see cref="T:UnityEngine.Color"/>.
+            </summary>
+            <param name="customColor">The full RGBA custom color to use.</param>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.#ctor(UnityEngine.Color32)">
+            <summary>
+            Create a <see cref="T:SDG.Unturned.SleekColor"/> from a custom Unity <see cref="T:UnityEngine.Color32"/>.
+            </summary>
+            <param name="customColor">The full RGBA custom color to use.</param>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.BackgroundIfLight(UnityEngine.Color)">
+            <summary>
+            Create a <see cref="T:SDG.Unturned.SleekColor"/> representing a custom color when using <c>pro</c> theme, otherwise <see cref="F:SDG.Unturned.ESleekTint.BACKGROUND"/>.
+            </summary>
+            <param name="customColor">The custom color that will show when using <c>pro</c> theme.</param>
+            <returns>A sleek color that will use a custom color when the <c>pro</c> theme is active, otherwise the background color.</returns>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.BackgroundIfLight(System.Single)">
+            <summary>
+            Create a <see cref="T:SDG.Unturned.SleekColor"/> representing white with a custom alpha value when using <c>pro</c> theme, otherwise <see cref="F:SDG.Unturned.ESleekTint.BACKGROUND"/>.
+            </summary>
+            <param name="alpha">Value of the alpha channel (transparency) from 0 to 1, where 0 is transparent and 1 is opaque.</param>
+            <returns>A sleek color that will use white with a custom alpha value when the <c>pro</c> theme is active, otherwise the background color.</returns>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.Get">
+            <summary>
+            Convert this <see cref="T:SDG.Unturned.SleekColor"/> to a Unity <see cref="T:UnityEngine.Color"/>.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.GetStyleColor">
+            <summary>
+            Convert this <see cref="T:SDG.Unturned.SleekColor"/> to a Unity <see cref="T:UnityEngine.UIElements.StyleColor"/>.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.SetAlpha(System.Single)">
+            <summary>
+            Set the custom opacity of the color.
+            </summary>
+            <param name="alpha">Value of the alpha channel (transparency) from 0 to 1, where 0 is transparent and 1 is opaque.</param>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.op_Implicit(SDG.Unturned.ESleekTint)~SDG.Unturned.SleekColor">
+            <summary>
+            Create a <see cref="T:SDG.Unturned.SleekColor"/> from a tint with full opacity.
+            </summary>
+            <param name="tint">The tint preset to use as the color.</param>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.op_Implicit(UnityEngine.Color)~SDG.Unturned.SleekColor">
+            <summary>
+            Create a <see cref="T:SDG.Unturned.SleekColor"/> from a custom Unity <see cref="T:UnityEngine.Color"/>.
+            </summary>
+            <param name="customColor">The full RGBA custom color to use.</param>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.op_Implicit(UnityEngine.Color32)~SDG.Unturned.SleekColor">
+            <summary>
+            Create a <see cref="T:SDG.Unturned.SleekColor"/> from a custom Unity <see cref="T:UnityEngine.Color32"/>.
+            </summary>
+            <param name="customColor">The full RGBA custom color to use.</param>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.op_Implicit(SDG.Unturned.SleekColor)~UnityEngine.Color">
+            <summary>
+            Convert this <see cref="T:SDG.Unturned.SleekColor"/> to a Unity <see cref="T:UnityEngine.Color"/>.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.SleekColor.op_Implicit(SDG.Unturned.SleekColor)~UnityEngine.UIElements.StyleColor">
+            <summary>
+            Convert this <see cref="T:SDG.Unturned.SleekColor"/> to a Unity <see cref="T:UnityEngine.UIElements.StyleColor"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.SleekCustomization">
+            <summary>
+            Holds customization values for Sleek UI. Dependant on the user's settings.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.darkTheme">
+            <summary>
+            Whether or not the user is using the <c>pro</c> UI theme.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.backgroundColor">
+            <summary>
+            Background color selection. Corresponds to <see cref="F:SDG.Unturned.ESleekTint.BACKGROUND"/> and <see cref="F:SDG.Unturned.ESleekTint.BACKGROUND_IF_LIGHT"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.foregroundColor">
+            <summary>
+            Foreground color selection. Corresponds to <see cref="F:SDG.Unturned.ESleekTint.FOREGROUND"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.fontColor">
+            <summary>
+            Font color selection. Corresponds to <see cref="F:SDG.Unturned.ESleekTint.FONT"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.cursorColor">
+            <summary>
+            Color of the cursor icon drawn every frame.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.badColor">
+            <summary>
+            Warning/caution color. Corresponds to <see cref="F:SDG.Unturned.ESleekTint.BAD"/>.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.shadowColor">
+            <summary>
+            Shadow color selection under text.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.defaultTextContrast">
+            <summary>
+            Contrast setting for <see cref="F:SDG.Unturned.ETextContrastContext.Default"/> contrast contexts.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.inconspicuousTextContrast">
+            <summary>
+            Contrast setting for <see cref="F:SDG.Unturned.ETextContrastContext.InconspicuousBackdrop"/> contrast contexts.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekCustomization.colorfulTextContrast">
+            <summary>
+            Contrast setting for <see cref="F:SDG.Unturned.ETextContrastContext.ColorfulBackdrop"/> contrast contexts.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.SleekShadowStyle">
+            <summary>
+            Holds a lookup table for <see cref="T:SDG.Unturned.ETextContrastStyle"/>.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.SleekShadowStyle.ContextToStyle(SDG.Unturned.ETextContrastContext)">
+            <summary>
+            Converts a <see cref="T:SDG.Unturned.ETextContrastContext"/> to a <see cref="T:SDG.Unturned.ETextContrastStyle"/> based on the user's settings.
+            </summary>
+            <param name="context">The context describing the backdrop for the text.</param>
+            <returns>The corresponding style based on the user's settings.</returns>
+        </member>
+        <member name="T:SDG.Unturned.SleekWindow">
+            <summary>
+            Fullscreen parent window for sleek elements.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekWindow.showCursor">
+            <summary>
+            Allow the curser to be visible?
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekWindow.isEnabled">
+            <summary>
+            Should the window and its children be visible?
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekWindow.drawCursorWhileDisabled">
+            <summary>
+            Should the curser be drawn even when <see cref="F:SDG.Unturned.SleekWindow.isEnabled"/> is <see langword="false"/>?
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekWindow.showTooltips">
+            <summary>
+            Allow tooltips to be shown when the cursor is enabled?
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.SleekWindow.hackSortOrder">
+            <summary>
+            Sets the canvas sort order much higher.
+            </summary>
+            <remarks>Doesn't appear to be in use right now.</remarks>
+        </member>
+        <member name="P:SDG.Unturned.SleekWindow.ShouldDrawCursor">
+            <summary>
+            Whether or not the cursor should be drawn.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.SleekWindow.ShouldDrawTooltip">
+            <summary>
+            Whether or not tooltips should be drawn.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.SleekWindow.isCursorLocked">
+            <summary>
+            Whether or not the user should be unable to select any UI elements.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.SleekWindow.OnUpdate">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWindow.#ctor">
+            <summary>
+            Initialize a new <see cref="T:SDG.Unturned.SleekWindow"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.SleekWrapper">
+            <summary>
+            Proxy implementation of <see cref="T:SDG.Unturned.ISleekElement"/> to use as a base class for Sleek presets.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.IsVisible">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.Parent">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.SideLabel">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.PositionOffset_X">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.PositionOffset_Y">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.PositionScale_X">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.PositionScale_Y">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.SizeOffset_X">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.SizeOffset_Y">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.SizeScale_X">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.SizeScale_Y">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.AttachmentRoot">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.IsAnimatingTransform">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.UseManualLayout">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.UseWidthLayoutOverride">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.UseHeightLayoutOverride">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.UseChildAutoLayout">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.ChildPerpendicularAlignment">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.ExpandChildren">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.IgnoreLayout">
+            <inheritdoc />
+        </member>
+        <member name="P:SDG.Unturned.SleekWrapper.ChildAutoLayoutPadding">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.InternalDestroy">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.AnimatePositionOffset(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.AnimatePositionScale(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.AnimateSizeOffset(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.AnimateSizeScale(System.Single,System.Single,SDG.Unturned.ESleekLerp,System.Single)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.AddChild(SDG.Unturned.ISleekElement)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.AddLabel(System.String,SDG.Unturned.ESleekSide)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.AddLabel(System.String,UnityEngine.Color,SDG.Unturned.ESleekSide)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.UpdateLabel(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.FindIndexOfChild(SDG.Unturned.ISleekElement)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.GetChildAtIndex(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.Update">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.RemoveChild(SDG.Unturned.ISleekElement)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.RemoveAllChildren">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.ViewportToNormalizedPosition(UnityEngine.Vector2)">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.GetNormalizedCursorPosition">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.GetAbsoluteSize">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.SetAsFirstSibling">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.OnUpdate">
+            <summary>
+            Runs every Update tick.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.OnDestroy">
+            <summary>
+            Runs when the element is destroyed.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.ValidateNotDestroyed">
+            <summary>
+            Conditional check for validating the UI is not destroyed.
+            </summary>
+            <remarks>Only compiles if the <c>VALIDATE_SLEEK_PROXY_USE_AFTER_DESTROY</c> compiler flag is set.</remarks>
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.#ctor">
+            <summary>
+            Create a proxy implementation for <see cref="T:SDG.Unturned.ISleekElement"/>.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.Toggled">
+            <summary>
+            Handles when a user toggles a <see cref="T:SDG.Unturned.ISleekToggle"/>.
+            </summary>
+            <param name="toggle">The toggle that the user interacted with.</param>
+            <param name="state"><see langword="true"/> if <paramref name="toggle"/> is now checked, otherwise <see langword="false"/>.</param>
+        </member>
+        <member name="T:SDG.Unturned.Typed">
+            <summary>
+            Handles when a user types a <see cref="T:System.String"/> into a <see cref="T:SDG.Unturned.ISleekField"/>.
+            </summary>
+            <param name="field">The field the user typed into.</param>
+            <param name="text">The current text in the field.</param>
+        </member>
+        <member name="T:SDG.Unturned.TypedByte">
+            <summary>
+            Handles when a user types a <see cref="T:System.Byte"/> into a <see cref="T:SDG.Unturned.ISleekUInt8Field"/>.
+            </summary>
+            <param name="field">The field the user typed into.</param>
+            <param name="value">The current value of the field.</param>
+        </member>
+        <member name="T:SDG.Unturned.TypedDouble">
+            <summary>
+            Handles when a user types a <see cref="T:System.Double"/> into a <see cref="T:SDG.Unturned.ISleekFloat64Field"/>.
+            </summary>
+            <param name="field">The field the user typed into.</param>
+            <param name="value">The current value of the field.</param>
+        </member>
+        <member name="T:SDG.Unturned.TypedInt32">
+            <summary>
+            Handles when a user types a <see cref="T:System.Int32"/> into a <see cref="T:SDG.Unturned.ISleekInt32Field"/>.
+            </summary>
+            <param name="field">The field the user typed into.</param>
+            <param name="value">The current value of the field.</param>
+        </member>
+        <member name="T:SDG.Unturned.TypedSingle">
+            <summary>
+            Handles when a user types a <see cref="T:System.Single"/> into a <see cref="T:SDG.Unturned.ISleekFloat32Field"/>.
+            </summary>
+            <param name="field">The field the user typed into.</param>
+            <param name="value">The current value of the field.</param>
+        </member>
+        <member name="T:SDG.Unturned.TypedUInt16">
+            <summary>
+            Handles when a user types a <see cref="T:System.UInt16"/> into a <see cref="T:SDG.Unturned.ISleekUInt16Field"/>.
+            </summary>
+            <param name="field">The field the user typed into.</param>
+            <param name="value">The current value of the field.</param>
+        </member>
+        <member name="T:SDG.Unturned.TypedUInt32">
+            <summary>
+            Handles when a user types a <see cref="T:System.UInt32"/> into a <see cref="T:SDG.Unturned.ISleekUInt32Field"/>.
+            </summary>
+            <param name="field">The field the user typed into.</param>
+            <param name="value">The current value of the field.</param>
+        </member>
+    </members>
+</doc>

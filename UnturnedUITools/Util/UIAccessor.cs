@@ -223,9 +223,6 @@ public static class UIAccessor
     private static readonly InstanceGetter<MenuPlayUI, MenuPlayConnectUI?>? GetMenuPlayConnectUI
         = Accessor.GenerateInstanceGetter<MenuPlayUI, MenuPlayConnectUI?>("connectUI");
 
-    private static readonly InstanceGetter<MenuPlayUI, MenuPlayServersUI?>? GetMenuPlayServersUI
-        = Accessor.GenerateInstanceGetter<MenuPlayUI, MenuPlayServersUI?>("serverListUI");
-
     private static readonly InstanceGetter<MenuPlayUI, MenuPlayServerInfoUI?>? GetMenuPlayServerInfoUI
         = Accessor.GenerateInstanceGetter<MenuPlayUI, MenuPlayServerInfoUI?>("serverInfoUI");
 
@@ -700,14 +697,17 @@ public static class UIAccessor
     /// <summary>
     /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServersUI"/>.
     /// </summary>
-    public static MenuPlayServersUI? MenuPlayServersUI
-    {
-        get
-        {
-            MenuPlayUI? menuPlayUI = MenuPlayUI;
-            return menuPlayUI != null ? GetMenuPlayServersUI?.Invoke(menuPlayUI) : null;
-        }
-    }
+    public static MenuPlayServersUI? MenuPlayServersUI => MenuPlayUI.serverListUI;
+
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerListFiltersUI"/>.
+    /// </summary>
+    public static MenuPlayServerListFiltersUI? MenuPlayServerListFiltersUI => MenuPlayServersUI.serverListFiltersUI;
+
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerBookmarksUI"/>.
+    /// </summary>
+    public static MenuPlayServerBookmarksUI? MenuPlayServerBookmarksUI => MenuPlayUI.serverBookmarksUI;
 
     /// <summary>
     /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerInfoUI"/>.
@@ -1654,18 +1654,18 @@ public static class UIAccessor
                     EmitProperty = nameof(MenuPlayLobbiesUI)
                 });
 
-                FieldInfo? menuPlayServersListFiltersUiField = FindUIType(nameof(SDG.Unturned.MenuPlayServersUI))?
-                        .GetField("serverListFiltersUI", BindingFlags.Static | BindingFlags.Public);
-                Add(new UITypeInfo(nameof(MenuPlayServerListFiltersUI))
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayServerListFiltersUI))
                 {
                     ParentName = nameof(SDG.Unturned.MenuPlayServersUI),
                     Scene = UIScene.Menu,
-                    CustomEmitter = menuPlayServersListFiltersUiField != null
-                            ? (_, generator) => generator.Emit(OpCodes.Ldsfld, menuPlayServersListFiltersUiField)
-                            : null,
-                    CustomTranspiler = menuPlayServersListFiltersUiField != null
-                            ? (_, _) => new CodeInstruction[] { new CodeInstruction(OpCodes.Ldsfld, menuPlayServersListFiltersUiField) }
-                            : null
+                    EmitProperty = nameof(MenuPlayServerListFiltersUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayServerBookmarksUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPlayServerBookmarksUI)
                 });
 
                 Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayServerInfoUI))
