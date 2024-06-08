@@ -1,4 +1,6 @@
-﻿using DanielWillett.UITools.API;
+﻿using DanielWillett.ReflectionTools;
+using DanielWillett.ReflectionTools.Formatting;
+using DanielWillett.UITools.API;
 using DanielWillett.UITools.Util;
 using HarmonyLib;
 using SDG.Unturned;
@@ -6,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DanielWillett.ReflectionTools;
 
 namespace DanielWillett.UITools.Core.Handlers;
 internal class CustomSleekWrapperDestroyHandler : ICustomOnDestroyUIHandler
@@ -23,7 +24,11 @@ internal class CustomSleekWrapperDestroyHandler : ICustomOnDestroyUIHandler
         MethodInfo? intlDestroy = typeof(ISleekElement).GetMethod(nameof(ISleekElement.InternalDestroy), BindingFlags.Public | BindingFlags.Instance);
         if (intlDestroy == null)
         {
-            CommandWindow.LogWarning($"[{Source}] Unable to find method: ISleekElement.InternalDestroy.");
+            Accessor.Logger?.LogWarning(Source, $"Unable to find method: {Accessor.Formatter.Format(new MethodDefinition(nameof(ISleekElement.InternalDestroy))
+                .DeclaredIn<ISleekElement>(isStatic: false)
+                .WithNoParameters()
+                .Returning(typeof(void))
+            )}.");
             return;
         }
 
@@ -36,8 +41,13 @@ internal class CustomSleekWrapperDestroyHandler : ICustomOnDestroyUIHandler
             MethodInfo? impl = Accessor.GetImplementedMethod(type, intlDestroy);
 
             if (impl == null)
-                CommandWindow.LogWarning($"[{Source}] Unable to find implemented method: {type.Name}.InternalDestroy.");
-            else Implementations.Add(impl);
+            {
+                Accessor.Logger?.LogWarning(Source, $"Unable to find implemented method for {Accessor.Formatter.Format(intlDestroy)} in {Accessor.Formatter.Format(type)}.");
+            }
+            else
+            {
+                Implementations.Add(impl);
+            }
         }
 
         for (int i = 0; i < Implementations.Count; ++i)
@@ -48,8 +58,7 @@ internal class CustomSleekWrapperDestroyHandler : ICustomOnDestroyUIHandler
             }
             catch (Exception ex)
             {
-                CommandWindow.LogWarning($"[{Source}] Unable to patch: {Implementations[i].DeclaringType!.Name}.InternalDestroy.");
-                CommandWindow.LogWarning(ex);
+                Accessor.Logger?.LogError(Source, ex, $"Unable to patch {Accessor.Formatter.Format(Implementations[i])}.");
             }
         }
     }
@@ -63,8 +72,7 @@ internal class CustomSleekWrapperDestroyHandler : ICustomOnDestroyUIHandler
             }
             catch (Exception ex)
             {
-                CommandWindow.LogWarning($"[{Source}] Unable to unpatch: {method.DeclaringType!.Name}.InternalDestroy.");
-                CommandWindow.LogWarning(ex);
+                Accessor.Logger?.LogError(Source, ex, $"Unable to unpatch {Accessor.Formatter.Format(method)}.");
             }
         }
     }
@@ -79,14 +87,14 @@ internal class CustomSleekWrapperDestroyHandler : ICustomOnDestroyUIHandler
 
         if (getter == null)
         {
-            CommandWindow.LogWarning($"[{Source}] Unable to get sleek wrapper from proxy implementation: " + type.Name + ".");
+            Accessor.Logger?.LogWarning(Source, $"Unable to get sleek wrapper from proxy implementation: {Accessor.Formatter.Format(type)}.");
             return;
         }
 
         __instance = getter(__instance);
         if (__instance == null)
         {
-            CommandWindow.LogWarning($"[{Source}] Sleek wrapper not available from proxy implementation: " + type.Name + ".");
+            Accessor.Logger?.LogWarning(Source, $"Sleek wrapper not available from proxy implementation {Accessor.Formatter.Format(type)}.");
             return;
         }
 
@@ -111,7 +119,7 @@ internal class CustomSleekWrapperDestroyHandler : ICustomOnDestroyUIHandler
         if (property != null)
             return Accessor.GenerateInstancePropertyGetter<SleekWrapper>(type, property.Name, allowUnsafeTypeBinding: true);
 
-        CommandWindow.LogWarning($"[{Source}] Failed to find property or field for SleekWrapper in proxy type: " + type.Name + ".");
+        Accessor.Logger?.LogWarning(Source, $"Failed to find property or field for SleekWrapper in proxy type {Accessor.Formatter.Format(type)}.");
         return null;
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace DanielWillett.UITools.API.Extensions;
+﻿using DanielWillett.ReflectionTools;
+
+namespace DanielWillett.UITools.API.Extensions;
 
 /// <summary>
 /// Stores information about a vanilla UI type.
@@ -27,5 +29,5 @@ public class UIExtensionVanillaInstanceInfo
     }
 
     /// <inheritdoc />
-    public override string ToString() => $"Instance: {(Instance == null ? "null" : "instance of " + Instance.GetType().Name)} (hash: {(Instance == null ? 0 : Instance.GetHashCode()):X8}), Static: {Static}, IsOpen: {IsOpen}.";
+    public override string ToString() => $"Instance: {(Instance == null ? "null" : "instance of " + Accessor.ExceptionFormatter.Format(Instance.GetType()))} (hash: {(Instance == null ? 0 : Instance.GetHashCode()):X8}), Static: {Static}, IsOpen: {IsOpen}.";
 }

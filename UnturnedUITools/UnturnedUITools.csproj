@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 
-    <PackageReleaseNotes>Added MenuPlayServerBookmarksUI from preview version v3.24.1.102. Minor updates to SDG.Glazier.Runtime documentation.</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated to ReflectionTools v3 and Harmony v2.3.3.</PackageReleaseNotes>
 
-    <Version>1.4.1</Version>
+    <Version>1.4.2</Version>
 
   </PropertyGroup>
   <PropertyGroup>
@@ -43,7 +43,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DanielWillett.ReflectionTools" Version="[2.0.1,)" />
+    <PackageReference Include="DanielWillett.ReflectionTools" Version="[3.0.0,)" />
+    <PackageReference Include="DanielWillett.ReflectionTools.Harmony" Version="[3.0.0,)" />
+    <PackageReference Include="Lib.Harmony" Version="[2.3.3,)" />
   </ItemGroup>
 
   <ItemGroup>

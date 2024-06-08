@@ -434,17 +434,10 @@ public static class GlazierExtensions
     {
         ThreadUtil.assertIsGameThread();
 
-        if (Glazier.instance == glazier)
+        if (Glazier.Get() == glazier)
             return new TSleekWrapper();
 
-        IGlazier oldInstance = Glazier.instance;
-        Glazier.instance = glazier;
-
-        TSleekWrapper wrapper = new TSleekWrapper();
-
-        Glazier.instance = oldInstance;
-
-        return wrapper;
+        return CreateWrapperIntl<TSleekWrapper>(glazier);
     }
 
     /// <summary>
@@ -464,9 +457,25 @@ public static class GlazierExtensions
     {
         ThreadUtil.assertIsGameThread();
 
-        if (Glazier.instance == glazier)
+        if (Glazier.Get() == glazier)
             return factory();
 
+        return CreateWrapperIntl(glazier, factory);
+    }
+    // isolate deprecated Glazier.instance
+    private static TSleekWrapper CreateWrapperIntl<TSleekWrapper>(this IGlazier glazier) where TSleekWrapper : ISleekElement, new()
+    {
+        IGlazier oldInstance = Glazier.instance;
+        Glazier.instance = glazier;
+
+        TSleekWrapper wrapper = new TSleekWrapper();
+
+        Glazier.instance = oldInstance;
+
+        return wrapper;
+    }
+    private static TSleekWrapper CreateWrapperIntl<TSleekWrapper>(this IGlazier glazier, Func<TSleekWrapper> factory) where TSleekWrapper : ISleekElement
+    {
         IGlazier oldInstance = Glazier.instance;
         Glazier.instance = glazier;
 

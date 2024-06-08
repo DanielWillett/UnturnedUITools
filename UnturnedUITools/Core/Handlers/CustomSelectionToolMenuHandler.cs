@@ -1,4 +1,5 @@
 ﻿using DanielWillett.ReflectionTools;
+using DanielWillett.ReflectionTools.Formatting;
 using DanielWillett.UITools.API;
 using DanielWillett.UITools.Util;
 using HarmonyLib;
@@ -41,14 +42,18 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
     {
         if (Type == null)
         {
-            CommandWindow.LogWarning($"[{Source}] Unable to find type: {TypeName}.");
+            Accessor.Logger?.LogWarning(Source, $"Unable to find type: {TypeName}.");
             return;
         }
 
-        MethodInfo? onUpdateMethod = Type?.GetMethod("OnUpdate", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+        MethodInfo? onUpdateMethod = Type.GetMethod("OnUpdate", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (onUpdateMethod == null)
         {
-            CommandWindow.LogWarning($"[{Source}] Unable to find method: {TypeName}.OnUpdate.");
+            Accessor.Logger?.LogWarning(Source, $"Unable to find method: {Accessor.Formatter.Format(new MethodDefinition("OnUpdate")
+                .DeclaredIn(Type, isStatic: false)
+                .WithNoParameters()
+                .Returning(typeof(void))
+            )}.");
             return;
         }
 
@@ -59,15 +64,18 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
         }
         catch (Exception ex)
         {
-            CommandWindow.LogWarning($"[{Source}] Unable to patch: {TypeName}.OnUpdate.");
-            CommandWindow.LogWarning(ex);
+            Accessor.Logger?.LogError(Source, ex, $"Unable to patch: {Accessor.Formatter.Format(onUpdateMethod)}.");
             return;
         }
 
-        MethodInfo? closeMethod = Type!.GetMethod("Close", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+        MethodInfo? closeMethod = Type.GetMethod("Close", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (closeMethod == null)
         {
-            CommandWindow.LogWarning($"[{Source}] Unable to find method: {TypeName}.Close.");
+            Accessor.Logger?.LogWarning(Source, $"Unable to find method: {Accessor.Formatter.Format(new MethodDefinition("Close")
+                .DeclaredIn(Type, isStatic: false)
+                .WithNoParameters()
+                .Returning(typeof(void))
+            )}.");
             return;
         }
 
@@ -78,8 +86,7 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
         }
         catch (Exception ex)
         {
-            CommandWindow.LogWarning($"[{Source}] Unable to patch: {TypeName}.Close.");
-            CommandWindow.LogWarning(ex);
+            Accessor.Logger?.LogError(Source, ex, $"Unable to patch: {Accessor.Formatter.Format(closeMethod)}.");
         }
     }
 
@@ -100,18 +107,32 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
         MethodInfo addInvoker = Accessor.GetMethod(OnOpenedInvoker)!;
         MethodInfo removeInvoker = Accessor.GetMethod(OnClosedAndDestroyedInvoker)!;
         MethodInfo? addMethod = typeof(SleekWrapper).GetMethod(nameof(SleekWrapper.AddChild), BindingFlags.Instance | BindingFlags.Public);
+
         if (addMethod == null)
-            CommandWindow.LogError($"[{Source}] Unable to find method: SleekWrapper.AddChild.");
+        {
+            Accessor.Logger?.LogWarning(Source, $"Unable to find method: {Accessor.Formatter.Format(new MethodDefinition(nameof(SleekWrapper.AddChild))
+                .DeclaredIn<SleekWrapper>(isStatic: false)
+                .WithParameter<ISleekElement>("sleek")
+                .Returning(typeof(void))
+            )}.");
+        }
+
         MethodInfo? removeMethod = typeof(SleekWrapper).GetMethod(nameof(SleekWrapper.RemoveChild), BindingFlags.Instance | BindingFlags.Public);
         if (removeMethod == null)
-            CommandWindow.LogError($"[{Source}] Unable to find method: SleekWrapper.RemoveChild.");
+        {
+            Accessor.Logger?.LogWarning(Source, $"Unable to find method: {Accessor.Formatter.Format(new MethodDefinition(nameof(SleekWrapper.RemoveChild))
+                .DeclaredIn<SleekWrapper>(isStatic: false)
+                .WithParameter<ISleekElement>("sleek")
+                .Returning(typeof(void))
+            )}.");
+        }
 
         List<CodeInstruction> ins = new List<CodeInstruction>(instructions);
 
         bool add = false, remove = false;
         for (int i = 0; i < ins.Count; ++i)
         {
-            if (!add && EmitUtility.FollowPattern(ins, ref i,
+            if (!add && PatchUtility.FollowPattern(ins, ref i,
                     x => x.opcode == OpCodes.Ldfld,
                     x => addMethod != null && x.Calls(addMethod)
                     ))
@@ -123,7 +144,7 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
                 i += 3;
             }
 
-            if (!remove && EmitUtility.MatchPattern(ins, i,
+            if (!remove && PatchUtility.MatchPattern(ins, i,
                     x => x.opcode == OpCodes.Ldfld,
                     x => removeMethod != null && x.Calls(removeMethod)
                 ))
@@ -136,11 +157,11 @@ internal abstract class CustomSelectionToolMenuHandler : ICustomOnCloseUIHandler
         }
         if (!add)
         {
-            CommandWindow.LogError($"[{Source}] Failed to patch: {method.FullDescription()}, unable to insert add child invoker (on opened).");
+            Accessor.Logger?.LogWarning(Source, $"Failed to patch {Accessor.Formatter.Format(method)}, unable to insert add child invoker (on opened).");
         }
         if (!remove)
         {
-            CommandWindow.LogError($"[{Source}] Failed to patch: {method.FullDescription()}, unable to insert remove child invoker (on closed).");
+            Accessor.Logger?.LogWarning(Source, $"Failed to patch {Accessor.Formatter.Format(method)}, unable to insert remove child invoker (on closed).");
         }
 
         return ins;

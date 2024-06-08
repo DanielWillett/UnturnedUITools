@@ -36,14 +36,6 @@ public static class SleekElementBuilderExtensions
         if (parent.FindIndexOfChild(element) == -1)
             parent.AddChild(element);
 
-        UnturnedLog.info($"{element.GetType().Name}.");
-        int c = 0;
-        foreach (PropertyInfo property in element.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy))
-        {
-            if (property.GetMethod != null)
-                UnturnedLog.info($" {++c:00}. {property.DeclaringType}.{property.Name} = {property.GetValue(element)}.");
-        }
-
         return (TSleekElement)element;
     }
 

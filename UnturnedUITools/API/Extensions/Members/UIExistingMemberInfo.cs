@@ -1,7 +1,6 @@
 ﻿using DanielWillett.ReflectionTools;
 using DanielWillett.UITools.Core.Extensions;
 using HarmonyLib;
-using SDG.Unturned;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -52,40 +51,60 @@ public class UIExistingMemberInfo
             case FieldInfo field:
                 il.Emit(ExistingIsStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, field);
                 break;
+
             case MethodInfo method:
                 il.Emit(method.GetCall(), method);
                 break;
+
             case PropertyInfo property:
                 MethodInfo getter = property.GetGetMethod(true);
                 if (getter == null)
                     goto default;
                 il.Emit(getter.GetCall(), getter);
                 break;
+
             default:
-                CommandWindow.LogWarning($"[{UIExtensionManager.Source}] Invalid accessor for existing member: {Member.DeclaringType?.Name ?? "<unknown-type>"}.{Existing.Name}.");
+                Accessor.Logger?.LogWarning(UIExtensionManager.Source, $"Invalid accessor for existing member: {Existing switch
+                    {
+                        MethodInfo m => Accessor.Formatter.Format(m),
+                        PropertyInfo p => Accessor.Formatter.Format(p),
+                        FieldInfo f => Accessor.Formatter.Format(f),
+                        _ => (Member.DeclaringType == null ? "global" : Accessor.Formatter.Format(Member.DeclaringType)) + "." + Member.Name
+                    }
+                }.");
                 il.Emit(OpCodes.Ldnull);
                 break;
         }
-        if (!onlyRead)
+
+        if (onlyRead)
+            return;
+
+        switch (Member)
         {
-            switch (Member)
-            {
-                case FieldInfo field:
-                    il.Emit(field.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, field);
-                    break;
-                case PropertyInfo property:
-                    MethodInfo setter = property.GetSetMethod(true);
-                    if (setter == null)
-                        goto default;
-                    il.Emit(setter.GetCall(), setter);
-                    break;
-                case MethodInfo method:
-                    il.Emit(method.GetCall(), method);
-                    break;
-                default:
-                    CommandWindow.LogWarning($"[{UIExtensionManager.Source}] Invalid accessor for implementing member: {Member.DeclaringType?.Name ?? "<unknown-type>"}.{Member.Name}.");
-                    break;
-            }
+            case FieldInfo field:
+                il.Emit(field.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, field);
+                break;
+
+            case PropertyInfo property:
+                MethodInfo setter = property.GetSetMethod(true);
+                if (setter == null)
+                    goto default;
+                il.Emit(setter.GetCall(), setter);
+                break;
+
+            case MethodInfo method:
+                il.Emit(method.GetCall(), method);
+                break;
+
+            default:
+                Accessor.Logger?.LogWarning(UIExtensionManager.Source, $"Invalid accessor for implementing member: {Existing switch
+                {
+                    MethodInfo m => Accessor.Formatter.Format(m),
+                    PropertyInfo p => Accessor.Formatter.Format(p),
+                    FieldInfo f => Accessor.Formatter.Format(f),
+                    _ => (Member.DeclaringType == null ? "global" : Accessor.Formatter.Format(Member.DeclaringType)) + "." + Member.Name
+                }}.");
+                break;
         }
     }
 
@@ -100,40 +119,59 @@ public class UIExistingMemberInfo
             case FieldInfo field:
                 yield return new CodeInstruction(ExistingIsStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, field);
                 break;
+
             case MethodInfo method:
                 yield return new CodeInstruction(method.GetCall(), method);
                 break;
+
             case PropertyInfo property:
                 MethodInfo getter = property.GetGetMethod(true);
                 if (getter == null)
                     goto default;
                 yield return new CodeInstruction(getter.GetCall(), getter);
                 break;
+
             default:
-                CommandWindow.LogWarning($"[{UIExtensionManager.Source}] Invalid accessor for existing member: {Member.DeclaringType?.Name ?? "<unknown-type>"}.{Existing.Name}.");
+                Accessor.Logger?.LogWarning(UIExtensionManager.Source, $"Invalid accessor for existing member: {Existing switch
+                {
+                    MethodInfo m => Accessor.Formatter.Format(m),
+                    PropertyInfo p => Accessor.Formatter.Format(p),
+                    FieldInfo f => Accessor.Formatter.Format(f),
+                    _ => (Member.DeclaringType == null ? "global" : Accessor.Formatter.Format(Member.DeclaringType)) + "." + Member.Name
+                }}.");
                 yield return new CodeInstruction(OpCodes.Ldnull);
                 break;
         }
-        if (!onlyRead)
+
+        if (onlyRead)
+            yield break;
+
+        switch (Member)
         {
-            switch (Member)
-            {
-                case FieldInfo field:
-                    yield return new CodeInstruction(field.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, field);
-                    break;
-                case PropertyInfo property:
-                    MethodInfo setter = property.GetSetMethod(true);
-                    if (setter == null)
-                        goto default;
-                    yield return new CodeInstruction(setter.GetCall(), setter);
-                    break;
-                case MethodInfo method:
-                    yield return new CodeInstruction(method.GetCall(), method);
-                    break;
-                default:
-                    CommandWindow.LogWarning($"[{UIExtensionManager.Source}] Invalid accessor for implementing member: {Member.DeclaringType?.Name ?? "<unknown-type>"}.{Member.Name}.");
-                    break;
-            }
+            case FieldInfo field:
+                yield return new CodeInstruction(field.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, field);
+                break;
+
+            case PropertyInfo property:
+                MethodInfo setter = property.GetSetMethod(true);
+                if (setter == null)
+                    goto default;
+                yield return new CodeInstruction(setter.GetCall(), setter);
+                break;
+
+            case MethodInfo method:
+                yield return new CodeInstruction(method.GetCall(), method);
+                break;
+
+            default:
+                Accessor.Logger?.LogWarning(UIExtensionManager.Source, $"Invalid accessor for implementing member: {Existing switch
+                {
+                    MethodInfo m => Accessor.Formatter.Format(m),
+                    PropertyInfo p => Accessor.Formatter.Format(p),
+                    FieldInfo f => Accessor.Formatter.Format(f),
+                    _ => (Member.DeclaringType == null ? "global" : Accessor.Formatter.Format(Member.DeclaringType)) + "." + Member.Name
+                }}.");
+                break;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using DanielWillett.UITools.API;
+﻿using DanielWillett.ReflectionTools;
+using DanielWillett.UITools.API;
 using DanielWillett.UITools.Util;
 using HarmonyLib;
 using SDG.Unturned;
@@ -6,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DanielWillett.ReflectionTools;
 
 namespace DanielWillett.UITools.Core.Handlers;
 internal class CustomUseableHandler : ICustomOnDestroyUIHandler, ICustomOnInitializeUIHandler
@@ -70,8 +70,7 @@ internal class CustomUseableHandler : ICustomOnDestroyUIHandler, ICustomOnInitia
             }
             catch (Exception ex)
             {
-                CommandWindow.LogWarning($"[{Source}] Failed to patch {method.FullDescription()}.");
-                CommandWindow.LogWarning(ex);
+                Accessor.Logger?.LogError(Source, ex, $"Failed to patch {Accessor.Formatter.Format(method)}.");
             }
         }
         foreach (MethodInfo method in AllowedDequipTypes.Keys)
@@ -82,8 +81,7 @@ internal class CustomUseableHandler : ICustomOnDestroyUIHandler, ICustomOnInitia
             }
             catch (Exception ex)
             {
-                CommandWindow.LogWarning($"[{Source}] Failed to patch {method.FullDescription()}.");
-                CommandWindow.LogWarning(ex);
+                Accessor.Logger?.LogError(Source, ex, $"Failed to patch {Accessor.Formatter.Format(method)}.");
             }
         }
     }

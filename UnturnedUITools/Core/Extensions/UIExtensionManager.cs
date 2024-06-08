@@ -127,7 +127,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                         }
                         catch (Exception ex)
                         {
-                            LogError($"Error invoking OnClosed from {instanceInfo.Instance.GetType().Name} while destroying.", extension.Module, extension.Assembly);
+                            LogError($"Error invoking OnClosed from {Accessor.Formatter.Format(instanceInfo.Instance.GetType())} while destroying.", extension.Module, extension.Assembly);
                             CommandWindow.LogError(ex);
                         }
                     }
@@ -138,11 +138,11 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     {
                         disposable.Dispose();
                         if (DebugLogging)
-                            LogDebug($"* Disposed: {extension.ImplementationType.Name}.", extension.Module, extension.Assembly);
+                            LogDebug($"* Disposed: {Accessor.Formatter.Format(extension.ImplementationType)}.", extension.Module, extension.Assembly);
                     }
                     catch (Exception ex)
                     {
-                        LogError($"Error disposing UI extension: {extension.ImplementationType.Name}.", extension.Module, extension.Assembly);
+                        LogError($"Error disposing UI extension: {Accessor.Formatter.Format(extension.ImplementationType)}.", extension.Module, extension.Assembly);
                         CommandWindow.LogError(ex);
                     }
                 }
@@ -182,7 +182,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             }
             catch (Exception ex)
             {
-                LogError($"Unable to unpatch {patch.Original.FullDescription()}.");
+                LogError($"Unable to unpatch {Accessor.Formatter.Format(patch.Original)}.");
                 CommandWindow.LogError(ex);
             }
         }
@@ -199,7 +199,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             }
             catch (Exception ex)
             {
-                LogError($"Failed to unpatch extension {_pendingUnpatches[i].GetType().Name}.");
+                LogError($"Failed to unpatch extension {Accessor.Formatter.Format(_pendingUnpatches[i].GetType())}.");
                 CommandWindow.LogError(ex);
             }
         }
@@ -216,7 +216,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             }
             catch (Exception ex)
             {
-                LogError($"Unable to unpatch existing member {existingMember.Key.FullDescription()}.");
+                LogError($"Unable to unpatch existing member {Accessor.Formatter.Format(existingMember.Key)}.");
                 CommandWindow.LogError(ex);
             }
         }
@@ -240,7 +240,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     }
                     catch (Exception ex)
                     {
-                        LogError($"Failed to unpatch CustomOnOpen {typeInfo.CustomOnOpen.GetType().Name} for {typeInfo.Type.Name}.");
+                        LogError($"Failed to unpatch CustomOnOpen {Accessor.Formatter.Format(typeInfo.CustomOnOpen.GetType())} for {Accessor.Formatter.Format(typeInfo.Type)}.");
                         CommandWindow.LogError(ex);
                     }
                 }
@@ -261,7 +261,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     }
                     catch (Exception ex)
                     {
-                        LogError($"Failed to unpatch CustomOnClose {typeInfo.CustomOnClose.GetType().Name} for {typeInfo.Type.Name}.");
+                        LogError($"Failed to unpatch CustomOnClose {Accessor.Formatter.Format(typeInfo.CustomOnClose.GetType())} for {Accessor.Formatter.Format(typeInfo.Type)}.");
                         CommandWindow.LogError(ex);
                     }
                 }
@@ -282,7 +282,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     }
                     catch (Exception ex)
                     {
-                        LogError($"Failed to unpatch CustomOnDestroy {typeInfo.CustomOnDestroy.GetType().Name} for {typeInfo.Type.Name}.");
+                        LogError($"Failed to unpatch CustomOnDestroy {Accessor.Formatter.Format(typeInfo.CustomOnDestroy.GetType())} for {Accessor.Formatter.Format(typeInfo.Type)}.");
                         CommandWindow.LogError(ex);
                     }
                 }
@@ -303,7 +303,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     }
                     catch (Exception ex)
                     {
-                        LogError($"Failed to unpatch CustomOnInitialize {typeInfo.CustomOnInitialize.GetType().Name} for {typeInfo.Type.Name}.");
+                        LogError($"Failed to unpatch CustomOnInitialize {Accessor.Formatter.Format(typeInfo.CustomOnInitialize.GetType())} for {Accessor.Formatter.Format(typeInfo.Type)}.");
                         CommandWindow.LogError(ex);
                     }
                 }
@@ -395,7 +395,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
             if (attribute.ParentType == null)
             {
-                LogError($"Error initializing UI extension: {type.Name}. Unknown parent type in [UIExtension] attribute: \"{attribute.SearchedParentType ?? "<unknown>"}\".", module, type.Assembly);
+                LogError($"Error initializing UI extension: {Accessor.Formatter.Format(type)}. Unknown parent type in {Accessor.Formatter.Format(typeof(UIExtensionAttribute))}: \"{attribute.SearchedParentType ?? "<unknown>"}\".", module, type.Assembly);
                 continue;
             }
 
@@ -412,13 +412,13 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             }
             catch (Exception ex)
             {
-                LogError($"Error initializing UI extension: {type.Name}.", module, type.Assembly);
+                LogError($"Error initializing UI extension: {Accessor.Formatter.Format(type)}.", module, type.Assembly);
                 CommandWindow.LogError(ex);
                 continue;
             }
             
             if (DebugLogging)
-                LogDebug($"Registered UI extension: {type.Name}.", module, type.Assembly);
+                LogDebug($"Registered UI extension: {Accessor.Formatter.Format(type)}.", module, type.Assembly);
         }
     }
 
@@ -433,11 +433,11 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             type = instance.GetType();
 
         if (DebugLogging)
-            LogDebug($"Opened: {type!.Name}.");
+            LogDebug($"Opened: {Accessor.Formatter.Format(type!)}.");
 
         if (!ParentTypeInfoIntl.TryGetValue(type!, out UIExtensionParentTypeInfo parentTypeInfo))
         {
-            LogWarning($"Unable to find parent type info while opening {type!.Name}.");
+            LogWarning($"Unable to find parent type info while opening {Accessor.Formatter.Format(type!)}.");
             return;
         }
 
@@ -450,7 +450,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 if (instanceInfo.IsOpen)
                 {
                     if (DebugLogging)
-                        LogDebug($"Already open: {type!.Name}.");
+                        LogDebug($"Already open: {Accessor.Formatter.Format(type!)}.");
                     return;
                 }
 
@@ -462,14 +462,14 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
         if (!found)
         {
-            LogWarning($"Unable to find vanilla instance info while opening {type!.Name}.");
+            LogWarning($"Unable to find vanilla instance info while opening {Accessor.Formatter.Format(type!)}.");
             return;
         }
 
         if (parentTypeInfo.InstancesIntl.Count == 0)
         {
             if (DebugLogging)
-                LogDebug($"No instances attached to UI type {type!.Name} to open.");
+                LogDebug($"No instances attached to UI type {Accessor.Formatter.Format(type!)} to open.");
             return;
         }
 
@@ -482,7 +482,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 continue;
 
             if (DebugLogging)
-                LogDebug($"* Opening instance of: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                LogDebug($"* Opening instance of: {Accessor.Formatter.Format(instanceInfo.Extension.ImplementationType)}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
 
             if (instanceInfo.Instance is IUIExtension ext)
             {
@@ -492,20 +492,20 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Error invoking OnOpened from {instanceInfo.Instance.GetType().Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                    LogError($"Error invoking OnOpened from {Accessor.Formatter.Format(instanceInfo.Instance.GetType())}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
                     CommandWindow.LogError(ex);
                 }
             }
 
             if (DebugLogging)
-                LogDebug($"* Opened: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                LogDebug($"* Opened: {Accessor.Formatter.Format(instanceInfo.Extension.ImplementationType)}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
 
             anyClosed = true;
         }
 
         if (!anyClosed && DebugLogging)
         {
-            LogDebug($"No instances attached to UI type {type!.Name} with the provided instance to open.");
+            LogDebug($"No instances attached to UI type {Accessor.Formatter.Format(type!)} with the provided instance to open.");
         }
     }
 
@@ -519,10 +519,10 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         if (instance != null)
             type = instance.GetType();
         if (DebugLogging)
-            LogDebug($"Closed: {type!.Name}.");
+            LogDebug($"Closed: {Accessor.Formatter.Format(type!)}.");
         if (!ParentTypeInfoIntl.TryGetValue(type!, out UIExtensionParentTypeInfo parentTypeInfo))
         {
-            LogWarning($"Unable to find parent type info while closing {type!.Name}.");
+            LogWarning($"Unable to find parent type info while closing {Accessor.Formatter.Format(type!)}.");
             return;
         }
 
@@ -535,7 +535,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 if (!instanceInfo.IsOpen)
                 {
                     if (DebugLogging)
-                        LogDebug($"Already closed: {type!.Name}.");
+                        LogDebug($"Already closed: {Accessor.Formatter.Format(type!)}.");
                     return;
                 }
 
@@ -547,14 +547,14 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
         if (!found)
         {
-            LogWarning($"Unable to find vanilla instance info while closing {type!.Name}.");
+            LogWarning($"Unable to find vanilla instance info while closing {Accessor.Formatter.Format(type!)}.");
             return;
         }
 
         if (parentTypeInfo.InstancesIntl.Count == 0)
         {
             if (DebugLogging)
-                LogDebug($"No instances attached to UI type {type!.Name} to close.");
+                LogDebug($"No instances attached to UI type {Accessor.Formatter.Format(type!)} to close.");
             return;
         }
 
@@ -567,7 +567,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 continue;
 
             if (DebugLogging)
-                LogDebug($"* Closing instance of: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                LogDebug($"* Closing instance of: {Accessor.Formatter.Format(instanceInfo.Extension.ImplementationType)}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
 
             if (instanceInfo.Instance is IUIExtension ext)
             {
@@ -577,20 +577,20 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Error invoking OnClosed from {instanceInfo.Instance.GetType().Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                    LogError($"Error invoking OnClosed from {Accessor.Formatter.Format(instanceInfo.Instance.GetType())}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
                     CommandWindow.LogError(ex);
                 }
             }
 
             if (DebugLogging)
-                LogDebug($"* Closed: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                LogDebug($"* Closed: {Accessor.Formatter.Format(instanceInfo.Extension.ImplementationType)}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
 
             anyClosed = true;
         }
 
         if (!anyClosed && DebugLogging)
         {
-            LogDebug($"No instances attached to UI type {type!.Name} with the provided instance to close.");
+            LogDebug($"No instances attached to UI type {Accessor.Formatter.Format(type!)} with the provided instance to close.");
         }
     }
 
@@ -604,7 +604,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         if (instance != null)
             type = instance.GetType();
         if (DebugLogging)
-            LogDebug($"Initialized: {type!.Name}.");
+            LogDebug($"Initialized: {Accessor.Formatter.Format(type!)}.");
 
 
         for (int i = 0; i < _extensions.Count; i++)
@@ -614,7 +614,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             object? ext = CreateExtension(info, instance);
             if (ext == null) continue;
             if (DebugLogging)
-                LogDebug($"* Initialized: {info.ImplementationType.Name}.", info.Module, info.Assembly);
+                LogDebug($"* Initialized: {Accessor.Formatter.Format(info.ImplementationType)}.", info.Module, info.Assembly);
             if ((info.TypeInfo.OpenOnInitialize || info.TypeInfo.DefaultOpenState) && ext is IUIExtension ext2)
             {
                 try
@@ -623,11 +623,11 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Error invoking OnOpened from {ext.GetType().Name}.", info.Module, info.Assembly);
+                    LogError($"Error invoking OnOpened from {Accessor.Formatter.Format(ext.GetType())}.", info.Module, info.Assembly);
                     CommandWindow.LogError(ex);
                 }
                 if (DebugLogging)
-                    LogDebug($"  * Opened: {info.ImplementationType.Name}.", info.Module, info.Assembly);
+                    LogDebug($"  * Opened: {Accessor.Formatter.Format(info.ImplementationType)}.", info.Module, info.Assembly);
             }
         }
     }
@@ -652,10 +652,10 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 {
                     logged = true;
                     if (DebugLogging)
-                        LogDebug($"Destroyed: {type!.Name}.");
+                        LogDebug($"Destroyed: {Accessor.Formatter.Format(type!)}.");
                 }
                 if (DebugLogging)
-                    LogDebug($"* Destroying child: {otherTypeInfo.Type.Name}.");
+                    LogDebug($"* Destroying child: {Accessor.Formatter.Format(otherTypeInfo.Type)}.");
                 OnDestroy(otherTypeInfo.Type, null);
             }
         }
@@ -668,7 +668,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
         if (!logged && DebugLogging)
         {
-            LogDebug($"Destroyed: {type!.Name}.");
+            LogDebug($"Destroyed: {Accessor.Formatter.Format(type!)}.");
         }
 
         bool close = parentTypeInfo.ParentTypeInfo.CloseOnDestroy;
@@ -684,7 +684,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     if (!instanceInfo.IsOpen)
                     {
                         if (DebugLogging)
-                            LogDebug($"Already closed: {type!.Name}.");
+                            LogDebug($"Already closed: {Accessor.Formatter.Format(type!)}.");
                         close = false;
                     }
                     else instanceInfo.IsOpen = false;
@@ -697,7 +697,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
             if (!found)
             {
-                LogWarning($"Unable to find vanilla instance info while closing (destroying) {type!.Name}.");
+                LogWarning($"Unable to find vanilla instance info while closing (destroying) {Accessor.Formatter.Format(type!)}.");
                 close = false;
             }
         }
@@ -705,7 +705,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         if (parentTypeInfo.InstancesIntl.Count == 0)
         {
             if (DebugLogging)
-                LogDebug($"No instances attached to UI type {type!.Name} to destroy.");
+                LogDebug($"No instances attached to UI type {Accessor.Formatter.Format(type!)} to destroy.");
             return;
         }
 
@@ -718,7 +718,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 continue;
 
             if (DebugLogging)
-                LogDebug($"* Destroying instance of: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                LogDebug($"* Destroying instance of: {Accessor.Formatter.Format(instanceInfo.Extension.ImplementationType)}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
 
             if (close && instanceInfo.Instance is IUIExtension ext)
             {
@@ -728,12 +728,12 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Error invoking OnClosed from {instanceInfo.Instance.GetType().Name} while destroying.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                    LogError($"Error invoking OnClosed from {Accessor.Formatter.Format(instanceInfo.Instance.GetType())} while destroying.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
                     CommandWindow.LogError(ex);
                 }
 
                 if (DebugLogging)
-                    LogDebug($"  * Closed: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                    LogDebug($"  * Closed: {Accessor.Formatter.Format(instanceInfo.Extension.ImplementationType)}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
             }
             if (instanceInfo.Instance is IDisposable disposable)
             {
@@ -743,12 +743,12 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Error disposing UI extension: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                    LogError($"Error disposing UI extension: {Accessor.Formatter.Format(instanceInfo.Extension.ImplementationType)}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
                     CommandWindow.LogError(ex);
                 }
 
                 if (DebugLogging)
-                    LogDebug($"  * Disposed: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                    LogDebug($"  * Disposed: {Accessor.Formatter.Format(instanceInfo.Extension.ImplementationType)}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
             }
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
@@ -757,7 +757,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 Destroy(obj);
 
                 if (DebugLogging)
-                    LogDebug($"  * Destroyed: {instanceInfo.Extension.ImplementationType.Name}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
+                    LogDebug($"  * Destroyed: {Accessor.Formatter.Format(instanceInfo.Extension.ImplementationType)}.", instanceInfo.Extension.Module, instanceInfo.Extension.Assembly);
             }
 
             if (instanceInfo.Extension.InstantiationsIntl.Count == 1 && instanceInfo.Extension.InstantiationsIntl[0] == instanceInfo.Instance)
@@ -779,7 +779,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
         if (!anyDestroyed && DebugLogging)
         {
-            LogDebug($"No instances attached to UI type {type!.Name} with the provided instance to destroy.");
+            LogDebug($"No instances attached to UI type {Accessor.Formatter.Format(type!)} with the provided instance to destroy.");
         }
     }
 
@@ -803,11 +803,11 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unable to initialize UI extension: {extensionType.FullName}.", ex);
+            throw new Exception($"Unable to initialize UI extension: {Accessor.ExceptionFormatter.Format(extensionType)}.", ex);
         }
 
         if (DebugLogging)
-            LogDebug($"Registered UI extension: {extensionType.Name}.", module, extensionType.Assembly);
+            LogDebug($"Registered UI extension: {Accessor.Formatter.Format(extensionType)}.", module, extensionType.Assembly);
     }
 
     private void AddToList(UIExtensionInfo info)
@@ -834,19 +834,19 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
     {
         if (!info.SuppressUIExtensionParentWarning && !typeof(IUIExtension).IsAssignableFrom(info.ImplementationType))
         {
-            LogWarning($"It's recommended to derive UI extensions from the {nameof(UIExtension)} class or the {nameof(IUIExtension)} interface (unlike {info.ImplementationType.Name}).", info.Module, info.Assembly);
-            LogInfo($"Alternatively set SuppressUIExtensionParentWarning to True in a {nameof(UIExtensionAttribute)} on the extension class.", info.Module, info.Assembly);
+            LogWarning($"It's recommended to derive UI extensions from the {Accessor.Formatter.Format(typeof(UIExtension))} class or the {Accessor.Formatter.Format(typeof(IUIExtension))} interface (unlike {Accessor.Formatter.Format(info.ImplementationType)}).", info.Module, info.Assembly);
+            LogInfo($"Alternatively set SuppressUIExtensionParentWarning to True in a {Accessor.Formatter.Format(typeof(UIExtensionAttribute))} on the extension class.", info.Module, info.Assembly);
         }
 
         if (!UIAccessor.TryGetUITypeInfo(info.ParentType, out UITypeInfo? typeInfo))
         {
-            LogWarning($"No type info for parent UI type: {info.ParentType.Name}, {info.ImplementationType.Name} UI extension may not behave as expected. Any warnings below:", info.Module, info.Assembly);
+            LogWarning($"No type info for parent UI type: {Accessor.Formatter.Format(info.ParentType)}, {Accessor.Formatter.Format(info.ImplementationType)} UI extension may not behave as expected. Any warnings below:", info.Module, info.Assembly);
         }
 
         if (typeInfo == null)
         {
             typeInfo = new UITypeInfo(info.ParentType);
-            LogInfo($"Created UI type info for {info.ParentType.Name}: {typeInfo.OpenMethods.Length} open method(s), " +
+            LogInfo($"Created UI type info for {Accessor.Formatter.Format(info.ParentType)}: {typeInfo.OpenMethods.Length} open method(s), " +
                     $"{typeInfo.CloseMethods.Length} close method(s), {typeInfo.InitializeMethods.Length} initialize method(s), " +
                     $"{typeInfo.DestroyMethods.Length} destroy method(s).", info.Module, info.Assembly);
         }
@@ -863,7 +863,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         {
             constructor = ctors.FirstOrDefault(x => x.GetParameters().Length == 0);
             if (constructor == null)
-                (exceptions ??= new List<Exception>()).Add(new InvalidOperationException("Type " + info.ImplementationType.Name + " does not have a parameterless constructor or an instance input constructor."));
+                (exceptions ??= new List<Exception>()).Add(new InvalidOperationException($"Type {Accessor.ExceptionFormatter.Format(info.ImplementationType)} does not have a parameterless constructor or an instance input constructor."));
         }
 
         foreach (MemberInfo member in info.ImplementationType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy)
@@ -886,7 +886,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         }
 
         if (exceptions != null)
-            throw new AggregateException($"Failed to initialze UI extension: {info.ImplementationType.Name}.", exceptions);
+            throw new AggregateException($"Failed to initialze UI extension: {Accessor.ExceptionFormatter.Format(info.ImplementationType)}.", exceptions);
 
         try
         {
@@ -905,22 +905,22 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             {
                 if (!_isAnActualObject)
                 {
-                    LogWarning($"Unity component {info.ImplementationType.Name} will not be instantiated properly because the UIExtensionManager was not initialized as a component.");
+                    LogWarning($"Unity component {Accessor.Formatter.Format(info.ImplementationType)} will not be instantiated properly because the UIExtensionManager was not initialized as a component.");
                     isUnityObject = false;
                 }
                 if (getGameObjectProperty == null)
                 {
-                    LogWarning($"Unknown property: get UnityEngine.Component.gameObject. Unity component {info.ImplementationType.Name} will not be instantiated properly.");
+                    LogWarning($"Unknown property: get UnityEngine.Component.gameObject. Unity component {Accessor.Formatter.Format(info.ImplementationType)} will not be instantiated properly.");
                     isUnityObject = false;
                 }
                 if (addComponentMethod == null)
                 {
-                    LogWarning($"Unknown method: UnityEngine.GameObject.AddComponent. Unity component {info.ImplementationType.Name} will not be instantiated properly.");
+                    LogWarning($"Unknown method: UnityEngine.GameObject.AddComponent. Unity component {Accessor.Formatter.Format(info.ImplementationType)} will not be instantiated properly.");
                     isUnityObject = false;
                 }
                 if (equalsMethod == null)
                 {
-                    LogWarning($"Unknown method: UnityEngine.Object.Equals. Unity component {info.ImplementationType.Name} will not be instantiated properly.");
+                    LogWarning($"Unknown method: UnityEngine.Object.Equals. Unity component {Accessor.Formatter.Format(info.ImplementationType)} will not be instantiated properly.");
                     isUnityObject = false;
                 }
             }
@@ -1051,7 +1051,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
                 if (onReadyMethod == null)
                 {
-                    LogWarning($"Unable to find implemented OnReady method of IUIExtensionReadyListener for {info.ImplementationType.Name}.");
+                    LogWarning($"Unable to find implemented OnReady method of {Accessor.Formatter.Format(typeof(IUIExtensionReadyListener))} for {Accessor.Formatter.Format(info.ImplementationType)}.");
                 }
                 else
                 {
@@ -1077,7 +1077,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         }
         catch (Exception ex)
         {
-            throw new Exception($"Failed to create instantiation method for UI extension: {info.ImplementationType.Name}.", ex);
+            throw new Exception($"Failed to create instantiation method for UI extension: {Accessor.ExceptionFormatter.Format(info.ImplementationType)}.", ex);
         }
 
         try
@@ -1086,7 +1086,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         }
         catch (Exception ex)
         {
-            throw new Exception($"Failed to patch for UI parent: {info.ParentType.Name} (while patching {info.ImplementationType.Name}).", ex);
+            throw new Exception($"Failed to patch for UI parent: {Accessor.ExceptionFormatter.Format(info.ParentType)} (while patching {Accessor.ExceptionFormatter.Format(info.ImplementationType)}).", ex);
         }
 
         AddToList(info);
@@ -1112,7 +1112,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                             }
                             catch (Exception ex2)
                             {
-                                LogWarning($"Error disposing UI extension: {extInfo.ImplementationType.Name}.", extInfo.Module, extInfo.Assembly);
+                                LogWarning($"Error disposing UI extension: {Accessor.Formatter.Format(extInfo.ImplementationType)}.", extInfo.Module, extInfo.Assembly);
                                 CommandWindow.LogWarning(ex2);
                             }
                         }
@@ -1120,10 +1120,10 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                         if (instance is UnityEngine.Object obj && obj != null)
                         {
-                            UnityEngine.Object.Destroy(obj);
+                            Destroy(obj);
 
                             if (DebugLogging)
-                                LogDebug($"  * Destroyed: {extInfo.ImplementationType.Name}.", extInfo.Module, extInfo.Assembly);
+                                LogDebug($"  * Destroyed: {Accessor.Formatter.Format(extInfo.ImplementationType)}.", extInfo.Module, extInfo.Assembly);
                         }
 
                         _extensions.Remove(extInfo);
@@ -1133,7 +1133,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     }
 
                     if (DebugLogging)
-                        LogDebug($"Deregistered UI extension: {info.ImplementationType.Name}.", extInfo.Module, extInfo.Assembly);
+                        LogDebug($"Deregistered UI extension: {Accessor.Formatter.Format(info.ImplementationType)}.", extInfo.Module, extInfo.Assembly);
                 }
             }
             catch (Exception)
@@ -1141,7 +1141,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 // ignored
             }
 
-            throw new Exception($"Failed to patch for UI extension: {info.ImplementationType.Name}.", ex);
+            throw new Exception($"Failed to patch for UI extension: {Accessor.ExceptionFormatter.Format(info.ImplementationType)}.", ex);
         }
     }
     private static readonly MethodInfo AddInstanceMethod = typeof(UIExtensionManager).GetMethod(nameof(AddInstance), BindingFlags.NonPublic | BindingFlags.Instance)!;
@@ -1158,7 +1158,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         type = extInfo?.ParentType;
         if (uiInstance != null && type != uiInstance.GetType() && type != null)
         {
-            LogWarning($"Extension type does not match parent type: {type.Name} vs {instance.GetType().Name}.");
+            LogWarning($"Extension type does not match parent type: {Accessor.Formatter.Format(type)} vs {Accessor.Formatter.Format(instance.GetType())}.");
             return;
         }
 
@@ -1167,12 +1167,12 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
         if (extInfo == null)
         {
-            LogWarning($"Failed to find extension info for extension: {instance.GetType().Name}.");
+            LogWarning($"Failed to find extension info for extension: {Accessor.Formatter.Format(instance.GetType())}.");
             return;
         }
         if (parentInfo == null)
         {
-            LogWarning($"Failed to find parent info for extension: {instance.GetType().Name}.", extInfo?.Module, extInfo?.Assembly);
+            LogWarning($"Failed to find parent info for extension: {Accessor.Formatter.Format(instance.GetType())}.", extInfo?.Module, extInfo?.Assembly);
             return;
         }
 
@@ -1185,7 +1185,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             info = new UIExtensionVanillaInstanceInfo(parentInfo.ParentTypeInfo.IsStaticUI ? null : uiInstance, parentInfo.ParentTypeInfo.OpenOnInitialize || parentInfo.ParentTypeInfo.DefaultOpenState);
             vanillaInstances.Add(info);
             if (DebugLogging)
-                LogDebug($"Replaced vanilla instance info: {parentInfo.ParentType.Name}.");
+                LogDebug($"Replaced vanilla instance info: {Accessor.Formatter.Format(parentInfo.ParentType)}.");
         }
         else
         {
@@ -1195,7 +1195,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 {
                     info = vanillaInstances[i];
                     if (DebugLogging)
-                        LogDebug($"Found vanilla instance info: {parentInfo.ParentType.Name}.");
+                        LogDebug($"Found vanilla instance info: {Accessor.Formatter.Format(parentInfo.ParentType)}.");
                     break;
                 }
             }
@@ -1205,7 +1205,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 info = new UIExtensionVanillaInstanceInfo(parentInfo.ParentTypeInfo.IsStaticUI ? null : uiInstance, parentInfo.ParentTypeInfo.OpenOnInitialize || parentInfo.ParentTypeInfo.DefaultOpenState);
                 vanillaInstances.Add(info);
                 if (DebugLogging)
-                    LogDebug($"Added vanilla instance info: {parentInfo.ParentType.Name}.");
+                    LogDebug($"Added vanilla instance info: {Accessor.Formatter.Format(parentInfo.ParentType)}.");
             }
         }
 
@@ -1233,12 +1233,12 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
                 if (instance == null)
                 {
-                    LogWarning($"Failed to create extension of type {info.ImplementationType.Name}.", info.Module, info.Assembly);
+                    LogWarning($"Failed to create extension of type {Accessor.Formatter.Format(info.ImplementationType)}.", info.Module, info.Assembly);
                     return null;
                 }
 
                 if (DebugLogging)
-                    LogDebug($"Created {info.ImplementationType.Name} for {info.ParentType.Name}.", info.Module, info.Assembly);
+                    LogDebug($"Created {Accessor.Formatter.Format(info.ImplementationType)} for {Accessor.Formatter.Format(info.ParentType)}.", info.Module, info.Assembly);
             }
 
             OnAdd?.Invoke(instance);
@@ -1247,7 +1247,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         }
         catch (Exception ex)
         {
-            LogError($"Error initializing {info.ImplementationType.Name}.", info.Module, info.Assembly);
+            LogError($"Error initializing {Accessor.Formatter.Format(info.ImplementationType)}.", info.Module, info.Assembly);
             CommandWindow.LogError(ex);
             return null;
         }
@@ -1272,7 +1272,15 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
         bool isStatic = member.GetIsStatic();
         if (isStatic)
-            throw new Exception($"UI extensions should not have static existing members, such as \"{member.Name}\".");
+        {
+            throw new Exception($"UI extensions should not have static existing members, such as {member switch
+            {
+                MethodInfo m => Accessor.ExceptionFormatter.Format(m),
+                PropertyInfo p => Accessor.ExceptionFormatter.Format(p),
+                FieldInfo f => Accessor.ExceptionFormatter.Format(f),
+                _ => member.Name
+            }}.");
+        }
 
         Type owningType = existingMemberAttribute.OwningType ?? info.ParentType;
 
@@ -1287,11 +1295,10 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
              existingProperty.GetIndexParameters().Length > 0) &&
             (existingMethod == null || existingMethod.ReturnType == typeof(void) || existingMethod.GetParameters().Length > 0))
         {
-            string msg = $"Unable to match \"{owningType.Name}.{existingMemberAttribute.MemberName}\" to a field, get-able property, or no-argument, non-void-returning method.";
             if (failureMode != ExistingMemberFailureBehavior.Ignore)
-                throw new MemberAccessException(msg);
-
-            LogInfo(msg, info.Module, info.Assembly);
+                throw new MemberAccessException($"Unable to match {Accessor.ExceptionFormatter.Format(owningType)} member {existingMemberAttribute.MemberName} to a field, get-able property, or no-argument, non-void-returning method.");
+            
+            LogInfo($"Unable to match {Accessor.Formatter.Format(owningType)} member {existingMemberAttribute.MemberName} to a field, get-able property, or no-argument, non-void-returning method.", info.Module, info.Assembly);
             return;
         }
         MemberInfo existingMember = ((MemberInfo?)existingField ?? existingProperty) ?? existingMethod!;
@@ -1307,11 +1314,24 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 // setter
                 if (parameters.Length == 0 || !parameters[0].ParameterType.IsAssignableFrom(existingMemberType))
                 {
-                    string msg = $"Unable to assign existing method parameter type: \"{existingMemberType.FullName}\" to expected member type: \"{parameters[0].ParameterType.FullName}\" for existing member \"{member.Name}\".";
                     if (failureMode != ExistingMemberFailureBehavior.Ignore)
-                        throw new Exception(msg);
+                    {
+                        throw new Exception($"Unable to assign existing method parameter type: {Accessor.ExceptionFormatter.Format(existingMemberType)} to expected member type: {Accessor.ExceptionFormatter.Format(parameters[0].ParameterType)} for existing member {member switch
+                        {
+                            MethodInfo m => Accessor.ExceptionFormatter.Format(m),
+                            PropertyInfo p => Accessor.ExceptionFormatter.Format(p),
+                            FieldInfo f => Accessor.ExceptionFormatter.Format(f),
+                            _ => member.Name
+                        }}.");
+                    }
 
-                    LogInfo(msg, info.Module, info.Assembly);
+                    LogInfo($"Unable to assign existing method parameter type: {Accessor.Formatter.Format(existingMemberType)} to expected member type: {Accessor.Formatter.Format(parameters[0].ParameterType)} for existing member {member switch
+                    {
+                        MethodInfo m => Accessor.Formatter.Format(m),
+                        PropertyInfo p => Accessor.Formatter.Format(p),
+                        FieldInfo f => Accessor.Formatter.Format(f),
+                        _ => member.Name
+                    }}.", info.Module, info.Assembly);
                     return;
                 }
             }
@@ -1320,22 +1340,48 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 // getter
                 if (parameters.Length != 0 || !memberType.IsAssignableFrom(existingMemberType))
                 {
-                    string msg = $"Unable to assign existing method parameter type: \"{existingMemberType.FullName}\" to expected member type: \"{memberType.FullName}\" for existing member \"{member.Name}\".";
                     if (failureMode != ExistingMemberFailureBehavior.Ignore)
-                        throw new Exception(msg);
+                    {
+                        throw new Exception($"Unable to assign existing method parameter type: {Accessor.ExceptionFormatter.Format(existingMemberType)} to expected member type: {Accessor.ExceptionFormatter.Format(memberType)} for existing member {member switch
+                        {
+                            MethodInfo m => Accessor.ExceptionFormatter.Format(m),
+                            PropertyInfo p => Accessor.ExceptionFormatter.Format(p),
+                            FieldInfo f => Accessor.ExceptionFormatter.Format(f),
+                            _ => member.Name
+                        }}.");
+                    }
 
-                    LogInfo(msg, info.Module, info.Assembly);
+                    LogInfo($"Unable to assign existing method parameter type: {Accessor.Formatter.Format(existingMemberType)} to expected member type: {Accessor.Formatter.Format(memberType)} for existing member {member switch
+                    {
+                        MethodInfo m => Accessor.Formatter.Format(m),
+                        PropertyInfo p => Accessor.Formatter.Format(p),
+                        FieldInfo f => Accessor.Formatter.Format(f),
+                        _ => member.Name
+                    }}.", info.Module, info.Assembly);
                     return;
                 }
             }
         }
         else if (!memberType.IsAssignableFrom(existingMemberType))
         {
-            string msg = $"Unable to assign existing member type: \"{existingMemberType.FullName}\" to expected member type: \"{memberType.FullName}\" for existing member \"{member.Name}\".";
             if (failureMode != ExistingMemberFailureBehavior.Ignore)
-                throw new Exception(msg);
+            {
+                throw new Exception($"Unable to assign existing member type: {Accessor.ExceptionFormatter.Format(existingMemberType)} to expected member type: {Accessor.ExceptionFormatter.Format(memberType)} for existing member {member switch
+                {
+                    MethodInfo m => Accessor.ExceptionFormatter.Format(m),
+                    PropertyInfo p => Accessor.ExceptionFormatter.Format(p),
+                    FieldInfo f => Accessor.ExceptionFormatter.Format(f),
+                    _ => member.Name
+                }}.");
+            }
 
-            LogInfo(msg, info.Module, info.Assembly);
+            LogInfo($"Unable to assign existing member type: {Accessor.Formatter.Format(existingMemberType)} to expected member type: {Accessor.Formatter.Format(memberType)} for existing member {member switch
+            {
+                MethodInfo m => Accessor.Formatter.Format(m),
+                PropertyInfo p => Accessor.Formatter.Format(p),
+                FieldInfo f => Accessor.Formatter.Format(f),
+                _ => member.Name
+            }}.", info.Module, info.Assembly);
             return;
         }
 
@@ -1343,11 +1389,36 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
 
         if (!existingIsStatic && info.TypeInfo.IsStaticUI)
         {
-            string msg = $"Requested instance variable ({existingMember.Name}) from static UI: {info.ParentType.Name} for existing member \"{member.Name}\".";
             if (failureMode != ExistingMemberFailureBehavior.Ignore)
-                throw new InvalidOperationException(msg);
+            {
+                throw new Exception($"Requested instance variable ({existingMember switch
+                {
+                    MethodInfo m => Accessor.ExceptionFormatter.Format(m),
+                    PropertyInfo p => Accessor.ExceptionFormatter.Format(p),
+                    FieldInfo f => Accessor.ExceptionFormatter.Format(f),
+                    _ => existingMember.Name
+                }}) from static UI: {Accessor.ExceptionFormatter.Format(info.ParentType)} for existing member {member switch
+                {
+                    MethodInfo m => Accessor.ExceptionFormatter.Format(m),
+                    PropertyInfo p => Accessor.ExceptionFormatter.Format(p),
+                    FieldInfo f => Accessor.ExceptionFormatter.Format(f),
+                    _ => member.Name
+                }}.");
+            }
 
-            LogInfo(msg, info.Module, info.Assembly);
+            LogInfo($"Requested instance variable ({existingMember switch
+            {
+                MethodInfo m => Accessor.Formatter.Format(m),
+                PropertyInfo p => Accessor.Formatter.Format(p),
+                FieldInfo f => Accessor.Formatter.Format(f),
+                _ => existingMember.Name
+            }}) from static UI: {Accessor.Formatter.Format(info.ParentType)} for existing member {member switch
+            {
+                MethodInfo m => Accessor.Formatter.Format(m),
+                PropertyInfo p => Accessor.Formatter.Format(p),
+                FieldInfo f => Accessor.Formatter.Format(f),
+                _ => member.Name
+            }}.", info.Module, info.Assembly);
             return;
         }
 
@@ -1357,26 +1428,35 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             initialized = existingMemberAttribute.InitializeMode == ExistingMemberInitializeMode.InitializeOnConstruct;
             if (!initialized && field != null)
             {
-                LogWarning($"Fields can not be non-initialized (as indicated for {field.Name}).", info.Module, info.Assembly);
+                LogWarning($"Fields can not be non-initialized (as indicated for {Accessor.Formatter.Format(field)}).", info.Module, info.Assembly);
                 initialized = true;
             }
             if (initialized && property != null && property.GetSetMethod(true) == null)
             {
-                LogWarning($"Properties without a setter can not be initialized (as indicated for {property.Name}).", info.Module, info.Assembly);
+                LogWarning($"Properties without a setter can not be initialized (as indicated for {Accessor.Formatter.Format(property)}).", info.Module, info.Assembly);
                 initialized = false;
             }
             if (!initialized && method != null && method.ReturnType == typeof(void))
             {
-                LogWarning($"Void-returning methods can not be non-initialized (as indicated for {method.Name}).", info.Module, info.Assembly);
+                LogWarning($"Void-returning methods can not be non-initialized (as indicated for {Accessor.Formatter.Format(method)}).", info.Module, info.Assembly);
                 initialized = true;
             }
             if (initialized && method != null && method.GetParameters().Length == 0)
             {
-                LogWarning($"Parameterless methods can not be initialized (as indicated for {method.Name}).", info.Module, info.Assembly);
+                LogWarning($"Parameterless methods can not be initialized (as indicated for {Accessor.Formatter.Format(method)}).", info.Module, info.Assembly);
                 initialized = false;
             }
+
             if (DebugLogging)
-                LogDebug($"Set initialized setting for existing member: {member.Name}: {initialized}.", info.Module, info.Assembly);
+            {
+                LogDebug($"Set initialized setting for existing member: {member switch
+                {
+                    MethodInfo m => Accessor.Formatter.Format(m),
+                    PropertyInfo p => Accessor.Formatter.Format(p),
+                    FieldInfo f => Accessor.Formatter.Format(f),
+                    _ => member.Name
+                }}: {initialized}.", info.Module, info.Assembly);
+            }
         }
         else
         {
@@ -1388,12 +1468,21 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 initialized = true;
             else
                 initialized = false;
+
             if (DebugLogging)
-                LogDebug($"Assumed initialized setting for existing member: {member.Name}: {initialized}.", info.Module, info.Assembly);
+            {
+                LogDebug($"Assumed initialized setting for existing member: {member switch
+                {
+                    MethodInfo m => Accessor.Formatter.Format(m),
+                    PropertyInfo p => Accessor.Formatter.Format(p),
+                    FieldInfo f => Accessor.Formatter.Format(f),
+                    _ => member.Name
+                }}: {initialized}.", info.Module, info.Assembly);
+            }
         }
 
         if (!initialized && existingProperty != null && existingProperty.GetSetMethod(true) != null)
-            LogWarning($"Setter on {existingProperty.Name} can not be used to set the original value. Recommended to make the property get-only (readonly).", info.Module, info.Assembly);
+            LogWarning($"Setter on {Accessor.Formatter.Format(existingProperty)} can not be used to set the original value. Recommended to make the property get-only (readonly).", info.Module, info.Assembly);
 
         info.ExistingMembersIntl.Add(new UIExistingMemberInfo(member, existingMember, existingIsStatic, initialized));
     }
@@ -1409,22 +1498,29 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
             if (member.IsInitialized || member.Member is not PropertyInfo property)
             {
                 if (DebugLogging)
-                    LogDebug($"Skipping initialized member: {member.Member.Name}.", info.Module, info.Assembly);
+                    LogDebug($"Skipping initialized member: {member.Member switch
+                    {
+                        MethodInfo m => Accessor.Formatter.Format(m),
+                        FieldInfo f => Accessor.Formatter.Format(f),
+                        _ => member.Member.Name
+                    }}.", info.Module, info.Assembly);
                 continue;
             }
             MethodInfo? getter = property.GetGetMethod(true);
             MethodInfo? setter = property.GetSetMethod(true);
             if (getter == null)
             {
-                LogWarning($"Unable to find getter for {property.Name}.", info.Module, info.Assembly);
+                LogWarning($"Unable to find getter for {Accessor.Formatter.Format(property)}.", info.Module, info.Assembly);
                 continue;
             }
             if (DebugLogging && setter == null)
-                LogDebug($"Unable to find setter for {property.Name}, not an issue.", info.Module, info.Assembly);
+                LogDebug($"Unable to find setter for {Accessor.Formatter.Format(property)}, not an issue.", info.Module, info.Assembly);
             if (Patches.ContainsKey(getter))
             {
                 if (DebugLogging)
-                    LogDebug($"{getter.Name} has already been transpiled.", info.Module, info.Assembly);
+                {
+                    LogDebug($"{Accessor.Formatter.Format(getter)} has already been transpiled.", info.Module, info.Assembly);
+                }
             }
             else
             {
@@ -1440,7 +1536,9 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 if (Patches.ContainsKey(setter))
                 {
                     if (DebugLogging)
-                        LogDebug($"{setter.Name} has already been transpiled.", info.Module, info.Assembly);
+                    {
+                        LogDebug($"{Accessor.Formatter.Format(setter)} has already been transpiled.", info.Module, info.Assembly);
+                    }
                 }
                 else
                 {
@@ -1505,14 +1603,14 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 if (parentTypeInfo.OpenPatchesIntl.Any(x => x.Original == openMethod.Method))
                 {
                     if (DebugLogging)
-                        LogDebug($"Skipped finalizer for {openMethod.Method.Name}, already done from this extension.", module, assembly);
+                        LogDebug($"Skipped finalizer for {Accessor.Formatter.Format(openMethod.Method)}, already done from this extension.", module, assembly);
                     continue;
                 }
 
                 if (Patches.TryGetValue(openMethod.Method, out UIExtensionPatch patchInfo))
                 {
                     if (DebugLogging)
-                        LogDebug($"Skipped finalizer for {openMethod.Method.Name}, already done from another extension.", module, assembly);
+                        LogDebug($"Skipped finalizer for {Accessor.Formatter.Format(openMethod.Method)}, already done from another extension.", module, assembly);
                     parentTypeInfo.OpenPatchesIntl.Add(patchInfo);
                     continue;
                 }
@@ -1527,7 +1625,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     parentTypeInfo.OpenPatchesIntl.Add(patchInfo);
                     Patches.Add(openMethod.Method, patchInfo);
                     if (DebugLogging)
-                        LogDebug($"Added finalizer for {openMethod.Method.Name}: {finalizer.Name}.", module, assembly);
+                        LogDebug($"Added finalizer for {Accessor.Formatter.Format(openMethod.Method)}: {Accessor.Formatter.Format(finalizer)}.", module, assembly);
                 }
                 else if (openMethod.Method.IsStatic)
                 {
@@ -1562,14 +1660,14 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 if (parentTypeInfo.ClosePatchesIntl.Any(x => x.Original == closeMethod.Method))
                 {
                     if (DebugLogging)
-                        LogDebug($"Skipped finalizer for {closeMethod.Method.Name}, already done from this extension.", module, assembly);
+                        LogDebug($"Skipped finalizer for {Accessor.Formatter.Format(closeMethod.Method)}, already done from this extension.", module, assembly);
                     continue;
                 }
 
                 if (Patches.TryGetValue(closeMethod.Method, out UIExtensionPatch patchInfo))
                 {
                     if (DebugLogging)
-                        LogDebug($"Skipped finalizer for {closeMethod.Method.Name}, already done from another extension.", module, assembly);
+                        LogDebug($"Skipped finalizer for {Accessor.Formatter.Format(closeMethod.Method)}, already done from another extension.", module, assembly);
                     parentTypeInfo.ClosePatchesIntl.Add(patchInfo);
                     continue;
                 }
@@ -1584,7 +1682,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     parentTypeInfo.ClosePatchesIntl.Add(patchInfo);
                     Patches.Add(closeMethod.Method, patchInfo);
                     if (DebugLogging)
-                        LogDebug($"Added finalizer for {closeMethod.Method.Name}: {finalizer.Name}.", module, assembly);
+                        LogDebug($"Added finalizer for {Accessor.Formatter.Format(closeMethod.Method)}: {Accessor.Formatter.Format(finalizer)}.", module, assembly);
                 }
                 else if (closeMethod.Method.IsStatic)
                 {
@@ -1619,14 +1717,14 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 if (parentTypeInfo.InitializePatchesIntl.Any(x => x.Original == initializeMethod.Method))
                 {
                     if (DebugLogging)
-                        LogDebug($"Skipped finalizer for {initializeMethod.Method.Name}, already done from this extension.", module, assembly);
+                        LogDebug($"Skipped finalizer for {Accessor.Formatter.Format(initializeMethod.Method)}, already done from this extension.", module, assembly);
                     continue;
                 }
 
                 if (Patches.TryGetValue(initializeMethod.Method, out UIExtensionPatch patchInfo))
                 {
                     if (DebugLogging)
-                        LogDebug($"Skipped finalizer for {initializeMethod.Method.Name}, already done from another extension.", module, assembly);
+                        LogDebug($"Skipped finalizer for {Accessor.Formatter.Format(initializeMethod.Method)}, already done from another extension.", module, assembly);
                     parentTypeInfo.InitializePatchesIntl.Add(patchInfo);
                     continue;
                 }
@@ -1639,7 +1737,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                     parentTypeInfo.InitializePatchesIntl.Add(patchInfo);
                     Patches.Add(initializeMethod.Method, patchInfo);
                     if (DebugLogging)
-                        LogDebug($"Added finalizer for {initializeMethod.Method.Name}: {finalizer.Name}.", module, assembly);
+                        LogDebug($"Added finalizer for {Accessor.Formatter.Format(initializeMethod.Method)}: {Accessor.Formatter.Format(finalizer)}.", module, assembly);
                 }
                 else if (initializeMethod.Method.IsStatic)
                 {
@@ -1677,14 +1775,14 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                 if (parentTypeInfo.DestroyPatchesIntl.Any(x => x.Original == destroyMethod.Method))
                 {
                     if (DebugLogging)
-                        LogDebug($"[{Source}] Skipped finalizer for {destroyMethod.Method.Name}, already done from this extension.", module, assembly);
+                        LogDebug($"[{Source}] Skipped finalizer for {Accessor.Formatter.Format(destroyMethod.Method)}, already done from this extension.", module, assembly);
                     continue;
                 }
 
                 if (Patches.TryGetValue(destroyMethod.Method, out UIExtensionPatch patchInfo))
                 {
                     if (DebugLogging)
-                        LogDebug($"[{Source}] Skipped finalizer for {destroyMethod.Method.Name}, already done from another extension.", module, assembly);
+                        LogDebug($"[{Source}] Skipped finalizer for {Accessor.Formatter.Format(destroyMethod.Method)}, already done from another extension.", module, assembly);
                     parentTypeInfo.DestroyPatchesIntl.Add(patchInfo);
                     continue;
                 }
@@ -1699,7 +1797,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                         UIAccessor.Patcher.Patch(destroyMethod.Method, prefix: new HarmonyMethod(prefix));
                         patchInfo = new UIExtensionPatch(destroyMethod.Method, prefix, HarmonyPatchType.Prefix);
                         if (DebugLogging)
-                            LogDebug($"[{Source}] Added prefix for {destroyMethod.Method.Name}: {prefix.Name}.", module, assembly);
+                            LogDebug($"[{Source}] Added prefix for {Accessor.Formatter.Format(destroyMethod.Method)}: {Accessor.Formatter.Format(prefix)}.", module, assembly);
                     }
                     else
                     {
@@ -1709,7 +1807,7 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                         UIAccessor.Patcher.Patch(destroyMethod.Method, finalizer: new HarmonyMethod(finalizer));
                         patchInfo = new UIExtensionPatch(destroyMethod.Method, finalizer, HarmonyPatchType.Finalizer);
                         if (DebugLogging)
-                            LogDebug($"[{Source}] Added finalizer for {destroyMethod.Method.Name}: {finalizer.Name}.", module, assembly);
+                            LogDebug($"[{Source}] Added finalizer for {Accessor.Formatter.Format(destroyMethod.Method)}: {Accessor.Formatter.Format(finalizer)}.", module, assembly);
                     }
                     parentTypeInfo.DestroyPatchesIntl.Add(patchInfo);
                     Patches.Add(destroyMethod.Method, patchInfo);
@@ -1814,8 +1912,8 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         Type declType = method.DeclaringType!;
         if (!mngr.PatchInfo.TryGetValue(method, out UIExtensionExistingMemberPatchInfo info))
         {
-            mngr.LogWarning($"Unable to patch {method.Name}: Could not find existing member info for {declType.Name}.", null, method.DeclaringType?.Assembly);
-            foreach (CodeInstruction instr in EmitUtility.Throw<InvalidOperationException>($"Could not find existing member info for {declType.Name}."))
+            mngr.LogWarning($"Unable to patch {Accessor.Formatter.Format(method)}: Could not find existing member info for {Accessor.Formatter.Format(declType)}.", null, method.DeclaringType?.Assembly);
+            foreach (CodeInstruction instr in PatchUtility.Throw<InvalidOperationException>($"Could not find existing member info for {Accessor.Formatter.Format(declType)}."))
                 yield return instr;
 
             yield break;
@@ -1843,12 +1941,12 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
         yield return new CodeInstruction(OpCodes.Ret);
         
         if (mngr.DebugLogging)
-            mngr.LogDebug($"Transpiled {method.Name} for extension for {info.Extension.ParentType.Name}.", info.Extension.Module, info.Extension.Assembly);
+            mngr.LogDebug($"Transpiled {Accessor.Formatter.Format(method)} for extension for {Accessor.Formatter.Format(info.Extension.ParentType)}.", info.Extension.Module, info.Extension.Assembly);
     }
     private static readonly MethodInfo TranspileSetterPropertyMethod = typeof(UIExtensionManager).GetMethod(nameof(TranspileSetterProperty), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     [UsedImplicitly]
-    private static IEnumerable<CodeInstruction> TranspileSetterProperty(IEnumerable<CodeInstruction> instructions, MethodBase method) => EmitUtility.Throw<NotImplementedException>($"{method.Name.Replace("set_", "")} can not have a setter, as it is a UI extension implementation.");
+    private static IEnumerable<CodeInstruction> TranspileSetterProperty(IEnumerable<CodeInstruction> instructions, MethodBase method) => PatchUtility.Throw<NotImplementedException>($"{Accessor.ExceptionFormatter.Format(method).Replace("set_", string.Empty)} can not have a setter, as it is a UI extension implementation.");
     
     /// <summary>
     /// Represents a patch for an existing member.
@@ -1908,9 +2006,9 @@ public class UIExtensionManager : MonoBehaviour, IUIExtensionManager, IDisposabl
                         if (UnturnedUIToolsNexus.UIExtensionManager is UIExtensionManager mngr)
                         {
                             if (extInfo != null)
-                                mngr.LogWarning($"Unable to find instance of UI extension: {type.Name} extending {extInfo.TypeInfo.Type.Name}.", extInfo.Module, extInfo.Assembly);
+                                mngr.LogWarning($"Unable to find instance of UI extension: {Accessor.Formatter.Format(type)} extending {Accessor.Formatter.Format(extInfo.TypeInfo.Type)}.", extInfo.Module, extInfo.Assembly);
                             else
-                                mngr.LogWarning($"Unable to find instance of UI extension: {type.Name}.");
+                                mngr.LogWarning($"Unable to find instance of UI extension: {Accessor.Formatter.Format(type)}.");
                         }
                     }
                 }

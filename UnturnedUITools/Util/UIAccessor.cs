@@ -1,4 +1,5 @@
 ﻿using DanielWillett.ReflectionTools;
+using DanielWillett.ReflectionTools.Formatting;
 using DanielWillett.UITools.API;
 using DanielWillett.UITools.Core.Handlers;
 using HarmonyLib;
@@ -12,10 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
 using System.Threading;
 using UnityEngine;
-using CodeInstruction = HarmonyLib.CodeInstruction;
 
 namespace DanielWillett.UITools.Util;
 
@@ -48,35 +47,8 @@ public static class UIAccessor
                     // set up harmony debug log if enabled.
                     if (_manageHarmonyDebugLog)
                     {
-                        try
-                        {
-                            _harmonyLogPath ??= Path.Combine(UnturnedPaths.RootDirectory.FullName, "Logs", "harmony.log");
-                            Environment.SetEnvironmentVariable("HARMONY_LOG_FILE", _harmonyLogPath);
-
-                            string? dir = Path.GetDirectoryName(_harmonyLogPath);
-                            if (dir != null)
-                                Directory.CreateDirectory(dir);
-
-                            try
-                            {
-                                using FileStream str = new FileStream(_harmonyLogPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
-                                byte[] bytes = Encoding.UTF8.GetBytes(DateTimeOffset.UtcNow.ToString("R") + Environment.NewLine);
-                                str.Write(bytes, 0, bytes.Length);
-                                str.Flush();
-                            }
-                            catch (Exception ex)
-                            {
-                                CommandWindow.LogError($"Unable to clear previous harmony log: {_harmonyLogPath}");
-                                CommandWindow.LogError(ex);
-                            }
-
-                            Harmony.DEBUG = true;
-                        }
-                        catch (Exception ex)
-                        {
-                            CommandWindow.LogError("Failed to set up Harmony log.");
-                            CommandWindow.LogError(ex);
-                        }
+                        _harmonyLogPath ??= Path.Combine(UnturnedPaths.RootDirectory.FullName, "Logs", "harmony.log");
+                        HarmonyLog.Reset(_harmonyLogPath, enableDebug: true);
                     }
 
                     _patcher = new Harmony(_harmonyId);
@@ -91,6 +63,7 @@ public static class UIAccessor
     /// Set the ID to use for the <see cref="Harmony"/> instance used by the module.
     /// </summary>
     /// <remarks>Must be set in <see cref="IModuleNexus.initialize"/>.</remarks>
+    /// <exception cref="InvalidOperationException">Patcher is already set up.</exception>
     public static string HarmonyId
     {
         get => _harmonyId;
@@ -113,6 +86,7 @@ public static class UIAccessor
     /// Set the path of the harmony debug log. Defaults to <c>Unturned/Logs/harmony.log</c>. Enable it with <see cref="ManageHarmonyDebugLog"/>.
     /// </summary>
     /// <remarks>Must be set in <see cref="IModuleNexus.initialize"/>.</remarks>
+    /// <exception cref="InvalidOperationException">Patcher is already set up.</exception>
     public static string? HarmonyLogPath
     {
         get => _harmonyLogPath;
@@ -133,6 +107,7 @@ public static class UIAccessor
     /// Enable managing the harmony debug log? Set the path with <see cref="HarmonyLogPath"/>.
     /// </summary>
     /// <remarks>Must be set in <see cref="IModuleNexus.initialize"/>.</remarks>
+    /// <exception cref="InvalidOperationException">Patcher is already set up.</exception>
     public static bool ManageHarmonyDebugLog
     {
         get => _manageHarmonyDebugLog;
@@ -1034,10 +1009,10 @@ public static class UIAccessor
         UITypeInfo? info = GetTypeInfo(uiType);
 
         if (info == null)
-            throw new ArgumentException(uiType.Name + " is not a valid UI type. If it's new, request it on the GitHub.");
+            throw new ArgumentException($"{Accessor.ExceptionFormatter.Format(uiType)} is not a valid UI type. If it's new, request it on the GitHub.");
 
         if (info.IsStaticUI || string.IsNullOrEmpty(info.EmitProperty) && info.CustomEmitter == null)
-            throw new InvalidOperationException(uiType.Name + " is not an instanced UI.");
+            throw new InvalidOperationException($"{Accessor.ExceptionFormatter.Format(uiType)} is not an instanced UI.");
 
         if (info.CustomEmitter != null)
         {
@@ -1063,7 +1038,7 @@ public static class UIAccessor
             // ignored
         }
 
-        throw new Exception($"Unable to find an emittable property at {nameof(UIAccessor)}.{info.EmitProperty}.");
+        throw new Exception($"Unable to find an emittable property at {Accessor.ExceptionFormatter.Format(typeof(UIAccessor))}.{info.EmitProperty}.");
     }
 
     /// <summary>
@@ -1074,10 +1049,10 @@ public static class UIAccessor
         UITypeInfo? info = GetTypeInfo(uiType);
 
         if (info == null)
-            throw new ArgumentException(uiType.Name + " is not a valid UI type. If it's new, request it on the GitHub.");
+            throw new ArgumentException($"{Accessor.ExceptionFormatter.Format(uiType)} is not a valid UI type. If it's new, request it on the GitHub.");
 
         if (info.IsStaticUI || string.IsNullOrEmpty(info.EmitProperty) && info.CustomTranspiler == null)
-            throw new InvalidOperationException(uiType.Name + " is not an instanced UI.");
+            throw new InvalidOperationException($"{Accessor.ExceptionFormatter.Format(uiType)} is not an instanced UI.");
 
         if (info.CustomTranspiler != null)
         {
@@ -1111,7 +1086,7 @@ public static class UIAccessor
             yield break;
         }
 
-        throw new Exception($"Unable to find an emittable property at {nameof(UIAccessor)}.{info.EmitProperty}.");
+        throw new Exception($"Unable to find an emittable property at {Accessor.ExceptionFormatter.Format(typeof(UIAccessor))}.{info.EmitProperty}.");
     }
 
     static UIAccessor()
@@ -1144,7 +1119,7 @@ public static class UIAccessor
                 EditorTerrainHeightUIType = rtnType;
                 if (rtnType == null)
                 {
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.EditorTerrainHeightUI.");
+                    Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.EditorTerrainHeightUI.");
                 }
                 else
                 {
@@ -1152,7 +1127,10 @@ public static class UIAccessor
                                        containerType.GetField("heights", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     if (field == null || field.IsStatic || !rtnType.IsAssignableFrom(field.FieldType))
                     {
-                        CommandWindow.LogWarning($"[{Source}] Unable to find field: EditorTerrainUI.heightV2.");
+                        Accessor.Logger?.LogWarning(Source, $"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("heightV2")
+                            .DeclaredIn(containerType, isStatic: false)
+                            .WithFieldType(rtnType)
+                        )}.");
                     }
                     else
                     {
@@ -1172,16 +1150,18 @@ public static class UIAccessor
                 EditorTerrainMaterialsUIType = rtnType;
                 if (rtnType == null)
                 {
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.EditorTerrainMaterialsUI.");
+                    Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.EditorTerrainMaterialsUI.");
                 }
                 else
                 {
                     FieldInfo? field = containerType.GetField("materialsV2", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public) ??
-                                      containerType.GetField("materials", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                                       containerType.GetField("materials", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     if (field == null || field.IsStatic || !rtnType.IsAssignableFrom(field.FieldType))
                     {
-                        CommandWindow.LogWarning($"[{Source}] Unable to find field: EditorTerrainUI.materialsV2.");
-                        return;
+                        Accessor.Logger?.LogWarning(Source, $"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("materialsV2")
+                            .DeclaredIn(containerType, isStatic: false)
+                            .WithFieldType(rtnType)
+                        )}.");
                     }
                     else
                     {
@@ -1201,16 +1181,19 @@ public static class UIAccessor
                 EditorTerrainDetailsUIType = rtnType;
                 if (rtnType == null)
                 {
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.EditorTerrainDetailsUI.");
+                    Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.EditorTerrainDetailsUI.");
                     return;
                 }
                 else
                 {
                     FieldInfo? field = containerType.GetField("detailsV2", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public) ??
-                            containerType.GetField("details", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                                       containerType.GetField("details", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     if (field == null || field.IsStatic || !rtnType.IsAssignableFrom(field.FieldType))
                     {
-                        CommandWindow.LogWarning($"[{Source}] Unable to find field: EditorTerrainUI.detailsV2.");
+                        Accessor.Logger?.LogWarning(Source, $"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("materialsV2")
+                            .DeclaredIn(containerType, isStatic: false)
+                            .WithFieldType(rtnType)
+                        )}.");
                     }
                     else
                     {
@@ -1230,15 +1213,18 @@ public static class UIAccessor
                 EditorTerrainTilesUIType = rtnType;
                 if (rtnType == null)
                 {
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.EditorTerrainTilesUI.");
+                    Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.EditorTerrainTilesUI.");
                 }
                 else
                 {
                     FieldInfo? field = containerType.GetField("tiles", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public) ??
-                            containerType.GetField("tilesV2", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                                       containerType.GetField("tilesV2", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     if (field == null || field.IsStatic || !rtnType.IsAssignableFrom(field.FieldType))
                     {
-                        CommandWindow.LogWarning($"[{Source}] Unable to find field: EditorTerrainUI.tiles.");
+                        Accessor.Logger?.LogWarning(Source, $"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("tiles")
+                            .DeclaredIn(containerType, isStatic: false)
+                            .WithFieldType(rtnType)
+                        )}.");
                     }
                     else
                     {
@@ -1263,15 +1249,18 @@ public static class UIAccessor
                 EditorEnvironmentNodesUIType = rtnType;
                 if (rtnType == null)
                 {
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.EditorEnvironmentNodesUI.");
+                    Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.EditorEnvironmentNodesUI.");
                 }
                 else
                 {
                     FieldInfo? field = containerType.GetField("nodesUI", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public) ??
-                            containerType.GetField("nodes", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                                       containerType.GetField("nodes", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
                     if (field == null || !field.IsStatic || !rtnType.IsAssignableFrom(field.FieldType))
                     {
-                        CommandWindow.LogWarning($"[{Source}] Unable to find field: EditorEnvironmentUI.nodesUI.");
+                        Accessor.Logger?.LogWarning(Source, $"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("nodesUI")
+                            .DeclaredIn(containerType, isStatic: false)
+                            .WithFieldType(rtnType)
+                        )}.");
                     }
                     else
                     {
@@ -1295,7 +1284,7 @@ public static class UIAccessor
                 EditorVolumesUIType = rtnType;
                 if (rtnType == null)
                 {
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.EditorVolumesUI.");
+                    Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.EditorVolumesUI.");
                 }
                 else
                 {
@@ -1303,7 +1292,10 @@ public static class UIAccessor
                                        containerType.GetField("volumes", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
                     if (field == null || !field.IsStatic || !rtnType.IsAssignableFrom(field.FieldType))
                     {
-                        CommandWindow.LogWarning($"[{Source}] Unable to find field: EditorLevelUI.volumesUI.");
+                        Accessor.Logger?.LogWarning(Source, $"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("volumesUI")
+                            .DeclaredIn(containerType, isStatic: false)
+                            .WithFieldType(rtnType)
+                        )}.");
                     }
                     else
                     {
@@ -1329,10 +1321,13 @@ public static class UIAccessor
                     if (rtnType != null)
                     {
                         FieldInfo? field = containerType.GetField("cartMenu", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public) ??
-                                containerType.GetField("cartMenuUI", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                                           containerType.GetField("cartMenuUI", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                         if (field == null || field.IsStatic || !rtnType.IsAssignableFrom(field.FieldType))
                         {
-                            CommandWindow.LogWarning($"[{Source}] Unable to find field: ItemStoreMenu.cartMenu.");
+                            Accessor.Logger?.LogWarning(Source, $"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("cartMenu")
+                                .DeclaredIn(containerType, isStatic: false)
+                                .WithFieldType(rtnType)
+                            )}.");
                         }
                         else
                         {
@@ -1352,7 +1347,7 @@ public static class UIAccessor
                     }
                     else
                     {
-                        CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.ItemStoreCartMenu.");
+                        Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.ItemStoreCartMenu.");
                     }
 
                     /* DETAILS MENU */
@@ -1363,7 +1358,10 @@ public static class UIAccessor
                                            containerType.GetField("detailsMenuUI", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                         if (field == null || field.IsStatic || !rtnType.IsAssignableFrom(field.FieldType))
                         {
-                            CommandWindow.LogWarning($"[{Source}] Unable to find field: ItemStoreMenu.detailsMenu.");
+                            Accessor.Logger?.LogWarning(Source, $"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("detailsMenu")
+                                .DeclaredIn(containerType, isStatic: false)
+                                .WithFieldType(rtnType)
+                            )}.");
                         }
                         else
                         {
@@ -1383,18 +1381,17 @@ public static class UIAccessor
                     }
                     else
                     {
-                        CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.ItemStoreCartMenu.");
+                        Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.ItemStoreCartMenu.");
                     }
                 }
                 else
                 {
-                    CommandWindow.LogWarning($"[{Source}] Unable to find type: SDG.Unturned.ItemStoreMenu.");
+                    Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.ItemStoreMenu.");
                 }
             }
             catch (Exception ex)
             {
-                CommandWindow.LogError($"[{Source}] Error initializing UI access tools.");
-                CommandWindow.LogError(ex);
+                Accessor.Logger?.LogError(Source, ex, "Error initializing UI access tools.");
             }
         }
     }
@@ -1420,19 +1417,19 @@ public static class UIAccessor
                 {
                     if (type.Type == typeof(object))
                     {
-                        CommandWindow.LogError($"Missing UI: {type.ExpectedTypeName}.");
+                        Accessor.Logger?.LogError(Source, null, $"Missing UI: {type.ExpectedTypeName}.");
                         return;
                     }
 
                     if (type.Parent == typeof(object))
                     {
-                        CommandWindow.LogError($"Missing parent of UI: {type.Type.FullName}.");
+                        Accessor.Logger?.LogError(Source, null, $"Missing parent of UI: {Accessor.Formatter.Format(type.Type)}.");
                         return;
                     }
 
                     if (typeInfo.ContainsKey(type.Type))
                     {
-                        CommandWindow.LogError($"Duplicate UI: {type.Type.FullName}.");
+                        Accessor.Logger?.LogError(Source, null, $"Duplicate UI: {Accessor.Formatter.Format(type.Type)}.");
                         return;
                     }
 
@@ -1555,7 +1552,7 @@ public static class UIAccessor
                 });
 
                 Add(new UITypeInfo(nameof(SDG.Unturned.EditorUI), emptyMethods, emptyMethods,
-                    typeof(EditorUI).GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance) is { } method1 ? new MethodBase[] { method1 } : emptyMethods,
+                    typeof(EditorUI).GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance) is { } method1 ? [ method1 ] : emptyMethods,
                     hasActiveMember: false)
                 {
                     Scene = UIScene.Editor,
@@ -1938,7 +1935,7 @@ public static class UIAccessor
                 });
 
                 Add(new UITypeInfo(nameof(SDG.Unturned.PlayerUI), emptyMethods, emptyMethods,
-                    typeof(PlayerUI).GetMethod("InitializePlayer", BindingFlags.NonPublic | BindingFlags.Instance) is { } method3 ? new MethodBase[] { method3 } : emptyMethods
+                    typeof(PlayerUI).GetMethod("InitializePlayer", BindingFlags.NonPublic | BindingFlags.Instance) is { } method3 ? [ method3 ] : emptyMethods
                     , hasActiveMember: false)
                 {
                     Scene = UIScene.Player,
@@ -2084,7 +2081,7 @@ public static class UIAccessor
                             };
                         }
                     }
-                    CommandWindow.Log($"[{Source}] Discovered {MenuTypes.Count} editor node/volume menu type(s).");
+                    Accessor.Logger?.LogInfo(Source, $"Discovered {MenuTypes.Count} editor node/volume menu type(s).");
                     int c = typeInfo.Count;
                     foreach (Type sleekWrapper in types.Where(x => typeof(SleekWrapper).IsAssignableFrom(x)))
                     {
@@ -2102,7 +2099,7 @@ public static class UIAccessor
                             CloseOnDestroy = true
                         });
                     }
-                    CommandWindow.Log($"[{Source}] Discovered {typeInfo.Count - c} UI wrapper type(s).");
+                    Accessor.Logger?.LogInfo(Source, $"Discovered {typeInfo.Count - c} UI wrapper type(s).");
                     c = typeInfo.Count;
                     Type? playerUi = FindUIType(nameof(SDG.Unturned.PlayerUI));
                     if (playerUi != null)
@@ -2130,12 +2127,11 @@ public static class UIAccessor
                             });
                         }
                     }
-                    CommandWindow.Log($"[{Source}] Discovered {typeInfo.Count - c} useable UI type(s).");
+                    Accessor.Logger?.LogInfo(Source, $"Discovered {typeInfo.Count - c} useable UI type(s).");
                 }
                 catch (Exception ex)
                 {
-                    CommandWindow.LogWarning($"[{Source}] Error initializing volume and node UI info.");
-                    CommandWindow.LogError(ex);
+                    Accessor.Logger?.LogError(Source, ex, "Error initializing volume and node UI info.");
                 }
 
                 int ct = typeInfo.Count;
@@ -2153,27 +2149,24 @@ public static class UIAccessor
                         {
                             MethodInfo? method = Accessor.GetMethod(ftn);
                             if (method != null)
-                                CommandWindow.LogWarning($"[{Source}] {method.DeclaringType?.Assembly.FullName ?? method.Module.FullyQualifiedName} threw an unhandled exception while invoking {nameof(UIAccessor)}.{nameof(OnInitializingUIInfo)}.");
+                                Accessor.Logger?.LogError(Source, ex, $"{Accessor.Formatter.Format(method)} threw an unhandled exception while invoking {Accessor.Formatter.Format(typeof(UIAccessor))}.{nameof(OnInitializingUIInfo)}.");
                             else
-                                CommandWindow.LogWarning($"[{Source}] Unhandled exception invoking {nameof(UIAccessor)}.{nameof(OnInitializingUIInfo)}.");
-
-                            CommandWindow.LogWarning(ex);
+                                Accessor.Logger?.LogError(Source, ex, $"Unhandled exception invoking {Accessor.Formatter.Format(typeof(UIAccessor))}.{nameof(OnInitializingUIInfo)}.");
                         }
                     }
                 }
 
                 ct = typeInfo.Count - ct;
                 if (ct > 0)
-                    CommandWindow.Log($"[{Source}] Modules added {ct} UI type(s).");
+                    Accessor.Logger?.LogInfo(Source, $"Modules added {ct} UI type(s).");
 
                 _typeInfoIntl = typeInfo;
-                CommandWindow.Log($"[{Source}] Registered {typeInfo.Count} UI type(s).");
+                Accessor.Logger?.LogInfo(Source, $"Registered {typeInfo.Count} UI type(s).");
                 TypeInfo = new ReadOnlyDictionary<Type, UITypeInfo>(typeInfo);
             }
             catch (Exception ex)
             {
-                CommandWindow.LogError($"[{Source}] Error initializing {typeof(UITypeInfo)} records.");
-                CommandWindow.LogError(ex);
+                Accessor.Logger?.LogError(Source, ex, $"Error initializing {Accessor.Formatter.Format(typeof(UITypeInfo))} records.");
             }
         }
     }
@@ -2182,7 +2175,13 @@ public static class UIAccessor
     {
         FieldInfo? field = EditorVolumesUIType?.GetField("focusedItemMenu", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (field == null)
-            throw new MemberAccessException("Unable to find field: EditorVolumesUI.focusedItemMenu.");
+        {
+            throw new MemberAccessException($"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("focusedItemMenu")
+                .DeclaredIn(EditorVolumesUIType!, isStatic: false)
+                .WithFieldType<ISleekElement>()
+            )}.");
+        }
+
         Label lbl = generator.DefineLabel();
         generator.Emit(OpCodes.Call, typeof(UIAccessor).GetProperty(nameof(EditorVolumesUI), BindingFlags.Public | BindingFlags.Static)!.GetMethod);
         generator.Emit(OpCodes.Dup);
@@ -2195,7 +2194,13 @@ public static class UIAccessor
     {
         FieldInfo? field = EditorEnvironmentNodesUIType?.GetField("focusedItemMenu", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (field == null)
-            throw new MemberAccessException("Unable to find field: EditorEnvironmentNodesUI.focusedItemMenu.");
+        {
+            throw new MemberAccessException($"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("focusedItemMenu")
+                .DeclaredIn(EditorEnvironmentNodesUIType!, isStatic: false)
+                .WithFieldType<ISleekElement>()
+            )}.");
+        }
+
         Label lbl = generator.DefineLabel();
         generator.Emit(OpCodes.Call, typeof(UIAccessor).GetProperty(nameof(EditorEnvironmentNodesUI), BindingFlags.Public | BindingFlags.Static)!.GetMethod);
         generator.Emit(OpCodes.Dup);
@@ -2210,9 +2215,34 @@ public static class UIAccessor
         MethodInfo? playerEquipmentProp = playerProp == null ? null : typeof(Player).GetProperty(nameof(Player.equipment), BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod(true);
         MethodInfo? useableProp = playerEquipmentProp == null ? null : typeof(PlayerEquipment).GetProperty(nameof(PlayerEquipment.useable), BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod(true);
         if (useableProp == null)
-            throw new MemberAccessException("Unable to find at least one of the properties: Player.player, Player.equipment, PlayerEquipment.useable.");
+        {
+            if (playerProp == null)
+            {
+                throw new MemberAccessException($"Unable to find property {Accessor.Formatter.Format(new PropertyDefinition("player")
+                    .DeclaredIn<Player>(isStatic: true)
+                    .WithPropertyType<Player>()
+                    .WithNoSetter()
+                )}.");
+            }
+
+            if (playerEquipmentProp == null)
+            {
+                throw new MemberAccessException($"Unable to find property {Accessor.Formatter.Format(new PropertyDefinition("equipment")
+                    .DeclaredIn<Player>(isStatic: false)
+                    .WithPropertyType<PlayerEquipment>()
+                    .WithNoSetter()
+                )}.");
+            }
+
+            throw new MemberAccessException($"Unable to find property {Accessor.Formatter.Format(new PropertyDefinition("useable")
+                .DeclaredIn<PlayerEquipment>(isStatic: false)
+                .WithPropertyType<Useable>()
+                .WithNoSetter()
+            )}.");
+        }
+            
         Label lbl = generator.DefineLabel();
-        generator.Emit(playerProp!.GetCall(), playerProp!);
+        generator.Emit(OpCodes.Call, playerProp!);
         generator.Emit(OpCodes.Dup);
         generator.Emit(OpCodes.Brfalse, lbl);
         generator.Emit(playerEquipmentProp!.GetCall(), playerEquipmentProp!);
@@ -2224,12 +2254,17 @@ public static class UIAccessor
     {
         FieldInfo? field = EditorVolumesUIType?.GetField("focusedItemMenu", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (field == null)
-            throw new MemberAccessException("Unable to find field: EditorVolumesUI.focusedItemMenu.");
+        {
+            throw new MemberAccessException($"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("focusedItemMenu")
+                .DeclaredIn(EditorEnvironmentNodesUIType!, isStatic: false)
+                .WithFieldType<ISleekElement>()
+            )}.");
+        }
 
         Label lbl = generator.DefineLabel();
 
-        return new CodeInstruction[]
-        {
+        return
+        [
             new CodeInstruction(OpCodes.Call, typeof(UIAccessor).GetProperty(nameof(EditorVolumesUI), BindingFlags.Public | BindingFlags.Static)!.GetMethod),
             new CodeInstruction(OpCodes.Dup),
             new CodeInstruction(OpCodes.Brfalse, lbl),
@@ -2237,17 +2272,23 @@ public static class UIAccessor
             new CodeInstruction(OpCodes.Isinst, info.Type),
 
             new CodeInstruction(OpCodes.Nop).WithLabels(lbl)
-        };
+        ];
     }
     private static IEnumerable<CodeInstruction> EnumerateNodeMenu(UITypeInfo info, ILGenerator generator)
     {
         FieldInfo? field = EditorEnvironmentNodesUIType?.GetField("focusedItemMenu", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (field == null)
-            throw new MemberAccessException("Unable to find field: EditorEnvironmentNodesUI.focusedItemMenu.");
+        {
+            throw new MemberAccessException($"Unable to find field: {Accessor.Formatter.Format(new FieldDefinition("focusedItemMenu")
+                .DeclaredIn(EditorEnvironmentNodesUIType!, isStatic: false)
+                .WithFieldType<ISleekElement>()
+            )}.");
+        }
+
         Label lbl = generator.DefineLabel();
 
-        return new CodeInstruction[]
-        {
+        return
+        [
             new CodeInstruction(OpCodes.Call, typeof(UIAccessor).GetProperty(nameof(EditorEnvironmentNodesUI), BindingFlags.Public | BindingFlags.Static)!.GetMethod),
             new CodeInstruction(OpCodes.Dup),
             new CodeInstruction(OpCodes.Brfalse, lbl),
@@ -2255,7 +2296,7 @@ public static class UIAccessor
             new CodeInstruction(OpCodes.Isinst, info.Type),
 
             new CodeInstruction(OpCodes.Nop).WithLabels(lbl)
-        };
+        ];
     }
     private static IEnumerable<CodeInstruction> EnumerateUseable(UITypeInfo info, ILGenerator generator)
     {
@@ -2263,13 +2304,36 @@ public static class UIAccessor
         MethodInfo? playerEquipmentProp = playerProp == null ? null : typeof(Player).GetProperty(nameof(Player.equipment), BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod(true);
         MethodInfo? useableProp = playerEquipmentProp == null ? null : typeof(PlayerEquipment).GetProperty(nameof(PlayerEquipment.useable), BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod(true);
         if (useableProp == null)
-            throw new MemberAccessException("Unable to find at least one of the properties: Player.player, Player.equipment, PlayerEquipment.useable.");
+        {
+            if (playerProp == null)
+            {
+                throw new MemberAccessException($"Unable to find property {Accessor.Formatter.Format(new PropertyDefinition("player")
+                    .DeclaredIn<Player>(isStatic: true)
+                    .WithPropertyType<Player>()
+                    .WithNoSetter()
+                )}.");
+            }
 
-        
+            if (playerEquipmentProp == null)
+            {
+                throw new MemberAccessException($"Unable to find property {Accessor.Formatter.Format(new PropertyDefinition("equipment")
+                    .DeclaredIn<Player>(isStatic: false)
+                    .WithPropertyType<PlayerEquipment>()
+                    .WithNoSetter()
+                )}.");
+            }
+
+            throw new MemberAccessException($"Unable to find property {Accessor.Formatter.Format(new PropertyDefinition("useable")
+                .DeclaredIn<PlayerEquipment>(isStatic: false)
+                .WithPropertyType<Useable>()
+                .WithNoSetter()
+            )}.");
+        }
+
         Label lbl = generator.DefineLabel();
 
-        return new CodeInstruction[]
-        {
+        return
+        [
             new CodeInstruction(playerProp!.GetCall(), playerProp!),
             new CodeInstruction(OpCodes.Dup),
             new CodeInstruction(OpCodes.Brfalse, lbl),
@@ -2278,7 +2342,7 @@ public static class UIAccessor
             new CodeInstruction(OpCodes.Isinst, info.Type),
 
             new CodeInstruction(OpCodes.Nop).WithLabels(lbl)
-        };
+        ];
     }
 
     [HarmonyPatch(typeof(EditorUI), "Start")]
@@ -2287,7 +2351,7 @@ public static class UIAccessor
     private static void EditorUIStartPostfix()
     {
         EditorUIReady?.Invoke();
-        CommandWindow.Log($"[{Source}] Editor UI ready.");
+        Accessor.Logger?.LogInfo(Source, "Editor UI ready.");
     }
 
     [HarmonyPatch(typeof(PlayerUI), "InitializePlayer")]
@@ -2296,7 +2360,7 @@ public static class UIAccessor
     private static void PlayerUIStartPostfix()
     {
         PlayerUIReady?.Invoke();
-        CommandWindow.Log($"[{Source}] Player UI ready.");
+        Accessor.Logger?.LogInfo(Source, "Player UI ready.");
     }
 }
 

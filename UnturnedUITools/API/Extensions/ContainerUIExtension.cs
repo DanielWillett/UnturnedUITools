@@ -1,6 +1,7 @@
-﻿using SDG.Unturned;
-using System;
+﻿using DanielWillett.ReflectionTools;
 using DanielWillett.UITools.Util;
+using SDG.Unturned;
+using System;
 
 namespace DanielWillett.UITools.API.Extensions;
 
@@ -99,7 +100,7 @@ public abstract class ContainerUIExtension : UIExtension, IDisposable
     {
         if (Parent == null)
         {
-            CommandWindow.LogError($"Parent null trying to add container: {GetType().Name}.");
+            Accessor.Logger?.LogWarning(nameof(ContainerUIExtension), $"Parent null trying to add container {Accessor.Formatter.Format(GetType())}.");
             return;
         }
         if (!_containerHasBeenParented || Parent.FindIndexOfChild(Container) == -1)
@@ -114,8 +115,7 @@ public abstract class ContainerUIExtension : UIExtension, IDisposable
                 {
                     if (UnturnedUIToolsNexus.UIExtensionManager.DebugLogging)
                     {
-                        CommandWindow.Log("Error destroying container.");
-                        CommandWindow.Log(ex);
+                        Accessor.Logger?.LogError(nameof(ContainerUIExtension), ex, "Error destroying container.");
                     }
                 }
 

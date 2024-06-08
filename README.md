@@ -2,7 +2,7 @@
 
 Powerful Unturned Module/Library for manipulating Glazier/Sleek UI.
 
-Requires `HarmonyLib 2.2.2+`.
+Requires `HarmonyLib 2.3.3+`.
 
 NuGet package: [DanielWillett.UnturnedUITools](https://www.nuget.org/packages/DanielWillett.UnturnedUITools)
 
@@ -53,17 +53,25 @@ private readonly ISleekLabel _messageLabel;
 ```
 
 ### Common Mistake
+Due to the way UI extensions are created, setting existing members to `null!` 
+to suppress nullability warnings actually overrides the value set before the constructor runs.
+
+Take care to avoid doing this.
+
 ```cs
 // Setting this to null here to fix nullable references will run after the fields
 // are initialized but before the constructor so _container will have a null value.
 // 
-// Instead use #nullable disable and #nullable restore to do this.
+// Instead use #nullable disable and #nullable restore to do this,
+// or simply mark the field nullable.
 
-// BAD
+// ================== BAD ==============================
+
 [ExistingMember("container")]
 private readonly SleekFullscreenBox _container = null!;
 
-// GOOD
+// ================== GOOD =============================
+
 #nullable disable
 
 // ...
@@ -73,12 +81,18 @@ private readonly SleekFullscreenBox _container;
 
 // ...
 #nullable restore
+
+// ================== GOOD =============================
+
+[ExistingMember("container")]
+private readonly SleekFullscreenBox? _container;
+
+// =====================================================
 ```
 
-### Static Compatability
+### Static Compatibility
 The system is designed to be able to be accessed from a static context (like a patch, for example).
 ```cs
-
 // Getting static or singleton UI extensions:
 
 MenuDashboardUIExtension? extension = UnturnedUIToolsNexus.UIExtensionManager.GetInstance<MenuDashboardUIExtension>();

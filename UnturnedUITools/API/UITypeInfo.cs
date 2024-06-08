@@ -1,11 +1,12 @@
-﻿using DanielWillett.UITools.Util;
+﻿using DanielWillett.ReflectionTools;
+using DanielWillett.UITools.Util;
+using HarmonyLib;
 using SDG.Unturned;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using HarmonyLib;
 
 namespace DanielWillett.UITools.API;
 
@@ -186,13 +187,13 @@ public class UITypeInfo
                 }
 
                 if (OpenMethods.Length == 0)
-                    CommandWindow.LogWarning($"[{UIAccessor.Source}] Failed to find any open methods for UI: {type.Name}.");
-
+                {
+                    Accessor.Logger?.LogWarning(UIAccessor.Source, $"Failed to find any open methods for UI type {Accessor.Formatter.Format(type)}.");
+                }
             }
             catch (Exception ex)
             {
-                CommandWindow.LogWarning($"[{UIAccessor.Source}] Error finding any open methods for UI: {type.Name}.");
-                CommandWindow.LogWarning(ex);
+                Accessor.Logger?.LogError(UIAccessor.Source, ex, $"Error finding any open methods for UI type {Accessor.Formatter.Format(type)}.");
                 OpenMethods = Array.Empty<UIVisibilityMethodInfo>();
             }
         }
@@ -219,12 +220,13 @@ public class UITypeInfo
                 }
 
                 if (CloseMethods.Length == 0)
-                    CommandWindow.LogWarning($"[{UIAccessor.Source}] Failed to find any close methods for UI: {type.Name}.");
+                {
+                    Accessor.Logger?.LogWarning(UIAccessor.Source, $"Failed to find any close methods for UI type {Accessor.Formatter.Format(type)}.");
+                }
             }
             catch (Exception ex)
             {
-                CommandWindow.LogWarning($"[{UIAccessor.Source}] Error finding any close methods for UI: {type.Name}.");
-                CommandWindow.LogWarning(ex);
+                Accessor.Logger?.LogError(UIAccessor.Source, ex, $"Error finding any close methods for UI type {Accessor.Formatter.Format(type)}.");
                 CloseMethods = Array.Empty<UIVisibilityMethodInfo>();
             }
         }
@@ -252,12 +254,13 @@ public class UITypeInfo
                 }
 
                 if (InitializeMethods.Length == 0)
-                    CommandWindow.LogWarning($"[{UIAccessor.Source}] Failed to find any initialize constructors for UI: {type.Name}.");
+                {
+                    Accessor.Logger?.LogWarning(UIAccessor.Source, $"Failed to find any initialize constructors for UI type {Accessor.Formatter.Format(type)}.");
+                }
             }
             catch (Exception ex)
             {
-                CommandWindow.LogWarning($"[{UIAccessor.Source}] Error finding any initialize constructors for UI: {type.Name}.");
-                CommandWindow.LogWarning(ex);
+                Accessor.Logger?.LogError(UIAccessor.Source, ex, $"Error finding any initialize constructors for UI type {Accessor.Formatter.Format(type)}.");
                 InitializeMethods = Array.Empty<UIVisibilityMethodInfo>();
             }
         }
@@ -285,8 +288,7 @@ public class UITypeInfo
             }
             catch (Exception ex)
             {
-                CommandWindow.LogWarning($"[{UIAccessor.Source}] Error finding any destroy methods for UI: {type.Name}.");
-                CommandWindow.LogWarning(ex);
+                Accessor.Logger?.LogError(UIAccessor.Source, ex, $"Error finding any destroy methods for UI type {Accessor.Formatter.Format(type)}.");
                 DestroyMethods = Array.Empty<UIVisibilityMethodInfo>();
             }
         }
@@ -320,8 +322,7 @@ public class UITypeInfo
             }
             catch (Exception ex)
             {
-                CommandWindow.LogWarning($"[{UIAccessor.Source}] Error finding any destroy methods for UI: {type.Name}.");
-                CommandWindow.LogWarning(ex);
+                Accessor.Logger?.LogError(UIAccessor.Source, ex, $"Error finding any 'active' or 'isActive' member for UI type {Accessor.Formatter.Format(type)}.");
                 IsActiveMember = null;
             }
         }

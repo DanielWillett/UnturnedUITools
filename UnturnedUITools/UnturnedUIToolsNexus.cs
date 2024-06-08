@@ -1,4 +1,5 @@
-﻿using DanielWillett.UITools.API.Extensions;
+﻿using DanielWillett.ReflectionTools;
+using DanielWillett.UITools.API.Extensions;
 using DanielWillett.UITools.Core.Extensions;
 using DanielWillett.UITools.Util;
 using SDG.Framework.Modules;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Module = SDG.Framework.Modules.Module;
 
@@ -31,6 +33,7 @@ public class UnturnedUIToolsNexus : IModuleNexus
     /// </summary>
     public static bool IsStandalone
     {
+        [MethodImpl(MethodImplOptions.NoInlining)]
         get
         {
             if (_isStandaloneCached)
@@ -118,6 +121,11 @@ public class UnturnedUIToolsNexus : IModuleNexus
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (oldManager is UnityEngine.Object obj && obj != null)
             UnityEngine.Object.DestroyImmediate(obj);
+        
+        if (Accessor.Logger is UnturnedReflectionToolsLogger)
+        {
+            Accessor.Logger = null;
+        }
     }
     private void OnModulesInitialized()
     {
@@ -162,6 +170,12 @@ public class UnturnedUIToolsNexus : IModuleNexus
 
         if (_init)
             return;
+
+        IReflectionToolsLogger? logger = Accessor.Logger;
+        if (logger is ConsoleReflectionToolsLogger)
+        {
+            Accessor.Logger = new UnturnedReflectionToolsLogger();
+        }
 
         lock (Sync)
         {

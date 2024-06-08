@@ -34,9 +34,10 @@ public class Nexus : IModuleNexus
     private void OnModulesLoaded()
     {
         if (UnturnedUIToolsNexus.InitializeIfNotStandalone())
+        {
             CommandWindow.Log("Initialized UITools.");
+        }
     }
-
     void IModuleNexus.shutdown()
     {
         CommandWindow.Log("ExampleModule shutdown.");
