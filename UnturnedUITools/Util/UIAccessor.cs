@@ -189,6 +189,9 @@ public static class UIAccessor
     private static readonly InstanceGetter<MenuDashboardUI, MenuConfigurationUI?>? GetMenuConfigurationUI
         = Accessor.GenerateInstanceGetter<MenuDashboardUI, MenuConfigurationUI?>("configUI");
 
+    private static readonly InstanceGetter<MenuConfigurationUI, MenuConfigurationAudioUI?>? GetMenuConfigurationAudioUI
+        = Accessor.GenerateInstanceGetter<MenuConfigurationUI, MenuConfigurationAudioUI?>("audioMenu");
+
     private static readonly InstanceGetter<MenuDashboardUI, MenuWorkshopUI?>? GetMenuWorkshopUI
         = Accessor.GenerateInstanceGetter<MenuDashboardUI, MenuWorkshopUI?>("workshopUI");
 
@@ -646,6 +649,18 @@ public static class UIAccessor
     }
 
     /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuConfigurationAudioUI"/>.
+    /// </summary>
+    public static MenuConfigurationAudioUI? MenuConfigurationAudioUI
+    {
+        get
+        {
+            MenuConfigurationUI? menuConfigurationUI = MenuConfigurationUI;
+            return menuConfigurationUI != null ? GetMenuConfigurationAudioUI?.Invoke(menuConfigurationUI) : null;
+        }
+    }
+
+    /// <summary>
     /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopUI"/>.
     /// </summary>
     public static MenuWorkshopUI? MenuWorkshopUI
@@ -673,6 +688,11 @@ public static class UIAccessor
     /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServersUI"/>.
     /// </summary>
     public static MenuPlayServersUI? MenuPlayServersUI => MenuPlayUI.serverListUI;
+
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayOnlineSafetyUI"/>.
+    /// </summary>
+    public static MenuPlayOnlineSafetyUI? MenuPlayOnlineSafetyUI => MenuPlayUI.onlineSafetyUI;
 
     /// <summary>
     /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerListFiltersUI"/>.
@@ -1601,6 +1621,13 @@ public static class UIAccessor
                     IsStaticUI = true
                 });
 
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuConfigurationAudioUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuConfigurationUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuConfigurationAudioUI)
+                });
+
                 Add(new UITypeInfo(nameof(SDG.Unturned.MenuConfigurationUI))
                 {
                     ParentName = nameof(SDG.Unturned.MenuDashboardUI),
@@ -1677,6 +1704,13 @@ public static class UIAccessor
                     ParentName = nameof(SDG.Unturned.MenuPlayUI),
                     Scene = UIScene.Menu,
                     EmitProperty = nameof(MenuPlayServersUI)
+                });
+
+                Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayOnlineSafetyUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPlayOnlineSafetyUI)
                 });
 
                 Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlaySingleplayerUI))

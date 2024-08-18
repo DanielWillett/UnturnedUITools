@@ -1050,6 +1050,37 @@ public static class SleekElementBuilderExtensions
         return ref builder;
     }
 
+    /// <summary>
+    /// Sets <see cref="ISleekField.IsClickable"/> to <see langword="true"/> on an <see cref="ISleekField"/>.
+    /// <para>Interactability defines if the user can interact with the slider (change it's value).</para>
+    /// </summary>
+    /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
+    /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
+    public static ref readonly SleekElementBuilder<ISleekField> Interactable(this in SleekElementBuilder<ISleekField> builder)
+        => ref builder.WithIsInteractable(true);
+
+    /// <summary>
+    /// Sets <see cref="ISleekField.IsClickable"/> to <see langword="false"/> on an <see cref="ISleekField"/>.
+    /// <para>Interactability defines if the user can interact with the slider (change it's value).</para>
+    /// </summary>
+    /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
+    /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
+    public static ref readonly SleekElementBuilder<ISleekField> NotInteractable(this in SleekElementBuilder<ISleekField> builder)
+        => ref builder.WithIsInteractable(false);
+
+    /// <summary>
+    /// Sets <see cref="ISleekField.IsClickable"/> to <paramref name="isInteractable"/> on an <see cref="ISleekField"/>.
+    /// <para>Interactability defines if the user can interact with the slider (change it's value).</para>
+    /// </summary>
+    /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
+    /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
+    public static ref readonly SleekElementBuilder<ISleekField> WithIsInteractable(this in SleekElementBuilder<ISleekField> builder, bool isInteractable)
+    {
+        if (builder.Element.IsClickable != isInteractable)
+            builder.Element.IsClickable = isInteractable;
+        return ref builder;
+    }
+
 
     /// <summary>
     /// Adds a callback for when a value is submitted in an <see cref="ISleekFloat32Field"/>.
@@ -1511,6 +1542,40 @@ public static class SleekElementBuilderExtensions
         [ValueProvider("SDG.Unturned.ESleekTint"), ValueProvider("UnityEngine.Color")] SleekColor backgroundColor) where TSleekNumericField : class, ISleekNumericField
     {
         builder.Element.BackgroundColor = backgroundColor;
+        return ref builder;
+    }
+
+    /// <summary>
+    /// Sets <see cref="ISleekNumericField.IsClickable"/> to <see langword="true"/> on an <see cref="ISleekNumericField"/>.
+    /// <para>Interactability defines if the user can interact with the slider (change it's value).</para>
+    /// </summary>
+    /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
+    /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
+    public static ref readonly SleekElementBuilder<TSleekNumericField> Interactable<TSleekNumericField>(this in SleekElementBuilder<TSleekNumericField> builder)
+        where TSleekNumericField : class, ISleekNumericField
+        => ref builder.WithIsInteractable(true);
+
+    /// <summary>
+    /// Sets <see cref="ISleekNumericField.IsClickable"/> to <see langword="false"/> on an <see cref="ISleekNumericField"/>.
+    /// <para>Interactability defines if the user can interact with the slider (change it's value).</para>
+    /// </summary>
+    /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
+    /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
+    public static ref readonly SleekElementBuilder<TSleekNumericField> NotInteractable<TSleekNumericField>(this in SleekElementBuilder<TSleekNumericField> builder)
+        where TSleekNumericField : class, ISleekNumericField
+        => ref builder.WithIsInteractable(false);
+
+    /// <summary>
+    /// Sets <see cref="ISleekNumericField.IsClickable"/> to <paramref name="isInteractable"/> on an <see cref="ISleekNumericField"/>.
+    /// <para>Interactability defines if the user can interact with the slider (change it's value).</para>
+    /// </summary>
+    /// <remarks>Default value: <see langword="true"/> (interactable).</remarks>
+    /// <exception cref="NotImplementedException">Not implemented in the current <see cref="Glazier"/> type.</exception>
+    public static ref readonly SleekElementBuilder<TSleekNumericField> WithIsInteractable<TSleekNumericField>(this in SleekElementBuilder<TSleekNumericField> builder,
+        bool isInteractable) where TSleekNumericField : class, ISleekNumericField
+    {
+        if (builder.Element.IsClickable != isInteractable)
+            builder.Element.IsClickable = isInteractable;
         return ref builder;
     }
 

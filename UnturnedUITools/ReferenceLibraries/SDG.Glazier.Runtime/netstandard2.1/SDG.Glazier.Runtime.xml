@@ -1112,6 +1112,11 @@
             Background color of the <see cref="T:SDG.Unturned.ISleekField"/>.
             </summary>
         </member>
+        <member name="P:SDG.Unturned.ISleekField.IsClickable">
+            <summary>
+            If this field can be interacted with.
+            </summary>
+        </member>
         <member name="M:SDG.Unturned.ISleekField.FocusControl">
             <summary>
             Selects the <see cref="T:SDG.Unturned.ISleekField"/>, which leaves the user in the position to be able to type.
@@ -1279,6 +1284,11 @@
         <member name="P:SDG.Unturned.ISleekNumericField.TextColor">
             <summary>
             Text (foreground) color of the <see cref="T:SDG.Unturned.ISleekNumericField"/>.
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekNumericField.IsClickable">
+            <summary>
+            If this field can be interacted with.
             </summary>
         </member>
         <member name="T:SDG.Unturned.ISleekScrollView">

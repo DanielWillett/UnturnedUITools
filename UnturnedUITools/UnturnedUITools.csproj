@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 
-    <PackageReleaseNotes>Updated to ReflectionTools v3 and Harmony v2.3.3.</PackageReleaseNotes>
+    <PackageReleaseNotes></PackageReleaseNotes>
 
-    <Version>1.4.2</Version>
+    <Version>1.4.3</Version>
 
   </PropertyGroup>
   <PropertyGroup>
