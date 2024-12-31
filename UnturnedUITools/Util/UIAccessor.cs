@@ -274,6 +274,7 @@ public static class UIAccessor
 
     private static readonly Func<object?>? GetItemStoreCartMenu;
     private static readonly Func<object?>? GetItemStoreDetailsMenu;
+    private static readonly Func<object?>? GetItemStoreBundleContentsMenu;
 
     /// <summary>
     /// Singleton instance of <see cref="SDG.Unturned.EditorUI"/>.
@@ -894,6 +895,11 @@ public static class UIAccessor
     public static Type? ItemStoreDetailsMenuType { get; } = typeof(Provider).Assembly.GetType("SDG.Unturned.ItemStoreDetailsMenu", false);
 
     /// <summary>
+    /// Type of <see cref="SDG.Unturned.ItemStoreBundleContentsMenu"/>.
+    /// </summary>
+    public static Type? ItemStoreBundleContentsMenuType { get; } = typeof(Provider).Assembly.GetType("SDG.Unturned.ItemStoreBundleContentsMenu", false);
+
+    /// <summary>
     /// Singleton instance of <see cref="SDG.Unturned.ItemStoreCartMenu"/>.
     /// </summary>
     public static object? ItemStoreCartMenu => GetItemStoreCartMenu?.Invoke();
@@ -902,6 +908,11 @@ public static class UIAccessor
     /// Singleton instance of <see cref="SDG.Unturned.ItemStoreDetailsMenu"/>.
     /// </summary>
     public static object? ItemStoreDetailsMenu => GetItemStoreDetailsMenu?.Invoke();
+
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.ItemStoreBundleContentsMenu"/>.
+    /// </summary>
+    public static object? ItemStoreBundleContentsMenu => GetItemStoreBundleContentsMenu?.Invoke();
 
     /// <summary>
     /// Singleton instance of <see cref="SDG.Unturned.MenuWorkshopSubmitUI"/>.
@@ -1427,6 +1438,37 @@ public static class UIAccessor
                     else
                     {
                         Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.ItemStoreCartMenu.");
+                    }
+
+                    /* BUNDLE CONTENTS MENU */
+                    rtnType = ItemStoreBundleContentsMenuType;
+                    if (rtnType != null)
+                    {
+                        FieldInfo? field = containerType.GetField("bundleContentsMenu", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public) ??
+                                containerType.GetField("bundleContentsMenuUI", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                        if (field == null || field.IsStatic || !rtnType.IsAssignableFrom(field.FieldType))
+                        {
+                            Accessor.Logger?.LogWarning(Source, "Unable to find field: ItemStoreMenu.bundleContentsMenu.");
+                        }
+                        else
+                        {
+                            DynamicMethod method = new DynamicMethod("ItemStoreBundleContentsMenu_Impl", attr,
+                                CallingConventions.Standard, rtnType,
+                                Type.EmptyTypes, accessTools, true);
+                            ILGenerator il = method.GetILGenerator();
+                            Label lbl = il.DefineLabel();
+                            il.Emit(OpCodes.Call, accessTools.GetProperty(nameof(ItemStoreMenu), BindingFlags.Public | BindingFlags.Static)!.GetMethod);
+                            il.Emit(OpCodes.Dup);
+                            il.Emit(OpCodes.Brfalse_S, lbl);
+                            il.Emit(OpCodes.Ldfld, field);
+                            il.MarkLabel(lbl);
+                            il.Emit(OpCodes.Ret);
+                            GetItemStoreBundleContentsMenu = (Func<object?>)method.CreateDelegate(typeof(Func<object>));
+                        }
+                    }
+                    else
+                    {
+                        Accessor.Logger?.LogWarning(Source, "Unable to find type: SDG.Unturned.ItemStoreBundleContentsMenu.");
                     }
                 }
                 else
@@ -2110,6 +2152,13 @@ public static class UIAccessor
                     Parent = ItemStoreMenuType ?? typeof(object),
                     Scene = UIScene.Menu,
                     EmitProperty = nameof(ItemStoreDetailsMenu)
+                });
+
+                Add(new UITypeInfo("ItemStoreBundleContentsMenu", hasActiveMember: false)
+                {
+                    Parent = ItemStoreMenuType ?? typeof(object),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(ItemStoreBundleContentsMenu)
                 });
 
 
