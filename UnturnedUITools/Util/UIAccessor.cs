@@ -1,4 +1,4 @@
-﻿using DanielWillett.ReflectionTools;
+using DanielWillett.ReflectionTools;
 using DanielWillett.ReflectionTools.Formatting;
 using DanielWillett.UITools.API;
 using DanielWillett.UITools.Core.Handlers;
@@ -206,6 +206,9 @@ public static class UIAccessor
 
     private static readonly InstanceGetter<MenuPlayUI, MenuPlaySingleplayerUI?>? GetMenuPlaySingleplayerUI
         = Accessor.GenerateInstanceGetter<MenuPlayUI, MenuPlaySingleplayerUI?>("singleplayerUI");
+
+    private static readonly InstanceGetter<MenuPlayServerCurationUI, object?>? GetMenuPlayServerCurationRulesUI
+        = Accessor.GenerateInstanceGetter<MenuPlayServerCurationUI, object?>("rulesUI");
 
     private static readonly InstanceGetter<MenuPlayUI, MenuPlayLobbiesUI?>? GetMenuPlayLobbiesUI
         = Accessor.GenerateInstanceGetter<MenuPlayUI, MenuPlayLobbiesUI?>("lobbiesUI");
@@ -703,6 +706,28 @@ public static class UIAccessor
     /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerBookmarksUI"/>.
     /// </summary>
     public static MenuPlayServerBookmarksUI? MenuPlayServerBookmarksUI => MenuPlayUI.serverBookmarksUI;
+
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerCurationUI"/>.
+    /// </summary>
+    public static MenuPlayServerCurationUI? MenuPlayServerCurationUI => MenuPlayServersUI.serverCurationUI;
+
+    /// <summary>
+    /// Type of <see cref="SDG.Unturned.MenuPlayServerCurationRulesUI"/>.
+    /// </summary>
+    public static Type? MenuPlayServerCurationRulesUIType { get; } = typeof(Provider).Assembly.GetType("SDG.Unturned.MenuPlayServerCurationRulesUI", false);
+
+    /// <summary>
+    /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerCurationUI"/>.
+    /// </summary>
+    public static object? MenuPlayServerCurationRulesUI
+    {
+        get
+        {
+            MenuPlayServerCurationUI? curationUI = MenuPlayServersUI.serverCurationUI;
+            return curationUI != null ? GetMenuPlayServerCurationRulesUI?.Invoke(curationUI) : null;
+        }
+    }
 
     /// <summary>
     /// Singleton instance of <see cref="SDG.Unturned.MenuPlayServerInfoUI"/>.
@@ -1683,6 +1708,22 @@ public static class UIAccessor
                     ParentName = nameof(SDG.Unturned.MenuPlayServersUI),
                     Scene = UIScene.Menu,
                     EmitProperty = nameof(MenuPlayServerListFiltersUI)
+                });
+
+                Add(new UITypeInfo(nameof(MenuPlayServerCurationUI))
+                {
+                    ParentName = nameof(SDG.Unturned.MenuPlayServersUI),
+                    Scene = UIScene.Menu,
+                    CustomEmitter = FindUIType(nameof(SDG.Unturned.MenuPlayServersUI))?.GetField("serverCurationUI", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic) is { } field3
+                                    ? (_, generator) => generator.Emit(OpCodes.Ldsfld, field3)
+                                    : null
+                });
+
+                Add(new UITypeInfo("MenuPlayServerCurationRulesUI")
+                {
+                    ParentName = nameof(MenuPlayServerCurationUI),
+                    Scene = UIScene.Menu,
+                    EmitProperty = nameof(MenuPlayServerCurationRulesUI)
                 });
 
                 Add(new UITypeInfo(nameof(SDG.Unturned.MenuPlayServerBookmarksUI))
