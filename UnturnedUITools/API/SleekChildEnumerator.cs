@@ -1,5 +1,4 @@
 ﻿using SDG.Unturned;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -11,6 +10,7 @@ namespace DanielWillett.UITools.API;
 public struct SleekChildEnumerator : IEnumerator<ISleekElement>, IEnumerable<ISleekElement>
 {
     private int _index;
+    private int _count;
     private readonly ISleekElement _parent;
     private ISleekElement _current;
 
@@ -36,6 +36,7 @@ public struct SleekChildEnumerator : IEnumerator<ISleekElement>, IEnumerable<ISl
     public SleekChildEnumerator(ISleekElement parent)
     {
         _index = -1;
+        _count = parent.GetChildCount();
         _parent = parent;
         _current = null!;
     }
@@ -49,16 +50,14 @@ public struct SleekChildEnumerator : IEnumerator<ISleekElement>, IEnumerable<ISl
     public bool MoveNext()
     {
         ++_index;
-        try
-        {
-            _current = _parent.GetChildAtIndex(_index);
-            return true;
-        }
-        catch (ArgumentOutOfRangeException)
+        if (_index >= _count)
         {
             _current = null!;
             return false;
         }
+
+        _current = _parent.GetChildAtIndex(_index);
+        return true;
     }
 
     /// <inheritdoc />
@@ -66,6 +65,7 @@ public struct SleekChildEnumerator : IEnumerator<ISleekElement>, IEnumerable<ISl
     {
         _index = -1;
         _current = null!;
+        _count = _parent.GetChildCount();
     }
 
     /// <inheritdoc />

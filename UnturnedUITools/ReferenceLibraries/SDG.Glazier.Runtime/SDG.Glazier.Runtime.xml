@@ -10,6 +10,21 @@
             </summary>
             <param name="button">The button that was pressed. Note that this could be any sleek button type, not just <see cref="T:SDG.Unturned.ISleekButton"/>.</param>
         </member>
+        <member name="T:SDG.Unturned.ClickedMouse">
+            <summary>
+            Unused delegate.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ClickedMouseStarted">
+            <summary>
+            Unused delegate.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.ClickedMouseStopped">
+            <summary>
+            Unused delegate.
+            </summary>
+        </member>
         <member name="T:SDG.Unturned.Dragged">
             <summary>
             Handles when a user interacts with a <see cref="T:SDG.Unturned.ISleekSlider"/> and changes it's position.
@@ -462,7 +477,7 @@
         </member>
         <member name="F:SDG.Unturned.GlazierElementBase._childPerpendicularAlignment">
             <summary>
-            Changes the value of <see cref="!:HorizontalLayoutGroup.childAlignment"/> if <see cref="P:SDG.Unturned.GlazierElementBase.UseChildAutoLayout"/> is <see cref="F:SDG.Unturned.ESleekChildLayout.Horizontal"/>.
+            Changes the value of <see cref="P:UnityEngine.UI.LayoutGroup.childAlignment"/> if <see cref="P:SDG.Unturned.GlazierElementBase.UseChildAutoLayout"/> is <see cref="F:SDG.Unturned.ESleekChildLayout.Horizontal"/>.
             </summary>
         </member>
         <member name="F:SDG.Unturned.GlazierElementBase._expandChildren">
@@ -576,6 +591,9 @@
         <member name="M:SDG.Unturned.GlazierElementBase.GetChildAtIndex(System.Int32)">
             <inheritdoc />
         </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.GetChildCount">
+            <inheritdoc />
+        </member>
         <member name="M:SDG.Unturned.GlazierElementBase.RemoveChild(SDG.Unturned.ISleekElement)">
             <inheritdoc />
         </member>
@@ -600,6 +618,9 @@
             <inheritdoc />
         </member>
         <member name="M:SDG.Unturned.GlazierElementBase.SetAsFirstSibling">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.GlazierElementBase.ForceLayoutUpdate">
             <inheritdoc />
         </member>
         <member name="M:SDG.Unturned.GlazierElementBase.UpdateDirtyTransform">
@@ -776,6 +797,12 @@
             Supports laying out elements based on the size of each individual element.
             </summary>
         </member>
+        <member name="P:SDG.Unturned.IGlazier.SupportsTilingSprite">
+            <summary>
+            Supports tiling the given sprite, meaning that it'll be repeated in both directions.
+            </summary>
+            <remarks><see cref="P:SDG.Unturned.ISleekSprite.DrawMethod"/> should be set to <see cref="F:SDG.Unturned.ESleekSpriteType.Tiled"/>.</remarks>
+        </member>
         <member name="T:SDG.Unturned.ISleekBox">
             <summary>
             Empty panel with a background texture for putting other elements on.
@@ -926,7 +953,7 @@
         </member>
         <member name="P:SDG.Unturned.ISleekElement.ChildPerpendicularAlignment">
             <summary>
-            Changes the value of <see cref="!:HorizontalLayoutGroup.childAlignment"/> if <see cref="P:SDG.Unturned.ISleekElement.UseChildAutoLayout"/> is <see cref="F:SDG.Unturned.ESleekChildLayout.Horizontal"/>.
+            Changes the value of <see cref="P:UnityEngine.UI.LayoutGroup.childAlignment"/> if <see cref="P:SDG.Unturned.ISleekElement.UseChildAutoLayout"/> is <see cref="F:SDG.Unturned.ESleekChildLayout.Horizontal"/>.
             </summary>
         </member>
         <member name="P:SDG.Unturned.ISleekElement.ExpandChildren">
@@ -1027,6 +1054,11 @@
             <returns>The child at <paramref name="index"/> in the child list.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is greater than or equal to the number of children this object has, or it's less than zero.</exception>
         </member>
+        <member name="M:SDG.Unturned.ISleekElement.GetChildCount">
+            <summary>
+            Gets the number of children that have this element as a parent.
+            </summary>
+        </member>
         <member name="M:SDG.Unturned.ISleekElement.Update">
             <summary>
             Updates the animation and transform changes, then calls <see cref="M:SDG.Unturned.ISleekElement.Update"/> on all it's visible children and <see cref="T:SDG.Unturned.SleekWrapper"/> owner, if present.
@@ -1065,6 +1097,11 @@
         <member name="M:SDG.Unturned.ISleekElement.SetAsFirstSibling">
             <summary>
             Makes this element the first child in the list of children (effectively bringing it to the front).
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekElement.ForceLayoutUpdate">
+            <summary>
+            Causes this UI element to fully update its graphical representation.
             </summary>
         </member>
         <member name="T:SDG.Unturned.ISleekField">
@@ -1296,8 +1333,16 @@
             Scroll viewport to manage offsets of scrollable content.
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "P:SDG.Unturned.ISleekScrollView.ScaleContentToWidth" -->
-        <!-- Badly formed XML comment ignored for member "P:SDG.Unturned.ISleekScrollView.ScaleContentToHeight" -->
+        <member name="P:SDG.Unturned.ISleekScrollView.ScaleContentToWidth">
+            <summary>
+            Should <see cref="P:SDG.Unturned.ISleekScrollView.ContentScaleFactor"/> be applied in the x direction?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.ISleekScrollView.ScaleContentToHeight">
+            <summary>
+            Should <see cref="P:SDG.Unturned.ISleekScrollView.ContentScaleFactor"/> be applied in the y direction?
+            </summary>
+        </member>
         <member name="P:SDG.Unturned.ISleekScrollView.ContentScaleFactor">
             <summary>
             How zoomed in the content is.
@@ -1544,6 +1589,11 @@
         <member name="P:SDG.Unturned.ISleekWithTooltip.TooltipText">
             <summary>
             Text that will show when hovering over the element.
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.MovedMouse">
+            <summary>
+            Unused delegate.
             </summary>
         </member>
         <member name="T:SDG.Unturned.SleekColor">
@@ -1856,6 +1906,9 @@
         <member name="M:SDG.Unturned.SleekWrapper.GetChildAtIndex(System.Int32)">
             <inheritdoc />
         </member>
+        <member name="M:SDG.Unturned.SleekWrapper.GetChildCount">
+            <inheritdoc />
+        </member>
         <member name="M:SDG.Unturned.SleekWrapper.Update">
             <inheritdoc />
         </member>
@@ -1875,6 +1928,9 @@
             <inheritdoc />
         </member>
         <member name="M:SDG.Unturned.SleekWrapper.SetAsFirstSibling">
+            <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.ForceLayoutUpdate">
             <inheritdoc />
         </member>
         <member name="M:SDG.Unturned.SleekWrapper.OnUpdate">

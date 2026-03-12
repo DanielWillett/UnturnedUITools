@@ -1,5 +1,6 @@
 ﻿using SDG.Unturned;
 using System;
+#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace DanielWillett.UITools.Util;
 

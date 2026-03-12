@@ -3,11 +3,11 @@
 
     <PackageReleaseNotes></PackageReleaseNotes>
 
-    <Version>1.4.5</Version>
+    <Version>1.4.6</Version>
 
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
 
@@ -51,8 +51,7 @@
   <ItemGroup>
     <None Include="../README.md" Pack="true" PackagePath="\" />
     <Reference Include="SDG.Glazier.Runtime" HintPath="ReferenceLibraries/SDG.Glazier.Runtime/SDG.Glazier.Runtime.dll" Private="true" />
-    <TfmSpecificPackageFile Include="ReferenceLibraries/SDG.Glazier.Runtime/$(TargetFramework)/SDG.Glazier.Runtime.dll" Pack="true" PackagePath="\lib\$(TargetFramework)" />
-    <TfmSpecificPackageFile Include="ReferenceLibraries/SDG.Glazier.Runtime/$(TargetFramework)/SDG.Glazier.Runtime.xml" Pack="true" PackagePath="\lib\$(TargetFramework)" />
+    <TfmSpecificPackageFile Include="ReferenceLibraries/SDG.Glazier.Runtime/SDG.Glazier.Runtime.dll" Pack="true" PackagePath="\lib\netstandard2.1" />
   </ItemGroup>
 
   <ItemGroup>
