@@ -762,10 +762,10 @@
         </member>
         <member name="M:SDG.Unturned.IGlazier.CreateProxyImplementation(SDG.Unturned.SleekWrapper)">
             <summary>
-            Creates a new instance of a proxy <see cref="T:SDG.Unturned.ISleekElement"/> for a <see cref="T:SDG.Unturned.SleekWrapper"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
+            Creates a new instance of a <see cref="T:SDG.Unturned.ISleekProxyImplementation"/> for a <see cref="T:SDG.Unturned.SleekWrapper"/> that depends on the selected <see cref="T:SDG.Unturned.Glazier"/> mode.
             </summary>
             <param name="owner">The instance of <see cref="T:SDG.Unturned.SleekWrapper"/> that the proxy is being created for.</param>
-            <returns>The newly created <see cref="T:SDG.Unturned.ISleekElement"/>, which must be cleaned up when the parent wrapper is done with it.</returns>
+            <returns>The newly created <see cref="T:SDG.Unturned.ISleekProxyImplementation"/>, which must be cleaned up when the parent wrapper is done with it.</returns>
         </member>
         <member name="P:SDG.Unturned.IGlazier.Root">
             <summary>
@@ -1327,6 +1327,22 @@
             <summary>
             If this field can be interacted with.
             </summary>
+        </member>
+        <member name="T:SDG.Unturned.ISleekProxyImplementation">
+            <summary>
+            An implementation of <see cref="T:SDG.Unturned.ISleekElement"/> that wraps a <see cref="T:SDG.Unturned.SleekWrapper"/> instance.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekProxyImplementation.GetWrapper">
+            <summary>
+            Gets the <see cref="T:SDG.Unturned.SleekWrapper"/> represented by this proxy implementation.
+            </summary>
+        </member>
+        <member name="M:SDG.Unturned.ISleekProxyImplementation.GetWrapper``1">
+            <summary>
+            Gets the <see cref="T:SDG.Unturned.SleekWrapper"/> represented by this proxy implementation casted to <typeparamref name="T"/>.
+            </summary>
+            <returns>If this element's wrapper is assignable to <typeparamref name="T"/>, the wrapper. Otherwise, a <see langword="null"/> value will be returned.</returns>
         </member>
         <member name="T:SDG.Unturned.ISleekScrollView">
             <summary>
@@ -1932,6 +1948,11 @@
         </member>
         <member name="M:SDG.Unturned.SleekWrapper.ForceLayoutUpdate">
             <inheritdoc />
+        </member>
+        <member name="M:SDG.Unturned.SleekWrapper.GetProxyImplementation">
+            <summary>
+            Gets this wrapper's <see cref="T:SDG.Unturned.ISleekProxyImplementation"/> element, which uses the active <see cref="T:SDG.Unturned.Glazier"/> mode for this <see cref="T:SDG.Unturned.SleekWrapper"/>.
+            </summary>
         </member>
         <member name="M:SDG.Unturned.SleekWrapper.OnUpdate">
             <summary>

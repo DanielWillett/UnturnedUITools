@@ -41,14 +41,14 @@ internal class UseableGunExtension : UIExtension, IDisposable
         };
 
         // Get equipped 'Item'.
-        byte page = Player.player.equipment.equippedPage;
-        byte x = Player.player.equipment.equipped_x, y = Player.player.equipment.equipped_x;
+        byte page = Player.LocalPlayer.equipment.equippedPage;
+        byte x = Player.LocalPlayer.equipment.equipped_x, y = Player.LocalPlayer.equipment.equipped_x;
 
-        byte index = Player.player.inventory.getIndex(page, x, y);
-        Item? item = index == byte.MaxValue ? null : Player.player.inventory.getItem(page, index)?.item;
+        byte index = Player.LocalPlayer.inventory.getIndex(page, x, y);
+        Item? item = index == byte.MaxValue ? null : Player.LocalPlayer.inventory.getItem(page, index)?.item;
 
         // Build and sort description
-        Player.player.equipment.asset?.BuildDescription(builder, item);
+        Player.LocalPlayer.equipment.asset?.BuildDescription(builder, item);
         builder.lines.Sort();
 
         // Set the text, spacing each line with newline characters.

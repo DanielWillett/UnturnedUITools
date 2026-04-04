@@ -17,18 +17,18 @@ public struct SleekChildEnumerator : IEnumerator<ISleekElement>, IEnumerable<ISl
     /// <summary>
     /// Owner of this enumerator.
     /// </summary>
-    public ISleekElement Parent => _parent;
+    public readonly ISleekElement Parent => _parent;
 
     /// <summary>
     /// Child index of the current element (or -1 if not started/reset).
     /// </summary>
-    public int Index => _index;
+    public readonly int Index => _index;
 
     /// <summary>
     /// The child of <see cref="Parent"/> at index <see cref="Index"/>.
     /// </summary>
-    public ISleekElement Current => _current;
-    object IEnumerator.Current => _current;
+    public readonly ISleekElement Current => _current;
+    readonly object IEnumerator.Current => _current;
 
     /// <summary>
     /// Enumerate through the children of <paramref name="parent"/>.
@@ -44,7 +44,7 @@ public struct SleekChildEnumerator : IEnumerator<ISleekElement>, IEnumerable<ISl
     /// <summary>
     /// Does nothing.
     /// </summary>
-    public void Dispose() { }
+    public readonly void Dispose() { }
 
     /// <inheritdoc />
     public bool MoveNext()
@@ -68,7 +68,8 @@ public struct SleekChildEnumerator : IEnumerator<ISleekElement>, IEnumerable<ISl
         _count = _parent.GetChildCount();
     }
 
-    /// <inheritdoc />
-    public IEnumerator<ISleekElement> GetEnumerator() => _index == -1 ? this : new SleekChildEnumerator(_parent);
-    IEnumerator IEnumerable.GetEnumerator() => _index == -1 ? this : new SleekChildEnumerator(_parent);
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
+    public readonly SleekChildEnumerator GetEnumerator() => _index == -1 ? this : new SleekChildEnumerator(_parent);
+    readonly IEnumerator<ISleekElement> IEnumerable<ISleekElement>.GetEnumerator() => GetEnumerator();
+    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
