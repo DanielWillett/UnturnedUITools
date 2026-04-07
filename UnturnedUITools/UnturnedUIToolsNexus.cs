@@ -10,14 +10,16 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using UnityEngine;
 using Module = SDG.Framework.Modules.Module;
+using Object = UnityEngine.Object;
 
 namespace DanielWillett.UITools;
 
 /// <summary>
 /// Module class for the <see cref="UITools"/> module/library.
 /// </summary>
-/// <remarks>Call <see cref="Initialize"/> to set up if not loaded as a module.</remarks>
+/// <remarks>Call <see cref="Initialize()"/> to set up if not loaded as a module.</remarks>
 public class UnturnedUIToolsNexus : IModuleNexus
 {
     private static readonly object Sync = new object();
@@ -27,6 +29,7 @@ public class UnturnedUIToolsNexus : IModuleNexus
     private static bool _isStandaloneCached;
     private static bool _isStandalone;
     private bool _subModInit;
+    private static GameObject? _extensionManagerObject;
 
     /// <summary>
     /// Is <see cref="UITools"/> installed as a module instead of a library?
@@ -55,7 +58,9 @@ public class UnturnedUIToolsNexus : IModuleNexus
     /// <summary>
     /// Manages extensions, the default type is <see cref="Core.Extensions.UIExtensionManager"/>.
     /// </summary>
-    /// <remarks>Call <see cref="Initialize"/> to setup with default values.</remarks>
+    /// <remarks>Call <see cref="Initialize()"/> to setup with default values.</remarks>
+    /// <returns>The current extension manager, or <see langword="null"/> duing initialization if it hasn't been set up yet.</returns>
+    /// <exception cref="InvalidOperationException">The <see cref="IUIExtensionManager"/> was never set up.</exception>
     public static IUIExtensionManager UIExtensionManager
     {
         get
@@ -83,8 +88,17 @@ public class UnturnedUIToolsNexus : IModuleNexus
                     disposable.Dispose();
 
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                if (old is UnityEngine.Object obj && obj != null)
-                    UnityEngine.Object.Destroy(obj);
+                if (old is Object obj && obj != null)
+                {
+                    if (obj is MonoBehaviour b && b.gameObject == _extensionManagerObject)
+                    {
+                        Object.Destroy(_extensionManagerObject);
+                    }
+                    else
+                    {
+                        Object.Destroy(obj);
+                    }
+                }
 
                 if (_init)
                 {
@@ -119,8 +133,17 @@ public class UnturnedUIToolsNexus : IModuleNexus
             disposable.Dispose();
 
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        if (oldManager is UnityEngine.Object obj && obj != null)
-            UnityEngine.Object.DestroyImmediate(obj);
+        if (oldManager is Object obj && obj != null)
+        {
+            if (obj is MonoBehaviour b && b.gameObject == _extensionManagerObject)
+            {
+                Object.DestroyImmediate(_extensionManagerObject);
+            }
+            else
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
         
         if (Accessor.Logger is UnturnedReflectionToolsLogger)
         {
@@ -138,33 +161,47 @@ public class UnturnedUIToolsNexus : IModuleNexus
         Initialize();
     }
 
+    /// <inheritdoc cref="InitializeIfNotStandalone(bool)"/>
+    public static bool InitializeIfNotStandalone()
+    {
+        return InitializeIfNotStandalone(_uiExtensionManager?.DebugLogging ?? false);
+    }
+
     /// <summary>
-    /// Call this manually after all modules have loaded if using as a library (or you're unsure if it's used as a library). Safe to call if it's already been called.
+    /// Call this manually after all modules have loaded if using as a library (or you're unsure if it's used as a library). Safe to call multiple times.
     /// <para>
-    /// Checks to see if <see cref="UITools"/> is loaded as a module, otherwise runs <see cref="Initialize"/>.
+    /// Checks to see if <see cref="UITools"/> is loaded as a module, otherwise runs <see cref="Initialize()"/>.
     /// </para>
     /// </summary>
+    /// <param name="debugLogging">Whether or not to enable debug logging for the current <see cref="IUIExtensionManager"/> before intializing.</param>
     /// <remarks>If desired, <see cref="UIExtensionManager"/> and <see cref="UIAccessor.HarmonyId"/> should be set beforehand.</remarks>
-    /// <returns><see langword="True"/> if <see cref="UITools"/> was not found as a module and <see cref="Initialize"/> was ran, otherwise <see langword="false"/>.</returns>
-    public static bool InitializeIfNotStandalone()
+    /// <returns><see langword="True"/> if <see cref="UITools"/> was not found as a module and <see cref="Initialize()"/> was ran, otherwise <see langword="false"/>.</returns>
+    public static bool InitializeIfNotStandalone(bool debugLogging)
     {
         if (ModuleHook.modules == null)
             throw new InvalidOperationException("Modules have not been loaded yet.");
         
         if (!IsStandalone)
         {
-            Initialize();
+            Initialize(debugLogging);
             return true;
         }
 
         return false;
     }
 
-    /// <summary>
-    /// Call this manually after all modules have loaded if using as a library. Safe to call if it's already been called.
-    /// </summary>
-    /// <remarks>If desired, <see cref="UIExtensionManager"/> and <see cref="UIAccessor.HarmonyId"/> should be set beforehand.</remarks>
+    /// <inheritdoc cref="Initialize(bool)"/>
     public static void Initialize()
+    {
+        Initialize(_uiExtensionManager?.DebugLogging ?? false);
+    }
+
+    /// <summary>
+    /// Call this manually after all modules have loaded if using as a library. Safe to call multiple times.
+    /// </summary>
+    /// <param name="debugLogging">Whether or not to enable debug logging for the current <see cref="IUIExtensionManager"/> before intializing.</param>
+    /// <remarks>If desired, <see cref="UIExtensionManager"/> and <see cref="UIAccessor.HarmonyId"/> should be set beforehand.</remarks>
+    public static void Initialize(bool debugLogging)
     {
         ThreadUtil.assertIsGameThread();
 
@@ -185,8 +222,19 @@ public class UnturnedUIToolsNexus : IModuleNexus
             UIAccessor.Init();
 
             _init = true;
-            _uiExtensionManager ??= new UIExtensionManager();
+            if (_uiExtensionManager == null)
+            {
+                if (_extensionManagerObject != null)
+                {
+                    Object.Destroy(_extensionManagerObject);
+                }
 
+                _extensionManagerObject = new GameObject(nameof(Core.Extensions.UIExtensionManager), typeof(UIExtensionManager));
+                Object.DontDestroyOnLoad(_extensionManagerObject);
+                _uiExtensionManager = _extensionManagerObject.GetComponent<UIExtensionManager>();
+            }
+
+            _uiExtensionManager.DebugLogging = debugLogging;
             _uiExtensionManager.Initialize();
 
             Register();

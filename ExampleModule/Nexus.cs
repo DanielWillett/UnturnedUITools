@@ -1,5 +1,4 @@
 ﻿using DanielWillett.UITools;
-using DanielWillett.UITools.Core.Extensions;
 using DanielWillett.UITools.Util;
 using HarmonyLib;
 using SDG.Framework.Modules;
@@ -15,15 +14,18 @@ public class Nexus : IModuleNexus
         CommandWindow.Log("ExampleModule started.");
 
         // Optionally override the UI Extension manager in your initialize method to enable debug logging.
+        // This can also be done in InitializeIfNotStandalone if the UnturnedUITools module isn't standalone. (see OnModulesLoaded)
 
+        // Note that if MonoBehaviour extensions will be used this needs to be created as a component instead.
+
+#if false
         UnturnedUIToolsNexus.UIExtensionManager ??= new UIExtensionManager
         {
             DebugLogging = true
         };
-
+#endif
 
         // Enables a auto-clearing harmony debug log in Unturned/Logs. Path can be changed with UIAccessor.HarmonyLogPath.
-
         UIAccessor.ManageHarmonyDebugLog = true;
 
 
@@ -33,7 +35,8 @@ public class Nexus : IModuleNexus
     }
     private void OnModulesLoaded()
     {
-        if (UnturnedUIToolsNexus.InitializeIfNotStandalone())
+                                                        // Enable debug logging
+        if (UnturnedUIToolsNexus.InitializeIfNotStandalone(debugLogging: true))
         {
             CommandWindow.Log("Initialized UITools.");
         }
